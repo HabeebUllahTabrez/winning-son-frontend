@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #111;
+  --paper: #fff;
+}
+
+html { font-size: 18px; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.7;
+}
+
+a { text-underline-offset: 3px; }
+a:hover { opacity: 0.9; }
+
+.input, .btn {
+  border: 2px solid var(--ink);
+  background: var(--paper);
+}
+
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
+}
+
+.btn {
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  box-shadow: 3px 3px 0 0 var(--ink);
+  transition: transform .05s ease, box-shadow .05s ease, background .2s ease;
+}
+.btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 0 var(--ink); }
+.btn:active { transform: translate(0,0); box-shadow: 2px 2px 0 0 var(--ink); }
+
+.card {
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  padding: 1.1rem 1.3rem;
+  box-shadow: 4px 4px 0 0 var(--ink);
+  background: #fff;
+}
+
+section + section { margin-top: 2rem; }
