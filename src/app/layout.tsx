@@ -41,7 +41,7 @@ function Nav() {
     { href: "/journal", label: "Journal" },
     { href: "/submissions", label: "Submissions" },
     { href: "/analyzer", label: "Analyzer" },
-    { href: "/reports", label: "Reports" },
+    { href: "/profile", label: "Profile" },
   ];
 
   // Reusable component for links to handle active state styling

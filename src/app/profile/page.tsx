@@ -4,22 +4,22 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import toast from "react-hot-toast";
-import { FaEdit, FaSave, FaTimes } from "react-icons/fa";
+import { FaEdit, FaSave, FaShieldAlt, FaTimes } from "react-icons/fa";
 import { AvatarPicker, AVATAR_MAP } from "./_components/AvatarPicker";
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 
-// 1. Updated type to match the GET /api/me response
+// Updated type to include is_admin
 type UserProfile = {
   first_name: string | null;
   last_name: string | null;
   email: string;
   avatar_id: number;
   goal: string | null;
-  start_date: string | null; // Comes as ISO string "YYYY-MM-DDTHH:mm:ssZ"
+  start_date: string | null;
   end_date: string | null;
+  is_admin: boolean; // <-- Added is_admin flag
 };
 
-// Helper to format date from API (ISO string) to input format (YYYY-MM-DD)
 const formatDateForInput = (dateString: string | null) => {
   if (!dateString) return "";
   return dateString.split("T")[0];
@@ -37,9 +37,8 @@ export default function ProfilePage() {
     return { Authorization: `Bearer ${token}` };
   }, []);
 
-  // 2. Updated to fetch from GET /api/me
   const loadProfile = useCallback(async () => {
-    if (!isEditing) setIsLoading(true); // Only show full skeleton on initial load
+    if (!isEditing) setIsLoading(true);
     try {
       const res = await apiFetch("/api/me", { headers: authHeader() });
       if (!res.ok) throw new Error("Failed to load profile.");
@@ -57,7 +56,6 @@ export default function ProfilePage() {
     loadProfile();
   }, [loadProfile]);
 
-  // 3. Updated to save to PUT /api/me
   const handleSave = async () => {
     if (!profile) return;
     setIsSaving(true);
@@ -70,19 +68,15 @@ export default function ProfilePage() {
         start_date: profile.start_date || "",
         end_date: profile.end_date || "",
       };
-
       const res = await apiFetch("/api/me", {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...authHeader() },
         body: JSON.stringify(payload),
       });
-
-      // Expecting 204 No Content on success
       if (res.status !== 204) throw new Error(await res.text() || "Failed to save profile.");
-      
       toast.success("Profile updated successfully!");
       setIsEditing(false);
-      await loadProfile(); // Refetch data to ensure UI is in sync
+      await loadProfile();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "An error occurred while saving.");
     } finally {
@@ -101,7 +95,7 @@ export default function ProfilePage() {
   };
 
   const getAvatarFile = (avatarId: number) => {
-    return AVATAR_MAP.find(avatar => avatar.id === avatarId)?.file || "1.jpeg";
+    return AVATAR_MAP.find(avatar => avatar.id === avatarId)?.file || "avatar-1.png";
   };
 
   if (isLoading) {
@@ -132,6 +126,7 @@ export default function ProfilePage() {
         </header>
 
         <div className="card p-6 sm:p-8 space-y-6">
+          {/* ... (rest of the form remains the same) ... */}
           <div className="flex flex-col items-center gap-4">
             <img
               src={`/avatars/${getAvatarFile(profile.avatar_id)}`}
@@ -148,7 +143,6 @@ export default function ProfilePage() {
           </div>
 
           <div className="space-y-4">
-            {/* Text Inputs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="form-group">
                 <label htmlFor="first_name">First Name</label>
@@ -167,7 +161,6 @@ export default function ProfilePage() {
               <label htmlFor="goal">Your Goal</label>
               <input type="text" id="goal" name="goal" className="input" value={profile.goal || ""} onChange={handleInputChange} disabled={!isEditing} placeholder="e.g., Run 5k daily" />
             </div>
-            {/* Date Inputs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="form-group">
                 <label htmlFor="start_date">Start Date</label>
@@ -191,6 +184,17 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
+
+        {/* --- Admin Panel Link --- */}
+        {profile.is_admin && (
+          <section className="card p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Admin Tools</h2>
+            <p className="text-gray-600 mb-4">You have access to the system administration panel.</p>
+            <a href="/admin" className="btn-secondary flex items-center gap-2 w-fit">
+              <FaShieldAlt /> Go to Admin Panel
+            </a>
+          </section>
+        )}
       </div>
     </div>
   );
