@@ -7,14 +7,8 @@ import clsx from "clsx";
 // --- IMPORTANT ---
 // This map converts the integer ID from the API to a filename.
 // Ensure the files exist in your /public/avatars folder.
-export const AVATAR_MAP = [
-  { id: 1, file: "./1.jpeg" },
-  { id: 2, file: "./2.jpeg" },
-  { id: 3, file: "./3.jpeg" },
-  { id: 4, file: "./4.jpeg" },
-//   { id: 5, file: "5.png" },
-//   { id: 6, file: "6.png" },
-];
+
+import { AVATAR_MAP } from "@/lib/avatars";
 
 type AvatarPickerProps = {
   currentAvatarId: number;

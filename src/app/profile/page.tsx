@@ -5,8 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import toast from "react-hot-toast";
 import { FaEdit, FaSave, FaShieldAlt, FaTimes } from "react-icons/fa";
-import { AvatarPicker, AVATAR_MAP } from "./_components/AvatarPicker";
+import { AvatarPicker } from "./_components/AvatarPicker";
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
+import { AVATAR_MAP } from "@/lib/avatars";
 
 // Updated type to include is_admin
 type UserProfile = {

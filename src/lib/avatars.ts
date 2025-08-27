@@ -5,8 +5,8 @@ export const AVATAR_MAP = [
   { id: 2, file: "2.jpeg" },
   { id: 3, file: "3.jpeg" },
   { id: 4, file: "4.jpeg" },
-//   { id: 5, file: "5.jpeg" },
-//   { id: 6, file: "6.jpeg" },
+  { id: 5, file: "5.jpeg" },
+  { id: 6, file: "6.jpeg" },
 ];
 
 /**
