@@ -3,14 +3,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/lib/api";
-import { getAvatarFile } from "@/lib/avatars"; // 1. Import the new utility
+import { getAvatarFile } from "@/lib/avatars";
 import { StatCard } from "./_components/StatCard";
 import { TrendChart } from "./_components/TrendChart";
 import { CallToAction } from "./_components/CallToAction";
 import { DashboardSkeleton } from "./_components/DashboardSkeleton";
-import { FaCalendarCheck, FaChartLine, FaFire, FaStar } from "react-icons/fa";
+import { FaCalendarCheck, FaChartLine, FaFire, FaFlagCheckered, FaStar, FaTrophy } from "react-icons/fa";
 
-// 2. Define nested User type and update DashboardData
+// Define nested User type and update DashboardData
 type User = {
     first_name: string | null;
     avatar_id: number | null;
@@ -19,6 +19,7 @@ type User = {
     end_date: string | null;
 };
 
+// Updated DashboardData type with goal_points
 type DashboardData = {
     has_today_entry: boolean;
     day_points: number;
@@ -30,7 +31,20 @@ type DashboardData = {
     average_month_rating: number;
     current_streak_days: number;
     last7_days_trend: { local_date: string; points: number }[];
-    user: User; // Add the user object
+    user: User;
+    // ASSUMPTION: The API now includes points accumulated during the goal's date range.
+    goal_points_to_date?: number;
+};
+
+// Helper to format dates for display
+const formatDateForDisplay = (dateString: string | null) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'UTC' // Ensure date is not shifted by local timezone
+    });
 };
 
 export default function Dashboard() {
@@ -67,7 +81,6 @@ export default function Dashboard() {
         loadDashboard();
     }, [loadDashboard]);
 
-    // 3. Memoize goal progress calculation
     const goalProgress = useMemo(() => {
         if (!dashboardData?.user.start_date || !dashboardData?.user.end_date) {
             return null;
@@ -82,7 +95,7 @@ export default function Dashboard() {
         const elapsedDuration = now - start;
         const percentage = Math.round((elapsedDuration / totalDuration) * 100);
 
-        return Math.max(0, Math.min(100, percentage)); // Clamp between 0 and 100
+        return Math.max(0, Math.min(100, percentage));
     }, [dashboardData?.user]);
 
 
@@ -106,7 +119,6 @@ export default function Dashboard() {
     return (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <div className="space-y-12">
-                {/* 4. New Personalized Header */}
                 <header className="flex items-center gap-4">
                     <img
                         src={`/avatars/${getAvatarFile(user.avatar_id)}`}
@@ -125,20 +137,41 @@ export default function Dashboard() {
 
                 <CallToAction hasEntryToday={dashboardData.has_today_entry} />
 
-                {/* 5. New Goal Progress Section */}
+                {/* --- Redesigned Goal Progress Section --- */}
                 {user.goal && (
-                    <section className="card p-6 space-y-3">
-                        <h2 className="text-xl font-bold text-gray-800">Your Current Goal</h2>
-                        <p className="text-3xl font-bold">{user.goal}</p>
+                    <section className="card p-6 space-y-4">
+                        <div className="flex justify-between items-start">
+                             <div>
+                                <h2 className="text-xl font-bold text-gray-800">Your Current Goal</h2>
+                                <p className="text-3xl font-bold">{user.goal}</p>
+                            </div>
+                            <div className="text-right">
+                                <h3 className="font-semibold text-gray-500 text-lg">Points for Goal</h3>
+                                <p className="font-bold text-gray-900 text-5xl flex items-center gap-2 justify-end">
+                                    <FaTrophy className="text-yellow-500" />
+                                    {dashboardData.goal_points_to_date ?? '...'}
+                                </p>
+                            </div>
+                        </div>
+
                         {goalProgress !== null && (
-                            <div>
+                            <div className="pt-2 space-y-3">
                                 <div className="w-full bg-gray-100 h-6 rounded-full border-2 border-black">
                                     <div 
                                         className="bg-black h-full rounded-full transition-all duration-500" 
                                         style={{ width: `${goalProgress}%` }} 
                                     />
                                 </div>
-                                <p className="text-right font-bold text-md mt-1">{goalProgress}% complete</p>
+                                <div className="flex justify-between items-center text-md font-bold">
+                                    <span className="flex items-center gap-2">
+                                        <FaCalendarCheck className="text-green-600" />
+                                        Start: {formatDateForDisplay(user.start_date)}
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                        <FaFlagCheckered className="text-red-600" />
+                                        End: {formatDateForDisplay(user.end_date)}
+                                    </span>
+                                </div>
                             </div>
                         )}
                     </section>
