@@ -1,69 +1,102 @@
 // src/app/submissions/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { toast } from "react-hot-toast"; // 1. Import toast
+import { toast } from "react-hot-toast";
+import { getStartOfWeek, formatDateForAPI, formatDateRangeForDisplay } from "@/lib/dateUtils";
 
 type Entry = { local_date: string; topics: string; rating: number };
 
 // --- SVG Icons ---
-const PencilIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-        <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-    </svg>
-);
-
-const TrashIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-        <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.033-2.134H8.033C6.91 2.75 6 3.704 6 4.884v.916m7.5 0a48.667 48.667 0 0 0--7.5 0" />
-    </svg>
-);
-
+const PencilIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>;
+const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.033-2.134H8.033C6.91 2.75 6 3.704 6 4.884v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>;
+const ChevronLeftIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>;
+const ChevronRightIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>;
 
 function SubmissionsSkeleton() {
     return (
-        <div className="space-y-6 animate-pulse">
-            <div className="card h-36"></div>
-            <div className="card h-36"></div>
-            <div className="card h-36"></div>
+        <div className="space-y-8 animate-pulse">
+            {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i}>
+                    <div className="h-6 bg-gray-200 rounded w-1/3 mb-3"></div>
+                    <div className="card h-24"></div>
+                </div>
+            ))}
         </div>
     );
 }
 
 export default function SubmissionsPage() {
+    const [weekStartDate, setWeekStartDate] = useState(() => getStartOfWeek(new Date()));
     const [data, setData] = useState<Entry[]>([]);
     const [loading, setLoading] = useState(true);
-    // 2. The old error state is no longer needed
-    // const [error, setError] = useState("");
     
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editData, setEditData] = useState<{ topics: string; rating: number } | null>(null);
     const [isSaving, setIsSaving] = useState(false);
-    
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-
     useEffect(() => {
         const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem("token")}` });
         const fetchSubmissions = async () => {
+            setLoading(true);
+            const endDate = new Date(weekStartDate);
+            endDate.setDate(weekStartDate.getDate() + 6);
+
+            const params = new URLSearchParams({
+                start_date: formatDateForAPI(weekStartDate),
+                end_date: formatDateForAPI(endDate),
+            });
+
             try {
-                const res = await apiFetch("/api/journal", { headers: authHeader() });
+                const res = await apiFetch(`/api/journal?${params.toString()}`, { headers: authHeader() });
                 if (!res.ok) throw new Error(await res.text());
                 setData(await res.json());
             } catch (e) {
-                // 3. Use toast for fetch errors
                 toast.error(e instanceof Error ? e.message : "Failed to load submissions.");
+                setData([]);
             } finally {
                 setLoading(false);
             }
         };
+
         fetchSubmissions();
-    }, []);
+    }, [weekStartDate]);
+    
+    const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => {
+        const day = new Date(weekStartDate);
+        day.setDate(weekStartDate.getDate() + i);
+        return day;
+    }), [weekStartDate]);
+
+    const entriesByDate = useMemo(() => new Map(data?.map(e => [e.local_date, e])), [data]);
+
+    const isNextWeekInFuture = useMemo(() => {
+        const nextWeekStart = new Date(weekStartDate);
+        nextWeekStart.setDate(weekStartDate.getDate() + 7);
+        return nextWeekStart > new Date();
+    }, [weekStartDate]);
+
+    const handlePreviousWeek = () => {
+        const newDate = new Date(weekStartDate);
+        newDate.setDate(weekStartDate.getDate() - 7);
+        setWeekStartDate(newDate);
+    };
+
+    const handleNextWeek = () => {
+        const newDate = new Date(weekStartDate);
+        newDate.setDate(weekStartDate.getDate() + 7);
+        setWeekStartDate(newDate);
+    };
+    
+    const handleGoToToday = () => {
+        setWeekStartDate(getStartOfWeek(new Date()));
+    };
 
     const handleEditClick = (entry: Entry) => {
         setEditingId(entry.local_date);
@@ -88,9 +121,9 @@ export default function SubmissionsPage() {
             if (!res.ok) throw new Error(await res.text());
             setData(current => current.map(e => e.local_date === date ? { ...e, ...editData } : e));
             handleCancelEdit();
-            toast.success("Entry saved successfully!"); // 4. Add success toast
+            toast.success("Entry saved successfully!");
         } catch (e) {
-            toast.error(e instanceof Error ? e.message : "Failed to save changes."); // 5. Add error toast
+            toast.error(e instanceof Error ? e.message : "Failed to save changes.");
         } finally {
             setIsSaving(false);
         }
@@ -115,9 +148,9 @@ export default function SubmissionsPage() {
             setData(currentData => currentData.filter(entry => entry.local_date !== entryToDelete));
             setIsConfirmOpen(false);
             setEntryToDelete(null);
-            toast.success("Entry deleted successfully!"); // 4. Add success toast
+            toast.success("Entry deleted successfully!");
         } catch (e) {
-            toast.error(e instanceof Error ? e.message : "Failed to delete entry."); // 5. Add error toast
+            toast.error(e instanceof Error ? e.message : "Failed to delete entry.");
             setIsConfirmOpen(false);
         } finally {
             setIsDeleting(false);
@@ -125,58 +158,6 @@ export default function SubmissionsPage() {
     };
     
     const ratingOptions = Array.from({ length: 10 }, (_, i) => i + 1);
-
-    const renderContent = () => {
-        if (loading) return <SubmissionsSkeleton />;
-
-        // 6. The main error card is no longer needed. The toast will handle it.
-        // if (error) { ... }
-
-        if (!loading && data.length === 0) {
-            return (
-                <div className="card text-center py-12">
-                    <h2 className="text-2xl font-bold mb-2">No Journal Submissions Yet</h2>
-                    <p className="text-gray-600 mb-4">Create your first entry to see it here.</p>
-                    <Link href="/journal" className="btn text-lg">Write in Journal</Link>
-                </div>
-            );
-        }
-
-        return (
-            <div className="space-y-6">
-                {data.map((entry) => (
-                    <div className="card" key={entry.local_date}>
-                        {editingId === entry.local_date && editData ? (
-                            <div className="space-y-4">
-                                <textarea className="input w-full min-h-[120px] text-lg" value={editData.topics} onChange={(e) => setEditData({ ...editData, topics: e.target.value })} disabled={isSaving} />
-                                <div className="flex flex-wrap items-center gap-2">
-                                    {ratingOptions.map(num => <button key={num} onClick={() => setEditData({...editData, rating: num})} disabled={isSaving} className={`w-10 h-10 text-md font-bold border-2 border-black rounded-full transition-colors ${editData.rating === num ? 'bg-black text-white' : 'bg-white text-black'}`}>{num}</button>)}
-                                </div>
-                                <div className="flex items-center gap-4 pt-2">
-                                    <button className="btn text-lg" onClick={() => handleSaveEdit(entry.local_date)} disabled={isSaving}>{isSaving ? "Saving..." : "Save"}</button>
-                                    <button className="underline" onClick={handleCancelEdit} disabled={isSaving}>Cancel</button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div>
-                                <div className="flex flex-wrap justify-between items-center gap-2 border-b-2 border-black/10 pb-3 mb-3">
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-xl font-bold">{entry.local_date}</span>
-                                        <span className="text-lg font-bold bg-black text-white py-1 px-3 rounded-full">Rating: {entry.rating}/10</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button className="p-2 rounded-full hover:bg-gray-200 transition-colors" onClick={() => handleEditClick(entry)} aria-label="Edit"><PencilIcon /></button>
-                                        <button className="p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors" onClick={() => openDeleteConfirm(entry.local_date)} aria-label="Delete"><TrashIcon /></button>
-                                    </div>
-                                </div>
-                                <p className="whitespace-pre-wrap text-lg leading-relaxed">{entry.topics}</p>
-                            </div>
-                        )}
-                    </div>
-                ))}
-            </div>
-        );
-    };
 
     return (
         <>
@@ -194,9 +175,73 @@ export default function SubmissionsPage() {
             <div className="max-w-5xl mx-auto px-4 py-10">
                 <header className="mb-8">
                     <h1 className="text-4xl font-bold">Journal Submissions</h1>
-                    <p className="text-lg text-gray-600">A complete history of your journal entries. Click the icons to edit or delete.</p>
+                    <p className="text-lg text-gray-600">Review your journal entries week by week.</p>
                 </header>
-                {renderContent()}
+
+                <div className="card mb-8 p-4">
+                    <div className="flex justify-between items-center">
+                        <button onClick={handlePreviousWeek} className="p-2 rounded-full hover:bg-gray-100 transition-colors" aria-label="Previous week"><ChevronLeftIcon /></button>
+                        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+                            <h2 className="text-xl sm:text-2xl font-bold text-center">{formatDateRangeForDisplay(weekStartDate)}</h2>
+                            <button onClick={handleGoToToday} className="btn bg-white text-black text-sm !py-1 !px-3">Today</button>
+                        </div>
+                        <button onClick={handleNextWeek} disabled={isNextWeekInFuture} className="p-2 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed" aria-label="Next week"><ChevronRightIcon /></button>
+                    </div>
+                </div>
+
+                {loading ? (
+                    <SubmissionsSkeleton />
+                ) : data?.length === 0 ? (
+                    <div className="card text-center py-12">
+                        <h2 className="text-2xl font-bold mb-2">No Submissions This Week</h2>
+                        <p className="text-gray-600">You haven't logged any journal entries for this date range.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-8">
+                        {weekDays.map(day => {
+                            const dateString = formatDateForAPI(day);
+                            const entry = entriesByDate.get(dateString);
+                            return (
+                                <div key={dateString}>
+                                    <h3 className="text-2xl font-bold border-b-2 border-black/10 pb-2 mb-4">
+                                        {day.toLocaleDateString('en-US', { weekday: 'long' })}, <span className="text-gray-600">{day.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</span>
+                                    </h3>
+                                    {entry ? (
+                                        <div className="card">
+                                            {editingId === entry.local_date && editData ? (
+                                                <div className="space-y-4">
+                                                    <textarea className="input w-full min-h-[120px] text-lg" value={editData.topics} onChange={(e) => setEditData({ ...editData, topics: e.target.value })} disabled={isSaving} />
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        {ratingOptions.map(num => <button key={num} onClick={() => setEditData({...editData, rating: num})} disabled={isSaving} className={`w-10 h-10 text-md font-bold border-2 border-black rounded-full transition-colors ${editData.rating === num ? 'bg-black text-white' : 'bg-white text-black'}`}>{num}</button>)}
+                                                    </div>
+                                                    <div className="flex items-center gap-4 pt-2">
+                                                        <button className="btn text-lg" onClick={() => handleSaveEdit(entry.local_date)} disabled={isSaving}>{isSaving ? "Saving..." : "Save"}</button>
+                                                        <button className="underline" onClick={handleCancelEdit} disabled={isSaving}>Cancel</button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    <div className="flex flex-wrap justify-between items-center gap-2 border-b-2 border-black/10 pb-3 mb-3">
+                                                        <span className="text-lg font-bold bg-black text-white py-1 px-3 rounded-full">Rating: {entry.rating}/10</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <button className="p-2 rounded-full hover:bg-gray-200 transition-colors" onClick={() => handleEditClick(entry)} aria-label="Edit"><PencilIcon /></button>
+                                                            <button className="p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors" onClick={() => openDeleteConfirm(entry.local_date)} aria-label="Delete"><TrashIcon /></button>
+                                                        </div>
+                                                    </div>
+                                                    <p className="whitespace-pre-wrap text-lg leading-relaxed pt-2">{entry.topics}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500">
+                                            <p>No entry for this day.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </>
     );
