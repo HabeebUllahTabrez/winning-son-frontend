@@ -3,152 +3,161 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
+import { StatCard } from "./_components/StatCard";
+import { TrendChart } from "./_components/TrendChart";
+import { CallToAction } from "./_components/CallToAction";
+import { DashboardSkeleton } from "./_components/DashboardSkeleton";
+import { FaCalendarCheck, FaChartLine, FaFire, FaStar } from "react-icons/fa";
 
-type Summary = { today: number; thisWeek: number; thisMonth: number };
-
-function DashboardSkeleton() {
-    // Also wrapping the skeleton for consistency during load
-    return (
-        <div className="max-w-5xl mx-auto px-4 py-10">
-            <div className="space-y-10 animate-pulse">
-                <header>
-                    <h1 className="text-4xl font-bold">Dashboard</h1>
-                    <p className="text-lg text-gray-600">Loading your progress...</p>
-                </header>
-                
-                <section className="card space-y-4">
-                    <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-                    <div className="w-full bg-gray-200 h-8 rounded-full"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/4 ml-auto"></div>
-                </section>
-
-                <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="card h-28 bg-gray-100"></div>
-                    <div className="card h-28 bg-gray-100"></div>
-                </section>
-
-                <section className="card">
-                    <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
-                    <div className="h-10 bg-gray-200 rounded w-1/2"></div>
-                </section>
-            </div>
-        </div>
-    );
-}
+// 1. Define a type that matches the API response
+type DashboardData = {
+    has_today_entry: boolean;
+    day_points: number;
+    week_points: number;
+    month_points: number;
+    year_points: number;
+    entries_this_week: number;
+    entries_this_year: number;
+    average_month_rating: number;
+    current_streak_days: number;
+    last7_days_trend: { local_date: string; points: number }[];
+};
 
 export default function Dashboard() {
-    const [summary, setSummary] = useState<Summary | null>(null);
-    const [amount, setAmount] = useState(0);
-    const [loading, setLoading] = useState(false);
+    // 2. Update state to use the new data type
+    const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     const authHeader = useCallback(() => {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        if (!token) {
+            // Handle not-logged-in case if necessary, e.g., redirect
+            return {};
+        }
         return { Authorization: `Bearer ${token}` } as const;
     }, []);
 
-    const load = useCallback(async () => {
-        try {
-            const res = await apiFetch("/api/progress", { headers: authHeader() });
-            if (!res.ok) throw new Error(await res.text());
-            const data: Summary = await res.json();
-            setSummary(data);
-        } catch (e: unknown) {
-            const message = e instanceof Error ? e.message : "Failed to load dashboard data.";
-            setError(message);
-        }
-    }, [authHeader]);
-
-    useEffect(() => {
-        load();
-    }, [load]);
-
-    async function add() {
-        setError("");
+    // 3. Refactor the load function for the new endpoint
+    const loadDashboard = useCallback(async () => {
         setLoading(true);
+        setError("");
         try {
-            const res = await apiFetch("/api/progress", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", ...authHeader() },
-                body: JSON.stringify({ amount }),
+            const today = new Date().toISOString().split("T")[0]; // Get YYYY-MM-DD
+            const res = await apiFetch(`/api/dashboard?local_date=${today}`, {
+                headers: authHeader(),
             });
-            if (!res.ok) throw new Error(await res.text());
-            setAmount(0);
-            await load();
+
+            if (!res.ok) {
+                throw new Error(`Failed to fetch dashboard data: ${res.statusText}`);
+            }
+
+            const data: DashboardData = await res.json();
+            setDashboardData(data);
         } catch (e: unknown) {
-            const message = e instanceof Error ? e.message : "Failed to add progress.";
+            const message = e instanceof Error ? e.message : "An unknown error occurred.";
             setError(message);
         } finally {
             setLoading(false);
         }
-    }
+    }, [authHeader]);
 
-    if (!summary) {
+    useEffect(() => {
+        loadDashboard();
+    }, [loadDashboard]);
+
+    // Use the new skeleton component
+    if (loading) {
         return <DashboardSkeleton />;
     }
-
-    const progressPercentage = Math.min(100, (summary.today / 100) * 100);
+    
+    // Handle error state
+    if (error || !dashboardData) {
+        return (
+            <div className="max-w-5xl mx-auto px-4 py-10 text-center">
+                 <h1 className="text-4xl font-bold mb-4">Dashboard</h1>
+                <div className="card border-red-500 text-red-700">
+                    <p className="font-bold">Could not load your dashboard:</p>
+                    <p>{error || "No data was returned."}</p>
+                    <button onClick={loadDashboard} className="btn mt-4">
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        // The new container for alignment and spacing
-        <div className="max-w-5xl mx-auto px-4 py-10">
-            <div className="space-y-10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div className="space-y-12">
                 <header>
-                    <h1 className="text-4xl font-bold">Dashboard</h1>
-                    <p className="text-lg text-gray-600">Here’s a look at your recent progress.</p>
+                    <h1 className="text-4xl font-bold text-gray-900">Dashboard</h1>
+                    <p className="text-lg text-gray-600 mt-1">
+                        Here’s your progress at a glance. Keep it up! ✨
+                    </p>
                 </header>
 
-                {error && (
-                    <div className="card border-red-500 text-red-700">
-                        <p className="font-bold">An error occurred:</p>
-                        <p>{error}</p>
-                    </div>
-                )}
+                {/* Main Call to Action */}
+                <CallToAction hasEntryToday={dashboardData.has_today_entry} />
 
-                <section className="card space-y-4">
-                    <h2 className="text-2xl font-bold">Today&apos;s Goal</h2>
-                    <div className="w-full bg-gray-100 h-8 rounded-full border-2 border-black">
-                        <div className="bg-black h-full rounded-full transition-all duration-500" style={{ width: `${progressPercentage}%` }} />
-                    </div>
-                    <p className="text-right font-bold text-lg">{summary.today} / 100</p>
-                </section>
-
+                {/* 4. Display key stats using the new StatCard component */}
                 <section>
-                    <h2 className="text-2xl font-bold mb-4">Overall Stats</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="card flex flex-col items-center justify-center text-center p-6">
-                            <span className="text-5xl font-bold">{summary.thisWeek}</span>
-                            <span className="text-lg text-gray-600">This Week</span>
-                        </div>
-                        <div className="card flex flex-col items-center justify-center text-center p-6">
-                            <span className="text-5xl font-bold">{summary.thisMonth}</span>
-                            <span className="text-lg text-gray-600">This Month</span>
-                        </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        <StatCard
+                            title="Today's Points"
+                            value={dashboardData.day_points}
+                            icon={<FaCalendarCheck className="text-blue-500" />}
+                        />
+                        <StatCard
+                            title="Current Streak"
+                            value={`${dashboardData.current_streak_days} days`}
+                            icon={<FaFire className="text-orange-500" />}
+                        />
+                         <StatCard
+                            title="Points This Week"
+                            value={dashboardData.week_points}
+                            icon={<FaChartLine className="text-green-500" />}
+                        />
                     </div>
                 </section>
 
-                <section className="card space-y-4">
-                    <h2 className="text-2xl font-bold">Log New Progress</h2>
-                    <div className="flex flex-wrap items-center gap-4">
-                        <input
-                            type="number"
-                            min={0}
-                            className="input rounded px-3 py-2 w-32 text-lg"
-                            value={amount}
-                            onChange={(e) => setAmount(parseInt(e.target.value || "0"))}
-                        />
-                        <button onClick={add} disabled={loading} className="btn text-lg">
-                            {loading ? "Saving..." : "Add Progress"}
-                        </button>
+                {/* 5. Display the 7-day trend using the new TrendChart component */}
+                <section className="card p-6">
+                     <h2 className="text-2xl font-bold text-gray-800 mb-4">Last 7 Days</h2>
+                    <div className="h-72">
+                        <TrendChart data={dashboardData.last7_days_trend} />
                     </div>
                 </section>
                 
+                {/* Additional Stats Section */}
                 <section>
-                    <h2 className="text-2xl font-bold mb-4">Navigation</h2>
+                     <h2 className="text-2xl font-bold text-gray-800 mb-4">More Stats</h2>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        <StatCard
+                            title="Monthly Average Rating"
+                            value={dashboardData.average_month_rating.toFixed(1)}
+                            icon={<FaStar className="text-yellow-500" />}
+                            isSmall={true}
+                        />
+                        <StatCard
+                            title="Entries This Week"
+                            value={dashboardData.entries_this_week}
+                            isSmall={true}
+                        />
+                        <StatCard
+                            title="Total Points This Year"
+                            value={dashboardData.year_points}
+                            isSmall={true}
+                        />
+                    </div>
+                </section>
+
+                {/* Navigation Section */}
+                <section className="card p-6">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Quick Links</h2>
                     <div className="flex flex-wrap items-center gap-4">
-                        <a href="/journal" className="btn text-lg">Today&apos;s Journal</a>
-                        <a href="/submissions" className="btn text-lg">View Submissions</a>
-                        <a href="/analyzer" className="btn text-lg">Open Analyzer</a>
+                        <a href="/submissions" className="btn-secondary text-lg">View All Entries</a>
+                        <a href="/analyzer" className="btn-secondary text-lg">Open Analyzer</a>
                     </div>
                 </section>
             </div>
