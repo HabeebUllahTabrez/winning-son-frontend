@@ -194,7 +194,7 @@ export default function SubmissionsPage() {
                 ) : data?.length === 0 ? (
                     <div className="card text-center py-12">
                         <h2 className="text-2xl font-bold mb-2">No Submissions This Week</h2>
-                        <p className="text-gray-600">You haven't logged any journal entries for this date range.</p>
+                        <p className="text-gray-600">You haven&apos;t logged any journal entries for this date range.</p>
                     </div>
                 ) : (
                     <div className="space-y-8">

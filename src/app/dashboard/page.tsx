@@ -33,9 +33,9 @@ export default function Dashboard() {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
         if (!token) {
             // Handle not-logged-in case if necessary, e.g., redirect
-            return {};
+            return undefined;
         }
-        return { Authorization: `Bearer ${token}` } as const;
+        return { Authorization: `Bearer ${token}` };
     }, []);
 
     // 3. Refactor the load function for the new endpoint
@@ -93,7 +93,7 @@ export default function Dashboard() {
                 <header>
                     <h1 className="text-4xl font-bold text-gray-900">Dashboard</h1>
                     <p className="text-lg text-gray-600 mt-1">
-                        Here’s your progress at a glance. Keep it up! ✨
+                        Here&apos;s your progress at a glance. Keep it up! ✨
                     </p>
                 </header>
 
