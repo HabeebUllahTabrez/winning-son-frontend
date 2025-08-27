@@ -1,4 +1,4 @@
-// app/layout.tsx
+// src/app/layout.tsx
 "use client";
 
 import { Patrick_Hand } from "next/font/google";
@@ -36,6 +36,8 @@ function Nav() {
       <Link href="/dashboard" className="hover:underline">Dashboard</Link>
       <Link href="/journal" className="hover:underline">Journal</Link>
       <Link href="/submissions" className="hover:underline">Submissions</Link>
+      <Link href="/analyzer" className="hover:underline">Analyzer</Link>
+      <Link href="/report" className="hover:underline">Reports</Link>
     </>
   );
 
@@ -43,7 +45,7 @@ function Nav() {
     <header className="sticky top-0 z-10 w-full bg-white/80 backdrop-blur-sm border-b-2 border-black">
       <div className="max-w-5xl mx-auto px-4">
         <div className="py-3 flex items-center justify-between">
-          <Link href="/" className="font-bold text-2xl">WinningSon-inator</Link>
+          <Link href="/" className="font-bold text-2xl">Daily Progress</Link>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6 text-lg">
@@ -64,7 +66,7 @@ function Nav() {
             aria-label="Toggle menu"
           >
             <svg
-              xmlns="http://www.w3.org/2000/svg"
+              xmlns="http://www.w.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth={2}

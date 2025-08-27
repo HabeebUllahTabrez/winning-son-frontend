@@ -22,11 +22,12 @@ export default function Journal() {
         setErrorMsg("");
         setLoading(true);
         try {
-			const date = new Date().toISOString().split("T")[0];
+			//2025-01-01
+			const local_date = new Date().toISOString().split('T')[0];
             const res = await apiFetch("/api/journal", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", ...authHeader() },
-                body: JSON.stringify({ topics, rating, date }),
+                body: JSON.stringify({ topics, rating, local_date }),
             });
             if (!res.ok) throw new Error(await res.text());
             setSuccessMsg("Saved today’s entry successfully!");
