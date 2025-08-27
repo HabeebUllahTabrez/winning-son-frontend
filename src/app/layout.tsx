@@ -45,7 +45,7 @@ function Nav() {
     <header className="sticky top-0 z-10 w-full bg-white/80 backdrop-blur-sm border-b-2 border-black">
       <div className="max-w-5xl mx-auto px-4">
         <div className="py-3 flex items-center justify-between">
-          <Link href="/" className="font-bold text-2xl">Daily Progress</Link>
+          <Link href="/" className="font-bold text-2xl">WinningSon-inator</Link>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6 text-lg">
