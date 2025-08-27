@@ -12,7 +12,7 @@ export function CallToAction({ hasEntryToday }: CallToActionProps) {
                     <h2 className="text-xl font-bold text-green-800">All Set for Today!</h2>
                     <p className="text-green-700">You&apos;ve completed your journal entry. Great job!</p>
                 </div>
-                <a href="/journal" className="btn-secondary whitespace-nowrap">
+                <a href="/submissions" className="btn-secondary whitespace-nowrap">
                     View Today&apos;s Journal
                 </a>
             </div>
