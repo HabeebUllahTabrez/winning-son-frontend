@@ -1,47 +1,50 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  --ink: #111;
-  --paper: #fff;
+/* Optional: define custom theme tokens */
+@theme {
+  --color-card-shadow: #000;
 }
 
-html { font-size: 18px; }
-body {
-  background: var(--paper);
-  color: var(--ink);
-  line-height: 1.7;
+/* Base styles */
+@layer base {
+  body {
+    @apply bg-white text-black;
+  }
 }
 
-a { text-underline-offset: 3px; }
-a:hover { opacity: 0.9; }
+/* Components */
+@layer components {
+  /* Card */
+  .card {
+    @apply bg-white border-2 border-black p-6;
+    box-shadow: 8px 8px 0px var(--color-card-shadow);
+    border-radius: 4px 5px 3px 6px; /* Imperfect radius */
+  }
 
-.input, .btn {
-  border: 2px solid var(--ink);
-  background: var(--paper);
+  /* Button */
+  .btn {
+    @apply bg-black text-white font-bold border-2 border-black px-5 py-2 transition-all;
+    border-radius: 5px 4px 6px 3px; /* Imperfect radius */
+  }
+  .btn:hover {
+    @apply bg-white text-black;
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0px var(--color-card-shadow);
+  }
+  .btn:disabled {
+    @apply bg-gray-300 border-gray-300 text-gray-500 cursor-not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Input */
+  .input {
+    @apply bg-white w-full border-2 border-black p-2 transition-all;
+    border-radius: 3px 5px 4px 4px; /* Imperfect radius */
+  }
+  .input:focus {
+    outline: none;
+    transform: translate(-1px, -1px);
+    box-shadow: 2px 2px 0px var(--color-card-shadow);
+  }
 }
-
-.input:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
-}
-
-.btn {
-  padding: 0.6rem 1rem;
-  border-radius: 10px;
-  box-shadow: 3px 3px 0 0 var(--ink);
-  transition: transform .05s ease, box-shadow .05s ease, background .2s ease;
-}
-.btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 0 var(--ink); }
-.btn:active { transform: translate(0,0); box-shadow: 2px 2px 0 0 var(--ink); }
-
-.card {
-  border: 2px solid var(--ink);
-  border-radius: 12px;
-  padding: 1.1rem 1.3rem;
-  box-shadow: 4px 4px 0 0 var(--ink);
-  background: #fff;
-}
-
-section + section { margin-top: 2rem; }
