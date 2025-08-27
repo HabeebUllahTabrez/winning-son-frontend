@@ -1,3 +1,4 @@
+// src/app/dashboard/page.tsx
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
@@ -5,76 +6,152 @@ import { apiFetch } from "@/lib/api";
 
 type Summary = { today: number; thisWeek: number; thisMonth: number };
 
+function DashboardSkeleton() {
+    // Also wrapping the skeleton for consistency during load
+    return (
+        <div className="max-w-5xl mx-auto px-4 py-10">
+            <div className="space-y-10 animate-pulse">
+                <header>
+                    <h1 className="text-4xl font-bold">Dashboard</h1>
+                    <p className="text-lg text-gray-600">Loading your progress...</p>
+                </header>
+                
+                <section className="card space-y-4">
+                    <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+                    <div className="w-full bg-gray-200 h-8 rounded-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/4 ml-auto"></div>
+                </section>
+
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="card h-28 bg-gray-100"></div>
+                    <div className="card h-28 bg-gray-100"></div>
+                </section>
+
+                <section className="card">
+                    <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
+                    <div className="h-10 bg-gray-200 rounded w-1/2"></div>
+                </section>
+            </div>
+        </div>
+    );
+}
+
 export default function Dashboard() {
-	const [summary, setSummary] = useState<Summary | null>(null);
-	const [amount, setAmount] = useState(0);
-	const [error, setError] = useState("");
+    const [summary, setSummary] = useState<Summary | null>(null);
+    const [amount, setAmount] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-	const authHeader = useCallback(() => {
-		const token = localStorage.getItem("token");
-		return { Authorization: `Bearer ${token}` } as const;
-	}, []);
+    const authHeader = useCallback(() => {
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        return { Authorization: `Bearer ${token}` } as const;
+    }, []);
 
-	const load = useCallback(async () => {
-		try {
-			const res = await apiFetch("/api/progress", { headers: authHeader() });
-			if (!res.ok) throw new Error(await res.text());
-			const data: Summary = await res.json();
-			setSummary(data);
-		} catch (e: unknown) {
-			const message = e instanceof Error ? e.message : "Failed to load";
-			setError(message);
-		}
-	}, [authHeader]);
+    const load = useCallback(async () => {
+        try {
+            const res = await apiFetch("/api/progress", { headers: authHeader() });
+            if (!res.ok) throw new Error(await res.text());
+            const data: Summary = await res.json();
+            setSummary(data);
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : "Failed to load dashboard data.";
+            setError(message);
+        }
+    }, [authHeader]);
 
-	useEffect(() => {
-		load();
-	}, [load]);
+    useEffect(() => {
+        load();
+    }, [load]);
 
-	async function add() {
-		setError("");
-		try {
-			const res = await apiFetch("/api/progress", {
-				method: "POST",
-				headers: { "Content-Type": "application/json", ...authHeader() },
-				body: JSON.stringify({ amount }),
-			});
-			if (!res.ok) throw new Error(await res.text());
-			setAmount(0);
-			load();
-		} catch (e: unknown) {
-			const message = e instanceof Error ? e.message : "Failed to add";
-			setError(message);
-		}
-	}
+    async function add() {
+        setError("");
+        setLoading(true);
+        try {
+            const res = await apiFetch("/api/progress", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", ...authHeader() },
+                body: JSON.stringify({ amount }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            setAmount(0);
+            await load();
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : "Failed to add progress.";
+            setError(message);
+        } finally {
+            setLoading(false);
+        }
+    }
 
-	return (
-		<div className="space-y-8">
-			<h1 className="text-3xl font-bold">Dashboard</h1>
-			{error && <p className="text-red-600 text-base">{error}</p>}
+    if (!summary) {
+        return <DashboardSkeleton />;
+    }
 
-			<section className="card space-y-4">
-				<p className="text-base">Today&apos;s progress</p>
-				<div className="w-full bg-gray-200 h-4 rounded">
-					<div className="bg-black h-4 rounded" style={{ width: `${Math.min(100, summary?.today ?? 0)}%` }} />
-				</div>
-				<p className="text-sm">{summary?.today ?? 0} / 100</p>
-			</section>
+    const progressPercentage = Math.min(100, (summary.today / 100) * 100);
 
-			<section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-				<div className="p-4 card">This week: {summary?.thisWeek ?? 0}</div>
-				<div className="p-4 card">This month: {summary?.thisMonth ?? 0}</div>
-			</section>
+    return (
+        // The new container for alignment and spacing
+        <div className="max-w-5xl mx-auto px-4 py-10">
+            <div className="space-y-10">
+                <header>
+                    <h1 className="text-4xl font-bold">Dashboard</h1>
+                    <p className="text-lg text-gray-600">Here’s a look at your recent progress.</p>
+                </header>
 
-			<section className="card">
-				<div className="flex flex-wrap items-center gap-4">
-					<input type="number" min={0} className="input rounded px-3 py-2 w-32 text-base" value={amount} onChange={(e) => setAmount(parseInt(e.target.value || "0"))} />
-					<button onClick={add} className="btn text-base">Add Today&apos;s Progress</button>
-					<a href="/journal" className="btn text-base">Today&apos;s Submission</a>
-					<a href="/submissions" className="btn text-base">Submissions</a>
-					<a href="/analyzer" className="btn text-base">Analyzer</a>
-				</div>
-			</section>
-		</div>
-	);
+                {error && (
+                    <div className="card border-red-500 text-red-700">
+                        <p className="font-bold">An error occurred:</p>
+                        <p>{error}</p>
+                    </div>
+                )}
+
+                <section className="card space-y-4">
+                    <h2 className="text-2xl font-bold">Today&apos;s Goal</h2>
+                    <div className="w-full bg-gray-100 h-8 rounded-full border-2 border-black">
+                        <div className="bg-black h-full rounded-full transition-all duration-500" style={{ width: `${progressPercentage}%` }} />
+                    </div>
+                    <p className="text-right font-bold text-lg">{summary.today} / 100</p>
+                </section>
+
+                <section>
+                    <h2 className="text-2xl font-bold mb-4">Overall Stats</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="card flex flex-col items-center justify-center text-center p-6">
+                            <span className="text-5xl font-bold">{summary.thisWeek}</span>
+                            <span className="text-lg text-gray-600">This Week</span>
+                        </div>
+                        <div className="card flex flex-col items-center justify-center text-center p-6">
+                            <span className="text-5xl font-bold">{summary.thisMonth}</span>
+                            <span className="text-lg text-gray-600">This Month</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="card space-y-4">
+                    <h2 className="text-2xl font-bold">Log New Progress</h2>
+                    <div className="flex flex-wrap items-center gap-4">
+                        <input
+                            type="number"
+                            min={0}
+                            className="input rounded px-3 py-2 w-32 text-lg"
+                            value={amount}
+                            onChange={(e) => setAmount(parseInt(e.target.value || "0"))}
+                        />
+                        <button onClick={add} disabled={loading} className="btn text-lg">
+                            {loading ? "Saving..." : "Add Progress"}
+                        </button>
+                    </div>
+                </section>
+                
+                <section>
+                    <h2 className="text-2xl font-bold mb-4">Navigation</h2>
+                    <div className="flex flex-wrap items-center gap-4">
+                        <a href="/journal" className="btn text-lg">Today&apos;s Journal</a>
+                        <a href="/submissions" className="btn text-lg">View Submissions</a>
+                        <a href="/analyzer" className="btn text-lg">Open Analyzer</a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    );
 }
