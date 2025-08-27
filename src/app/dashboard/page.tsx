@@ -1,154 +1,212 @@
 // src/app/dashboard/page.tsx
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/lib/api";
+import { getAvatarFile } from "@/lib/avatars";
+import { StatCard } from "./_components/StatCard";
+import { TrendChart } from "./_components/TrendChart";
+import { CallToAction } from "./_components/CallToAction";
+import { DashboardSkeleton } from "./_components/DashboardSkeleton";
+import { FaCalendarCheck, FaChartLine, FaFire, FaFlagCheckered, FaStar, FaTrophy } from "react-icons/fa";
 
-type Summary = { today: number; thisWeek: number; thisMonth: number };
+// Define nested User type and update DashboardData
+type User = {
+    first_name: string | null;
+    avatar_id: number | null;
+    goal: string | null;
+    start_date: string | null;
+    end_date: string | null;
+};
 
-function DashboardSkeleton() {
-    // Also wrapping the skeleton for consistency during load
-    return (
-        <div className="max-w-5xl mx-auto px-4 py-10">
-            <div className="space-y-10 animate-pulse">
-                <header>
-                    <h1 className="text-4xl font-bold">Dashboard</h1>
-                    <p className="text-lg text-gray-600">Loading your progress...</p>
-                </header>
-                
-                <section className="card space-y-4">
-                    <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-                    <div className="w-full bg-gray-200 h-8 rounded-full"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/4 ml-auto"></div>
-                </section>
+// Updated DashboardData type with goal_points
+type DashboardData = {
+    has_today_entry: boolean;
+    day_points: number;
+    week_points: number;
+    month_points: number;
+    year_points: number;
+    entries_this_week: number;
+    entries_this_year: number;
+    average_month_rating: number;
+    current_streak_days: number;
+    last7_days_trend: { local_date: string; points: number }[];
+    user: User;
+    // ASSUMPTION: The API now includes points accumulated during the goal's date range.
+    goal_points_to_date?: number;
+};
 
-                <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="card h-28 bg-gray-100"></div>
-                    <div className="card h-28 bg-gray-100"></div>
-                </section>
-
-                <section className="card">
-                    <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
-                    <div className="h-10 bg-gray-200 rounded w-1/2"></div>
-                </section>
-            </div>
-        </div>
-    );
-}
+// Helper to format dates for display
+const formatDateForDisplay = (dateString: string | null) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'UTC' // Ensure date is not shifted by local timezone
+    });
+};
 
 export default function Dashboard() {
-    const [summary, setSummary] = useState<Summary | null>(null);
-    const [amount, setAmount] = useState(0);
-    const [loading, setLoading] = useState(false);
+    const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     const authHeader = useCallback(() => {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-        return { Authorization: `Bearer ${token}` } as const;
+        if (!token) return undefined;
+        return { Authorization: `Bearer ${token}` };
     }, []);
 
-    const load = useCallback(async () => {
-        try {
-            const res = await apiFetch("/api/progress", { headers: authHeader() });
-            if (!res.ok) throw new Error(await res.text());
-            const data: Summary = await res.json();
-            setSummary(data);
-        } catch (e: unknown) {
-            const message = e instanceof Error ? e.message : "Failed to load dashboard data.";
-            setError(message);
-        }
-    }, [authHeader]);
-
-    useEffect(() => {
-        load();
-    }, [load]);
-
-    async function add() {
-        setError("");
+    const loadDashboard = useCallback(async () => {
         setLoading(true);
+        setError("");
         try {
-            const res = await apiFetch("/api/progress", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", ...authHeader() },
-                body: JSON.stringify({ amount }),
+            const today = new Date().toISOString().split("T")[0];
+            const res = await apiFetch(`/api/dashboard?local_date=${today}`, {
+                headers: authHeader(),
             });
-            if (!res.ok) throw new Error(await res.text());
-            setAmount(0);
-            await load();
+            if (!res.ok) throw new Error(`Failed to fetch dashboard data: ${res.statusText}`);
+            const data: DashboardData = await res.json();
+            setDashboardData(data);
         } catch (e: unknown) {
-            const message = e instanceof Error ? e.message : "Failed to add progress.";
+            const message = e instanceof Error ? e.message : "An unknown error occurred.";
             setError(message);
         } finally {
             setLoading(false);
         }
+    }, [authHeader]);
+
+    useEffect(() => {
+        loadDashboard();
+    }, [loadDashboard]);
+
+    const goalProgress = useMemo(() => {
+        if (!dashboardData?.user.start_date || !dashboardData?.user.end_date) {
+            return null;
+        }
+        const start = new Date(dashboardData.user.start_date).getTime();
+        const end = new Date(dashboardData.user.end_date).getTime();
+        const now = new Date().getTime();
+
+        if (start >= end) return null;
+
+        const totalDuration = end - start;
+        const elapsedDuration = now - start;
+        const percentage = Math.round((elapsedDuration / totalDuration) * 100);
+
+        return Math.max(0, Math.min(100, percentage));
+    }, [dashboardData?.user]);
+
+
+    if (loading) return <DashboardSkeleton />;
+    
+    if (error || !dashboardData) {
+        return (
+            <div className="max-w-5xl mx-auto px-4 py-10 text-center">
+                 <h1 className="text-4xl font-bold mb-4">Dashboard</h1>
+                <div className="card border-red-500 text-red-700">
+                    <p className="font-bold">Could not load your dashboard:</p>
+                    <p>{error || "No data was returned."}</p>
+                    <button onClick={loadDashboard} className="btn mt-4">Try Again</button>
+                </div>
+            </div>
+        );
     }
 
-    if (!summary) {
-        return <DashboardSkeleton />;
-    }
-
-    const progressPercentage = Math.min(100, (summary.today / 100) * 100);
+    const { user } = dashboardData;
 
     return (
-        // The new container for alignment and spacing
-        <div className="max-w-5xl mx-auto px-4 py-10">
-            <div className="space-y-10">
-                <header>
-                    <h1 className="text-4xl font-bold">Dashboard</h1>
-                    <p className="text-lg text-gray-600">Here’s a look at your recent progress.</p>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div className="space-y-12">
+                <header className="flex items-center gap-4">
+                    <img
+                        src={`/avatars/${getAvatarFile(user.avatar_id)}`}
+                        alt="User Avatar"
+                        className="w-20 h-20 rounded-full border-4 border-black bg-gray-100 object-cover"
+                    />
+                    <div>
+                        <h1 className="text-4xl font-bold text-gray-900">
+                            Welcome back, {user.first_name || 'friend'}!
+                        </h1>
+                        <p className="text-lg text-gray-600 mt-1">
+                            Here’s your progress at a glance. Keep it up! ✨
+                        </p>
+                    </div>
                 </header>
 
-                {error && (
-                    <div className="card border-red-500 text-red-700">
-                        <p className="font-bold">An error occurred:</p>
-                        <p>{error}</p>
-                    </div>
+                <CallToAction hasEntryToday={dashboardData.has_today_entry} />
+
+                {/* --- Redesigned Goal Progress Section --- */}
+                {user.goal && (
+                    <section className="card p-6 space-y-4">
+                        <div className="flex justify-between items-start">
+                             <div>
+                                <h2 className="text-xl font-bold text-gray-800">Your Current Goal</h2>
+                                <p className="text-3xl font-bold">{user.goal}</p>
+                            </div>
+                            <div className="text-right">
+                                <h3 className="font-semibold text-gray-500 text-lg">Points for Goal</h3>
+                                <p className="font-bold text-gray-900 text-5xl flex items-center gap-2 justify-end">
+                                    <FaTrophy className="text-yellow-500" />
+                                    {dashboardData.goal_points_to_date ?? '...'}
+                                </p>
+                            </div>
+                        </div>
+
+                        {goalProgress !== null && (
+                            <div className="pt-2 space-y-3">
+                                <div className="w-full bg-gray-100 h-6 rounded-full border-2 border-black">
+                                    <div 
+                                        className="bg-black h-full rounded-full transition-all duration-500" 
+                                        style={{ width: `${goalProgress}%` }} 
+                                    />
+                                </div>
+                                <div className="flex justify-between items-center text-md font-bold">
+                                    <span className="flex items-center gap-2">
+                                        <FaCalendarCheck className="text-green-600" />
+                                        Start: {formatDateForDisplay(user.start_date)}
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                        <FaFlagCheckered className="text-red-600" />
+                                        End: {formatDateForDisplay(user.end_date)}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                    </section>
                 )}
 
-                <section className="card space-y-4">
-                    <h2 className="text-2xl font-bold">Today&apos;s Goal</h2>
-                    <div className="w-full bg-gray-100 h-8 rounded-full border-2 border-black">
-                        <div className="bg-black h-full rounded-full transition-all duration-500" style={{ width: `${progressPercentage}%` }} />
-                    </div>
-                    <p className="text-right font-bold text-lg">{summary.today} / 100</p>
-                </section>
-
                 <section>
-                    <h2 className="text-2xl font-bold mb-4">Overall Stats</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="card flex flex-col items-center justify-center text-center p-6">
-                            <span className="text-5xl font-bold">{summary.thisWeek}</span>
-                            <span className="text-lg text-gray-600">This Week</span>
-                        </div>
-                        <div className="card flex flex-col items-center justify-center text-center p-6">
-                            <span className="text-5xl font-bold">{summary.thisMonth}</span>
-                            <span className="text-lg text-gray-600">This Month</span>
-                        </div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Key Stats</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        <StatCard title="Today's Points" value={dashboardData.day_points} icon={<FaCalendarCheck className="text-blue-500" />} />
+                        <StatCard title="Current Streak" value={`${dashboardData.current_streak_days} days`} icon={<FaFire className="text-orange-500" />} />
+                        <StatCard title="Points This Week" value={dashboardData.week_points} icon={<FaChartLine className="text-green-500" />} />
                     </div>
                 </section>
 
-                <section className="card space-y-4">
-                    <h2 className="text-2xl font-bold">Log New Progress</h2>
-                    <div className="flex flex-wrap items-center gap-4">
-                        <input
-                            type="number"
-                            min={0}
-                            className="input rounded px-3 py-2 w-32 text-lg"
-                            value={amount}
-                            onChange={(e) => setAmount(parseInt(e.target.value || "0"))}
-                        />
-                        <button onClick={add} disabled={loading} className="btn text-lg">
-                            {loading ? "Saving..." : "Add Progress"}
-                        </button>
+                <section className="card p-6">
+                     <h2 className="text-2xl font-bold text-gray-800 mb-4">Last 7 Days</h2>
+                    <div className="h-72">
+                        <TrendChart data={dashboardData.last7_days_trend} />
                     </div>
                 </section>
                 
                 <section>
-                    <h2 className="text-2xl font-bold mb-4">Navigation</h2>
+                     <h2 className="text-2xl font-bold text-gray-800 mb-4">More Stats</h2>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        <StatCard title="Monthly Average Rating" value={dashboardData.average_month_rating.toFixed(1)} icon={<FaStar className="text-yellow-500" />} isSmall={true} />
+                        <StatCard title="Entries This Week" value={dashboardData.entries_this_week} isSmall={true} />
+                        <StatCard title="Total Points This Year" value={dashboardData.year_points} isSmall={true} />
+                    </div>
+                </section>
+
+                <section className="card p-6">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Quick Links</h2>
                     <div className="flex flex-wrap items-center gap-4">
-                        <a href="/journal" className="btn text-lg">Today&apos;s Journal</a>
-                        <a href="/submissions" className="btn text-lg">View Submissions</a>
-                        <a href="/analyzer" className="btn text-lg">Open Analyzer</a>
+                        <a href="/submissions" className="btn-secondary text-lg">View All Entries</a>
+                        <a href="/analyzer" className="btn-secondary text-lg">Open Analyzer</a>
                     </div>
                 </section>
             </div>
