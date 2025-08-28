@@ -42,6 +42,7 @@ function Nav() {
     { href: "/submissions", label: "Submissions" },
     { href: "/analyzer", label: "Analyzer" },
     { href: "/profile", label: "Profile" },
+    { href: "/help", label: "Help" },
   ];
 
   // Reusable component for links to handle active state styling
