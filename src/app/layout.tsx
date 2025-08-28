@@ -42,8 +42,10 @@ function Nav() {
     { href: "/submissions", label: "Submissions" },
     { href: "/analyzer", label: "Analyzer" },
     { href: "/profile", label: "Profile" },
-    { href: "/help", label: "Help" },
   ];
+
+  // Help link is always visible
+  const helpLink = { href: "/help", label: "Help" };
 
   // Reusable component for links to handle active state styling
   const NavLink = ({ href, label }: { href: string; label: string }) => (
@@ -70,6 +72,7 @@ function Nav() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-4 text-lg">
+            <NavLink {...helpLink} />
             {isLoggedIn ? (
               <>
                 {navLinks.map((link) => (
@@ -111,6 +114,7 @@ function Nav() {
         )}
       >
         <nav className="flex flex-col items-start gap-2 p-4 text-lg">
+          <NavLink {...helpLink} />
           {isLoggedIn ? (
             <>
               {navLinks.map((link) => (
