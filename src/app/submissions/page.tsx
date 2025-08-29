@@ -233,10 +233,13 @@ export default function SubmissionsPage() {
                                             )}
                                         </div>
                                     ) : (
-                                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500">
-                                            <p>No entry for this day.</p>
+                                    <Link href={`/journal?date=${dateString}`} className="block">
+                                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500 hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer">
+                                            <p className="font-semibold">No entry for this day</p>
+                                            <p className="text-sm">Click to add an entry.</p>
                                         </div>
-                                    )}
+                                    </Link>
+                                )}
                                 </div>
                             );
                         })}
