@@ -41,7 +41,7 @@ function Nav() {
   // 2. Define nav links as an array for easier mapping
   const navLinks = [
     { href: "/dashboard", label: "Dashboard" },
-    { href: "/journal", label: "Journal" },
+    // { href: "/journal", label: "Journal" },
     { href: "/submissions", label: "Submissions" },
     { href: "/analyzer", label: "Analyzer" },
     { href: "/profile", label: "Profile" },
