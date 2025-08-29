@@ -1,16 +1,68 @@
-// src/app/journal/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 
 export default function Journal() {
+    // State for the form
     const [topics, setTopics] = useState("");
     const [rating, setRating] = useState(5);
-    const [loading, setLoading] = useState(false);
+    
+    // State for the specific date of the journal entry
+    const [journalDate, setJournalDate] = useState<string | null>(null);
+
+    // UI/UX states
+    const [loading, setLoading] = useState(true); // Start loading to fetch existing data
     const [successMsg, setSuccessMsg] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
+
+    const searchParams = useSearchParams();
+
+    // Effect to set the journal date from URL or default to today
+    useEffect(() => {
+        const dateParam = searchParams.get('date');
+        const targetDate = dateParam || new Date().toISOString().split('T')[0];
+        setJournalDate(targetDate);
+    }, [searchParams]);
+
+    // Effect to fetch existing entry when journalDate is set
+    useEffect(() => {
+        if (!journalDate) return;
+
+        const fetchEntryForDate = async () => {
+            setLoading(true);
+            setSuccessMsg("");
+            setErrorMsg("");
+            // Reset form fields for new date
+            setTopics("");
+            setRating(5);
+
+            try {
+                const res = await apiFetch(`/api/journal?date=${journalDate}`, {
+                    headers: authHeader(),
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data) { // If an entry exists, populate the form
+                        setTopics(data.topics);
+                        setRating(data.rating);
+                    }
+                } else if (res.status !== 404) {
+                    // Ignore 404 (no entry found), but handle other errors
+                    throw new Error(await res.text());
+                }
+            } catch (e: unknown) {
+                setErrorMsg(e instanceof Error ? e.message : "Failed to load entry data.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEntryForDate();
+    }, [journalDate]);
 
     function authHeader() {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -18,21 +70,19 @@ export default function Journal() {
     }
 
     async function submit() {
+        if (!journalDate) return;
+
         setSuccessMsg("");
         setErrorMsg("");
         setLoading(true);
         try {
-			//2025-01-01
-			const local_date = new Date().toISOString().split('T')[0];
             const res = await apiFetch("/api/journal", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", ...authHeader() },
-                body: JSON.stringify({ topics, rating, local_date }),
+                body: JSON.stringify({ topics, rating, local_date: journalDate }),
             });
             if (!res.ok) throw new Error(await res.text());
-            setSuccessMsg("Saved today’s entry successfully!");
-            setTopics("");
-            setRating(5);
+            setSuccessMsg(`Saved entry for ${formatDisplayDate(journalDate)} successfully!`);
         } catch (e: unknown) {
             setErrorMsg(e instanceof Error ? e.message : "An unknown error occurred.");
         } finally {
@@ -40,13 +90,26 @@ export default function Journal() {
         }
     }
 
+    const formatDisplayDate = (dateString: string | null) => {
+        if (!dateString) return "Today";
+        const today = new Date().toISOString().split('T')[0];
+        if (dateString === today) return "Today";
+        // Add time to avoid timezone issues with new Date()
+        const date = new Date(dateString + 'T00:00:00');
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    };
+
     const ratingOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
     return (
         <div className="max-w-5xl mx-auto px-4 py-10">
             <div className="space-y-8">
                 <header>
-                    <h1 className="text-4xl font-bold">Today&apos;s Journal</h1>
+                    <h1 className="text-4xl font-bold">Journal for {formatDisplayDate(journalDate)}</h1>
                     <p className="text-lg text-gray-600">Log your progress and how you felt about it.</p>
                 </header>
 
@@ -61,7 +124,7 @@ export default function Journal() {
                             className="input w-full min-h-[150px] text-lg"
                             value={topics}
                             onChange={(e) => setTopics(e.target.value)}
-                            placeholder="What did you work on today? e.g., Next.js routing, database schemas..."
+                            placeholder="What did you work on? e.g., Next.js routing, database schemas..."
                             disabled={loading}
                         />
                     </div>
@@ -92,10 +155,10 @@ export default function Journal() {
                     {/* Action Buttons */}
                     <div className="flex flex-wrap items-center gap-4 pt-4">
                         <button className="btn text-lg" onClick={submit} disabled={loading}>
-                            {loading ? "Saving..." : "Save Entry"}
+                            {loading ? "Loading..." : "Save Entry"}
                         </button>
-                        <Link className="text-lg underline" href="/dashboard">
-                            Back to Dashboard
+                        <Link className="text-lg underline" href="/submissions">
+                            Back to Submissions
                         </Link>
                     </div>
 
