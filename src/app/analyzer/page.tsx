@@ -4,7 +4,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { apiFetch } from "@/lib/api";
 import toast from "react-hot-toast";
-import { FaCopy, FaMagic, FaUndo } from "react-icons/fa";
+import { FaCopy, FaFlask, FaMagic, FaUndo, } from "react-icons/fa";
 import clsx from "clsx";
 
 // --- Type Definitions (Unchanged) ---
@@ -161,9 +161,10 @@ Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
       <div className="card p-8 space-y-6 transition-all duration-500">
         {!finalPrompt ? (
           <>
-            <h2 className="text-2xl font-bold">Summon Your Blueprint</h2>
+            {/* <h2 className="text-2xl font-bold">Summon Your Blueprint</h2> */}
+             <h2 className="text-2xl font-bold flex items-center gap-2"><FaFlask /> Tweak the Ingredients</h2>
             <div className="form-group">
-              <label htmlFor="goal">Your Grand Quest</label>
+              <label htmlFor="goal">Your Ultimate Goal</label>
               <input type="text" id="goal" value={goal} onChange={(e) => setGoal(e.target.value)} className="input" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -194,7 +195,7 @@ Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
             </div>
             <button className="btn text-lg w-full sm:w-auto flex items-center justify-center gap-2" onClick={handleSummonBlueprint} disabled={loadingState === 'summoning'}>
               <FaMagic />
-              {loadingState === 'summoning' ? "Consulting the Archives..." : "Forge the Blueprint"}
+              {loadingState === 'summoning' ? "Brewing..." : "Conjure My Prompt"}
             </button>
             {noEntriesMessage && (
               <div className="text-center p-4 mt-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg">
@@ -204,10 +205,11 @@ Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
           </>
         ) : (
           <div className="animate-fade-in space-y-4">
-            <h2 className="text-3xl font-bold text-center">Your Oracle Query is Ready!</h2>
+            <h2 className="text-3xl font-bold text-center">Your Magic Formula!</h2>
             <div className="p-4 bg-gray-900 text-white rounded-lg shadow-inner">
-                <p className="text-center font-mono text-sm mb-4 text-yellow-300">A personal message from the dev team:</p>
-                <p className="text-center text-gray-300 italic">&quot;We spent our entire AI budget on a really nice office plant (his name is Bartholomew). So, we&apos;ve crafted the perfect spell for you. Take this to your favorite AI genie (ChatGPT, Gemini, Claude, etc.) and let THEM do the heavy lifting.&quot;</p>
+                <p className="text-center text-md font-mono mb-4 text-yellow-300 mt-4">Your Spell is Ready! Now, to the Wizard...</p>
+                <p className="text-center text-gray-300 italic mb-1">We've mixed your data with a dash of digital magic. Now, copy this masterpiece and paste it into your favourite AI Wizard.</p>
+                <p className="text-center text-sm text-gray-300 italic mb-4">(Our own crystal ball is, uh... buffering. Let's just say our LLM budget went into buying this cool font.)</p>
             </div>
             <textarea className="w-full input min-h-[250px] text-base bg-gray-50 font-mono" value={finalPrompt} readOnly />
             <div className="flex flex-wrap gap-4 justify-center">
