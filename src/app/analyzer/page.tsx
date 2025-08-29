@@ -4,7 +4,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { apiFetch } from "@/lib/api";
 import toast from "react-hot-toast";
-import { FaCopy, FaMagic, FaUndo } from "react-icons/fa";
+import { FaCopy, FaFlask, FaMagic, FaUndo } from "react-icons/fa";
 import clsx from "clsx";
 
 // --- Type Definitions (Unchanged) ---
@@ -161,7 +161,8 @@ Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
       <div className="card p-8 space-y-6 transition-all duration-500">
         {!finalPrompt ? (
           <>
-            <h2 className="text-2xl font-bold">Summon Your Blueprint</h2>
+            {/* <h2 className="text-2xl font-bold">Summon Your Blueprint</h2> */}
+             <h2 className="text-2xl font-bold flex items-center gap-2"><FaFlask /> Tweak the Ingredients</h2>
             <div className="form-group">
               <label htmlFor="goal">Your Grand Quest</label>
               <input type="text" id="goal" value={goal} onChange={(e) => setGoal(e.target.value)} className="input" />
