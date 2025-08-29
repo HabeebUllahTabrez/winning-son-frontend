@@ -208,8 +208,8 @@ Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
             <h2 className="text-3xl font-bold text-center">Your Magic Formula!</h2>
             <div className="p-4 bg-gray-900 text-white rounded-lg shadow-inner">
                 <p className="text-center text-md font-mono mb-4 text-yellow-300 mt-4">Your Spell is Ready! Now, to the Wizard...</p>
-                <p className="text-center text-gray-300 italic mb-1">We've mixed your data with a dash of digital magic. Now, copy this masterpiece and paste it into your favourite AI Wizard.</p>
-                <p className="text-center text-sm text-gray-300 italic mb-4">(Our own crystal ball is, uh... buffering. Let's just say our LLM budget went into buying this cool font.)</p>
+                <p className="text-center text-gray-300 italic mb-1">We&apos;ve mixed your data with a dash of digital magic. Now, copy this masterpiece and paste it into your favourite AI Wizard.</p>
+                <p className="text-center text-sm text-gray-300 italic mb-4">(Our own crystal ball is, uh... buffering. Let&apos;s just say our LLM budget went into buying this cool font.)</p>
             </div>
             <textarea className="w-full input min-h-[250px] text-base bg-gray-50 font-mono" value={finalPrompt} readOnly />
             <div className="flex flex-wrap gap-4 justify-center">
