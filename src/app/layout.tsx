@@ -18,20 +18,23 @@ const scribble = Patrick_Hand({
 // --- New, Redesigned Nav Component ---
 function Nav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authStatus, setAuthStatus] = useState<"loading" | "loggedIn" | "loggedOut">("loading");
   const router = useRouter();
   const pathname = usePathname();
 
   // Effect to check login status and close menu on page change
   useEffect(() => {
     const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    // setIsLoggedIn(!!token);
+    setAuthStatus(token ? "loggedIn" : "loggedOut");
     setIsMenuOpen(false); // Close mobile menu on navigation
   }, [pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    setIsLoggedIn(false);
+    // setIsLoggedIn(false);
+    setAuthStatus("loggedOut");
     router.push("/");
   };
 
@@ -62,6 +65,33 @@ function Nav() {
     </Link>
   );
 
+  const renderNavContent = () => {
+  // If we're still checking, render nothing to match the server.
+  if (authStatus === "loading") {
+    return null;
+  }
+
+  // If we've confirmed the user is logged in...
+  if (authStatus === "loggedIn") {
+    return (
+      <>
+        {navLinks.map((link) => (
+          <NavLink key={link.href} {...link} />
+        ))}
+        <button
+          onClick={handleLogout}
+          className="px-2 py-1 hover:text-gray-600 transition-colors duration-200"
+        >
+          Logout
+        </button>
+      </>
+    );
+  }
+
+  // Otherwise, the user is logged out.
+  return <NavLink href="/" label="Login" />;
+};
+
   return (
     <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b-2 border-black">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -73,21 +103,7 @@ function Nav() {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-4 text-lg">
             <NavLink {...helpLink} />
-            {isLoggedIn ? (
-              <>
-                {navLinks.map((link) => (
-                  <NavLink key={link.href} {...link} />
-                ))}
-                <button
-                  onClick={handleLogout}
-                  className="px-2 py-1 hover:text-gray-600 transition-colors duration-200"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <NavLink href="/" label="Login" />
-            )}
+            {renderNavContent()}
           </nav>
 
           {/* 3. Redesigned Mobile Menu Button with Animation */}
@@ -115,21 +131,7 @@ function Nav() {
       >
         <nav className="flex flex-col items-start gap-2 p-4 text-lg">
           <NavLink {...helpLink} />
-          {isLoggedIn ? (
-            <>
-              {navLinks.map((link) => (
-                <NavLink key={link.href} {...link} />
-              ))}
-              <button
-                onClick={handleLogout}
-                className="px-2 py-1 hover:text-gray-600 transition-colors duration-200"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <NavLink href="/" label="Login" />
-          )}
+          {renderNavContent()}
         </nav>
       </div>
     </header>
