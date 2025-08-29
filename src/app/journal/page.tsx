@@ -14,7 +14,7 @@ export default function Journal() {
     const [journalDate, setJournalDate] = useState<string | null>(null);
 
     // UI/UX states
-    const [loading, setLoading] = useState(true); // Start loading to fetch existing data
+    const [loading, setLoading] = useState(false); // Start loading to fetch existing data
     const [successMsg, setSuccessMsg] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
 
@@ -27,42 +27,6 @@ export default function Journal() {
         setJournalDate(targetDate);
     }, [searchParams]);
 
-    // Effect to fetch existing entry when journalDate is set
-    useEffect(() => {
-        if (!journalDate) return;
-
-        const fetchEntryForDate = async () => {
-            setLoading(true);
-            setSuccessMsg("");
-            setErrorMsg("");
-            // Reset form fields for new date
-            setTopics("");
-            setRating(5);
-
-            try {
-                const res = await apiFetch(`/api/journal?date=${journalDate}`, {
-                    headers: authHeader(),
-                });
-                
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data) { // If an entry exists, populate the form
-                        setTopics(data.topics);
-                        setRating(data.rating);
-                    }
-                } else if (res.status !== 404) {
-                    // Ignore 404 (no entry found), but handle other errors
-                    throw new Error(await res.text());
-                }
-            } catch (e: unknown) {
-                setErrorMsg(e instanceof Error ? e.message : "Failed to load entry data.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchEntryForDate();
-    }, [journalDate]);
 
     function authHeader() {
         const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -104,12 +68,16 @@ export default function Journal() {
     };
 
     const ratingOptions = Array.from({ length: 10 }, (_, i) => i + 1);
+    console.log("rating", rating)
 
     return (
         <div className="max-w-5xl mx-auto px-4 py-10">
             <div className="space-y-8">
                 <header>
-                    <h1 className="text-4xl font-bold">Journal for {formatDisplayDate(journalDate)}</h1>
+                    {/* <h1 className="text-4xl font-bold">Journal for {formatDisplayDate(journalDate)}</h1> */}
+                    <h1 className="text-4xl font-bold">
+                    {journalDate ? `Journal for ${formatDisplayDate(journalDate)}` : "Loading Journal..."}
+                    </h1>
                     <p className="text-lg text-gray-600">Log your progress and how you felt about it.</p>
                 </header>
 
@@ -154,7 +122,7 @@ export default function Journal() {
 
                     {/* Action Buttons */}
                     <div className="flex flex-wrap items-center gap-4 pt-4">
-                        <button className="btn text-lg" onClick={submit} disabled={loading}>
+                        <button className="btn text-lg" onClick={submit} disabled={loading || !topics || !rating}>
                             {loading ? "Loading..." : "Save Entry"}
                         </button>
                         <Link className="text-lg underline" href="/submissions">
