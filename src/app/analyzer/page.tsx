@@ -141,7 +141,7 @@ Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success("Blueprint copied! Now, to the Oracle...");
+    toast.success("And just like that… the text is yours! ✨");
   };
 
   return (
@@ -214,7 +214,7 @@ Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
             <textarea className="w-full input min-h-[250px] text-base bg-gray-50 font-mono" value={finalPrompt} readOnly />
             <div className="flex flex-wrap gap-4 justify-center">
               <button className="btn text-lg flex items-center gap-2" onClick={() => handleCopy(finalPrompt)}>
-                <FaCopy /> Copy Blueprint & Go
+                <FaCopy /> Copy Magic Formula
               </button>
               <button className="btn-secondary text-lg flex items-center gap-2" onClick={handleReset}>
                 <FaUndo /> Start Over
