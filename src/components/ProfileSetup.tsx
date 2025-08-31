@@ -83,10 +83,10 @@ export function ProfileSetup() {
       const res = await apiFetch("/api/me", {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...authHeader() },
-        body: JSON.stringify(payload),
+        data: payload,
       });
 
-      if (res.status !== 204) throw new Error(await res.text() || "Failed to save profile.");
+      if (res.status !== 204) throw new Error(res.data || "Failed to save profile.");
       
       toast.success("Profile setup complete! 🎉");
       setCurrentStep('complete');
