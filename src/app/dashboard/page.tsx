@@ -53,20 +53,12 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    const authHeader = useCallback(() => {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-        if (!token) return undefined;
-        return { Authorization: `Bearer ${token}` };
-    }, []);
-
     const loadDashboard = useCallback(async () => {
         setLoading(true);
         setError("");
         try {
             const today = new Date().toISOString().split("T")[0];
-            const res = await apiFetch(`/api/dashboard?local_date=${today}`, {
-                headers: authHeader(),
-            });
+            const res = await apiFetch(`/api/dashboard?local_date=${today}`);
             if (!res.ok) throw new Error(`Failed to fetch dashboard data: ${res.statusText}`);
             const data: DashboardData = await res.json();
             setDashboardData(data);
@@ -76,7 +68,7 @@ export default function Dashboard() {
         } finally {
             setLoading(false);
         }
-    }, [authHeader]);
+    }, []);
 
     useEffect(() => {
         loadDashboard();

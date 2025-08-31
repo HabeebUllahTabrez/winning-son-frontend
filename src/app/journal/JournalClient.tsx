@@ -28,11 +28,6 @@ export default function Journal() {
     }, [searchParams]);
 
 
-    function authHeader() {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-        return { Authorization: `Bearer ${token}` } as const;
-    }
-
     async function submit() {
         if (!journalDate) return;
 
@@ -42,7 +37,7 @@ export default function Journal() {
         try {
             const res = await apiFetch("/api/journal", {
                 method: "POST",
-                headers: { "Content-Type": "application/json", ...authHeader() },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ topics, rating, local_date: journalDate }),
             });
             if (!res.ok) throw new Error(await res.text());

@@ -30,16 +30,17 @@ export function ProfileSetupGuard({ children, redirectTo = "/setup" }: ProfileSe
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          router.push("/login");
+          router.push("/");
           return;
         }
 
-        const res = await apiFetch("/api/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await apiFetch("/api/me");
 
         if (!res.ok) {
-          router.push("/login");
+          // If it's not a 401 (which would be handled by apiFetch), redirect to login
+          if (res.status !== 401) {
+            router.push("/");
+          }
           return;
         }
 
@@ -58,7 +59,7 @@ export function ProfileSetupGuard({ children, redirectTo = "/setup" }: ProfileSe
         }
       } catch (error) {
         console.error("Error checking profile:", error);
-        router.push("/login");
+        router.push("/");
       } finally {
         setIsLoading(false);
       }
