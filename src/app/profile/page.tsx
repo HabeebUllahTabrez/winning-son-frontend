@@ -33,15 +33,10 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const authHeader = useCallback(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    return { Authorization: `Bearer ${token}` };
-  }, []);
-
   const loadProfile = useCallback(async () => {
     if (!isEditing) setIsLoading(true);
     try {
-      const res = await apiFetch("/api/me", { headers: authHeader() });
+      const res = await apiFetch("/api/me");
       if (!res.ok) throw new Error("Failed to load profile.");
       const data: UserProfile = await res.json();
       setProfile(data);
@@ -51,7 +46,7 @@ export default function ProfilePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [authHeader, isEditing]);
+  }, [isEditing]);
 
   useEffect(() => {
     loadProfile();
@@ -71,7 +66,7 @@ export default function ProfilePage() {
       };
       const res = await apiFetch("/api/me", {
         method: "PUT",
-        headers: { "Content-Type": "application/json", ...authHeader() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       if (res.status !== 204) throw new Error(await res.text() || "Failed to save profile.");

@@ -20,6 +20,25 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Authentication Features
+
+### Automatic Token Expiration Handling
+
+The application automatically handles token expiration and invalid tokens:
+
+- **Automatic Logout**: When the API responds with "Invalid token" (401 status), the user is automatically logged out
+- **Automatic Redirect**: Users are redirected to the login page when their token expires
+- **Centralized Token Management**: All API calls automatically include the authentication token
+- **Consistent Logout**: Use the `logout()` function from `@/lib/api` for manual logout actions
+
+### API Integration
+
+The `apiFetch` function in `src/lib/api.ts` provides:
+- Automatic token injection into request headers
+- Detection of invalid token responses
+- Automatic logout and redirect on token expiration
+- Simplified API calls (no need to manually add auth headers)
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

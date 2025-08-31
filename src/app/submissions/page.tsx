@@ -42,7 +42,6 @@ export default function SubmissionsPage() {
     const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
-        const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem("token")}` });
         const fetchSubmissions = async () => {
             setLoading(true);
             const endDate = new Date(weekStartDate);
@@ -54,7 +53,7 @@ export default function SubmissionsPage() {
             });
 
             try {
-                const res = await apiFetch(`/api/journal?${params.toString()}`, { headers: authHeader() });
+                const res = await apiFetch(`/api/journal?${params.toString()}`);
                 if (!res.ok) throw new Error(await res.text());
                 setData(await res.json());
             } catch (e) {
@@ -112,10 +111,9 @@ export default function SubmissionsPage() {
         if (!editData) return;
         setIsSaving(true);
         try {
-            const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem("token")}` });
             const res = await apiFetch("/api/journal", {
                 method: "POST",
-                headers: { "Content-Type": "application/json", ...authHeader() },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...editData, local_date: date }),
             });
             if (!res.ok) throw new Error(await res.text());
@@ -138,10 +136,9 @@ export default function SubmissionsPage() {
         if (!entryToDelete) return;
         setIsDeleting(true);
         try {
-            const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem("token")}` });
             const res = await apiFetch(`/api/journal`, {
                 method: "DELETE",
-                headers: { "Content-Type": "application/json", ...authHeader() },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ local_date: entryToDelete }),
             });
             if (!res.ok) throw new Error(await res.text() || "Failed to delete from server.");

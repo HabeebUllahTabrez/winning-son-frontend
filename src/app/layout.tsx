@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import clsx from "clsx"; // 1. Import clsx for cleaner conditional classes
 import "./globals.css";
+import { logout } from "@/lib/api";
 
 const scribble = Patrick_Hand({
   weight: "400",
@@ -32,10 +33,7 @@ function Nav() {
   }, [pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    // setIsLoggedIn(false);
-    setAuthStatus("loggedOut");
-    router.push("/");
+    logout();
   };
 
   // 2. Define nav links as an array for easier mapping
