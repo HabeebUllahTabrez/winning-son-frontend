@@ -7,15 +7,21 @@ import { FaArrowRight, FaCheck, FaSmile, FaRocket, FaCalendarAlt, FaUser } from 
 import { AvatarPicker } from "@/app/profile/_components/AvatarPicker";
 import { AVATAR_MAP } from "@/lib/avatars";
 
+const formatDateForInput = (dateString: string | null) => {
+  if (!dateString) return "";
+  return dateString.split("T")[0];
+};
+
 type ProfileSetupData = {
   first_name: string;
   last_name: string;
   avatar_id: number;
   goal: string;
-  goal_duration: string;
+  start_date: string;
+  end_date: string;
 };
 
-type SetupStep = 'welcome' | 'first_name' | 'last_name' | 'avatar' | 'goal' | 'duration' | 'complete';
+type SetupStep = 'welcome' | 'first_name' | 'last_name' | 'avatar' | 'goal' | 'start_date' | 'end_date' | 'complete';
 
 export function ProfileSetup() {
   const [currentStep, setCurrentStep] = useState<SetupStep>('welcome');
@@ -24,7 +30,8 @@ export function ProfileSetup() {
     last_name: '',
     avatar_id: 1,
     goal: '',
-    goal_duration: ''
+    start_date: '',
+    end_date: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,7 +41,7 @@ export function ProfileSetup() {
   }, []);
 
   const handleNext = () => {
-    const steps: SetupStep[] = ['welcome', 'first_name', 'last_name', 'avatar', 'goal', 'duration', 'complete'];
+    const steps: SetupStep[] = ['welcome', 'first_name', 'last_name', 'avatar', 'goal', 'start_date', 'end_date', 'complete'];
     const currentIndex = steps.indexOf(currentStep);
     if (currentIndex < steps.length - 1) {
       setCurrentStep(steps[currentIndex + 1]);
@@ -43,15 +50,15 @@ export function ProfileSetup() {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      const currentStepData = profileData[currentStep as keyof ProfileSetupData];
       if (currentStep === 'welcome' || 
           (currentStep === 'first_name' && profileData.first_name.trim()) ||
           (currentStep === 'last_name' && profileData.last_name.trim()) ||
           (currentStep === 'avatar') ||
           (currentStep === 'goal' && profileData.goal.trim()) ||
-          (currentStep === 'duration' && profileData.goal_duration.trim())) {
+          (currentStep === 'start_date' && profileData.start_date.trim()) ||
+          (currentStep === 'end_date' && profileData.end_date.trim())) {
         handleNext();
-      } else if (currentStep === 'duration' && profileData.goal_duration.trim()) {
+      } else if (currentStep === 'end_date' && profileData.end_date.trim()) {
         handleSubmit();
       }
     }
@@ -64,32 +71,13 @@ export function ProfileSetup() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // Calculate end date based on duration
-      const startDate = new Date().toISOString().split('T')[0];
-      let endDate = new Date();
-      
-      // Parse duration (e.g., "3 months", "6 weeks", "by end of year")
-      const duration = profileData.goal_duration.toLowerCase();
-      if (duration.includes('month')) {
-        const months = parseInt(duration.match(/\d+/)?.[0] || '3');
-        endDate.setMonth(endDate.getMonth() + months);
-      } else if (duration.includes('week')) {
-        const weeks = parseInt(duration.match(/\d+/)?.[0] || '6');
-        endDate.setDate(endDate.getDate() + (weeks * 7));
-      } else if (duration.includes('year')) {
-        endDate = new Date(new Date().getFullYear(), 11, 31); // End of year
-      } else {
-        // Default to 3 months
-        endDate.setMonth(endDate.getMonth() + 3);
-      }
-
       const payload = {
         first_name: profileData.first_name,
         last_name: profileData.last_name,
         avatar_id: profileData.avatar_id,
         goal: profileData.goal,
-        start_date: startDate,
-        end_date: endDate.toISOString().split('T')[0],
+        start_date: profileData.start_date,
+        end_date: profileData.end_date,
       };
 
       const res = await apiFetch("/api/me", {
@@ -226,7 +214,9 @@ export function ProfileSetup() {
             <div className="text-4xl mb-4">🎯</div>
             <h2 className="text-2xl font-bold text-gray-800">Alright, the big one!</h2>
             <p className="text-gray-600 max-w-md mx-auto">
-              What's the single most important goal you're ready to tackle right now? Don't worry, we'll focus on just one to start.
+              What&apos;s the single most important goal you&apos;re ready to tackle right now? 
+              <br /><br />
+              <strong>Tip:</strong> Make it specific and measurable! Instead of &quot;get fit&quot;, try &quot;run 3 miles 3 times per week&quot; or &quot;lose 10 pounds&quot;. This helps our AI give you better insights!
             </p>
             <div className="max-w-md mx-auto">
               <input
@@ -234,7 +224,7 @@ export function ProfileSetup() {
                 value={profileData.goal}
                 onChange={(e) => handleInputChange('goal', e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="e.g., Run 5k daily, Learn Spanish, Build a business"
+                placeholder="e.g., Run 3 miles 3 times per week, Lose 10 pounds, Read 20 books"
                 className="input text-center text-lg"
                 maxLength={100}
                 autoFocus
@@ -250,29 +240,57 @@ export function ProfileSetup() {
           </div>
         );
 
-      case 'duration':
+      case 'start_date':
         return (
           <div className="text-center space-y-6">
-            <div className="text-4xl mb-4">⏰</div>
-            <h2 className="text-2xl font-bold text-gray-800">Love it!</h2>
+            <div className="text-4xl mb-4">📅</div>
+            <h2 className="text-2xl font-bold text-gray-800">When do you want to start?</h2>
             <p className="text-gray-600 max-w-md mx-auto">
-              Every great quest needs a timeline. How long are you giving yourself to accomplish this?
+              Pick the date you want to begin your journey. You can start today or pick a future date!
             </p>
             <div className="max-w-md mx-auto">
               <input
-                type="text"
-                value={profileData.goal_duration}
-                onChange={(e) => handleInputChange('goal_duration', e.target.value)}
+                type="date"
+                value={profileData.start_date}
+                onChange={(e) => handleInputChange('start_date', e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="e.g., 3 months, 6 weeks, by end of year"
                 className="input text-center text-lg"
-                maxLength={50}
+                min={new Date().toISOString().split('T')[0]}
+                autoFocus
+              />
+            </div>
+            <button 
+              onClick={handleNext} 
+              disabled={!profileData.start_date.trim()}
+              className="btn flex items-center gap-2 mx-auto"
+            >
+              Next <FaArrowRight />
+            </button>
+          </div>
+        );
+
+      case 'end_date':
+        return (
+          <div className="text-center space-y-6">
+            <div className="text-4xl mb-4">🏁</div>
+            <h2 className="text-2xl font-bold text-gray-800">When do you want to finish?</h2>
+            <p className="text-gray-600 max-w-md mx-auto">
+              Set your finish line! When do you want to accomplish this goal?
+            </p>
+            <div className="max-w-md mx-auto">
+              <input
+                type="date"
+                value={profileData.end_date}
+                onChange={(e) => handleInputChange('end_date', e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="input text-center text-lg"
+                min={profileData.start_date || new Date().toISOString().split('T')[0]}
                 autoFocus
               />
             </div>
             <button 
               onClick={handleSubmit} 
-              disabled={!profileData.goal_duration.trim() || isSubmitting}
+              disabled={!profileData.end_date.trim() || isSubmitting}
               className="btn flex items-center gap-2 mx-auto"
             >
               {isSubmitting ? (
@@ -282,7 +300,7 @@ export function ProfileSetup() {
                 </>
               ) : (
                 <>
-                  <FaRocket /> Let's Get Started!
+                  <FaRocket /> Let&apos;s Get Started!
                 </>
               )}
             </button>
@@ -301,11 +319,12 @@ export function ProfileSetup() {
                   alt="Your avatar"
                   className="w-16 h-16 rounded-full object-cover"
                 />
-                <div className="text-left">
-                  <p className="font-semibold">{profileData.first_name} {profileData.last_name}</p>
-                  <p className="text-sm text-gray-600">Goal: {profileData.goal}</p>
-                  <p className="text-sm text-gray-600">Timeline: {profileData.goal_duration}</p>
-                </div>
+                                  <div className="text-left">
+                    <p className="font-semibold">{profileData.first_name} {profileData.last_name}</p>
+                    <p className="text-sm text-gray-600">Goal: {profileData.goal}</p>
+                    <p className="text-sm text-gray-600">Start: {new Date(profileData.start_date).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-600">End: {new Date(profileData.end_date).toLocaleDateString()}</p>
+                  </div>
               </div>
               <p className="text-gray-600">
                 I've got your info logged and your mission locked in. Remember, you can tweak any of this from your profile page anytime.
