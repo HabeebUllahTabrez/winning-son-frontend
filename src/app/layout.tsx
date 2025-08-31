@@ -9,6 +9,8 @@ import { Toaster } from "react-hot-toast";
 import clsx from "clsx"; // 1. Import clsx for cleaner conditional classes
 import "./globals.css";
 import { logout } from "@/lib/api";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
+import Clarity from "@/components/Clarity";
 
 const scribble = Patrick_Hand({
   weight: "400",
@@ -143,6 +145,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <GoogleAnalytics />
+        <Clarity />
+      </head>
       <body
         className={`${scribble.variable} min-h-screen bg-gray-50 text-black`}
         style={{ fontFamily: "var(--font-scribble), sans-serif" }}
