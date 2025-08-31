@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { FaArrowRight, FaCheck, FaSmile, FaRocket, FaCalendarAlt, FaUser } from "react-icons/fa";
 import { AvatarPicker } from "@/app/profile/_components/AvatarPicker";
 import { AVATAR_MAP } from "@/lib/avatars";
+import { formatDateForAPI } from "@/lib/dateUtils";
 
 const formatDateForInput = (dateString: string | null) => {
   if (!dateString) return "";
@@ -255,7 +256,7 @@ export function ProfileSetup() {
                 onChange={(e) => handleInputChange('start_date', e.target.value)}
                 onKeyPress={handleKeyPress}
                 className="input text-center text-lg"
-                min={new Date().toISOString().split('T')[0]}
+                min={formatDateForAPI(new Date())}
                 autoFocus
               />
             </div>
@@ -284,7 +285,7 @@ export function ProfileSetup() {
                 onChange={(e) => handleInputChange('end_date', e.target.value)}
                 onKeyPress={handleKeyPress}
                 className="input text-center text-lg"
-                min={profileData.start_date || new Date().toISOString().split('T')[0]}
+                min={profileData.start_date || formatDateForAPI(new Date())}
                 autoFocus
               />
             </div>

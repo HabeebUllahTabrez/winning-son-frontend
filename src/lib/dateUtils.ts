@@ -13,9 +13,13 @@ export function getStartOfWeek(date: Date): Date {
 /**
  * Formats a date into YYYY-MM-DD for API calls.
  */
-export function formatDateForAPI(date: Date): string {
-  return date.toISOString().split('T')[0];
+
+export function formatDateForAPI(date: Date):string {
+  return date.getFullYear() + '-' +
+    String(date.getMonth() + 1).padStart(2, '0') + '-' +
+    String(date.getDate()).padStart(2, '0');
 }
+
 
 /**
  * Formats a date range for display, e.g., "August 25 – 31, 2025".

@@ -10,6 +10,7 @@ import { CallToAction } from "./_components/CallToAction";
 import { DashboardSkeleton } from "./_components/DashboardSkeleton";
 import { ProfileSetupGuard } from "@/components/ProfileSetupGuard";
 import { FaCalendarCheck, FaChartLine, FaFire, FaFlagCheckered, FaStar, FaTrophy } from "react-icons/fa";
+import { formatDateForAPI } from "@/lib/dateUtils";
 
 // Define nested User type and update DashboardData
 type User = {
@@ -44,7 +45,6 @@ const formatDateForDisplay = (dateString: string | null) => {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
-        timeZone: 'UTC' // Ensure date is not shifted by local timezone
     });
 };
 
@@ -57,7 +57,8 @@ export default function Dashboard() {
         setLoading(true);
         setError("");
         try {
-            const today = new Date().toISOString().split("T")[0];
+            // Get today's date in the format YYYY-MM-DD
+            const today = formatDateForAPI(new Date());
             const res = await apiFetch(`/api/dashboard?local_date=${today}`);
             if (res.status !== 200) throw new Error(`Failed to fetch dashboard data: ${res.statusText}`);
             const data: DashboardData = res.data;
