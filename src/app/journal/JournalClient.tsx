@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import { formatDateForAPI } from "@/lib/dateUtils";
 
 export default function Journal() {
     // State for the form
@@ -23,7 +24,7 @@ export default function Journal() {
     // Effect to set the journal date from URL or default to today
     useEffect(() => {
         const dateParam = searchParams.get('date');
-        const targetDate = dateParam || new Date().toISOString().split('T')[0];
+        const targetDate = dateParam || formatDateForAPI(new Date());
         setJournalDate(targetDate);
     }, [searchParams]);
 
@@ -51,9 +52,8 @@ export default function Journal() {
 
     const formatDisplayDate = (dateString: string | null) => {
         if (!dateString) return "Today";
-        const today = new Date().toISOString().split('T')[0];
+        const today = formatDateForAPI(new Date());
         if (dateString === today) return "Today";
-        // Add time to avoid timezone issues with new Date()
         const date = new Date(dateString + 'T00:00:00');
         return date.toLocaleDateString('en-US', {
             year: 'numeric',
@@ -63,7 +63,6 @@ export default function Journal() {
     };
 
     const ratingOptions = Array.from({ length: 10 }, (_, i) => i + 1);
-    console.log("rating", rating)
 
     return (
         <div className="max-w-5xl mx-auto px-4 py-10">

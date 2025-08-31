@@ -11,6 +11,7 @@ import "./globals.css";
 import { logout } from "@/lib/api";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import Clarity from "@/components/Clarity";
+import { Analytics } from '@vercel/analytics/next';
 
 const scribble = Patrick_Hand({
   weight: "400",
@@ -173,6 +174,7 @@ export default function RootLayout({
             }}
           />
         </div>
+        <Analytics />
       </body>
     </html>
   );
