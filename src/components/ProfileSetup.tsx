@@ -108,7 +108,7 @@ export function ProfileSetup() {
               Let&apos;s get this show on the road. I&apos;m here to help you set up your profile so we can track your epic journey to success!
             </p>
             <button onClick={handleNext} className="btn flex items-center gap-2 mx-auto">
-              Let's Do This! <FaArrowRight />
+              Let&apos;s Do This! <FaArrowRight />
             </button>
           </div>
         );
@@ -175,7 +175,7 @@ export function ProfileSetup() {
           <div className="text-center space-y-6">
             <div className="text-4xl mb-4">🎭</div>
             <h2 className="text-2xl font-bold text-gray-800">
-              Awesome, {profileData.first_name}! Now let's put a face to that soon-to-be-famous name!
+              Awesome, {profileData.first_name}! Now let&apos;s put a face to that soon-to-be-famous name!
             </h2>
             <p className="text-gray-600">Pick an avatar that represents your winning spirit:</p>
             
@@ -311,7 +311,7 @@ export function ProfileSetup() {
         return (
           <div className="text-center space-y-6">
             <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold text-gray-800">And just like that, you're all set!</h2>
+            <h2 className="text-3xl font-bold text-gray-800">And just like that, you&apos;re all set!</h2>
             <div className="max-w-md mx-auto space-y-4">
               <div className="flex items-center justify-center gap-3">
                 <img
@@ -327,9 +327,9 @@ export function ProfileSetup() {
                   </div>
               </div>
               <p className="text-gray-600">
-                I've got your info logged and your mission locked in. Remember, you can tweak any of this from your profile page anytime.
+                I&apos;ve got your info logged and your mission locked in. Remember, you can tweak any of this from your profile page anytime.
               </p>
-              <p className="font-bold text-lg">Now, go get 'em! 🚀</p>
+              <p className="font-bold text-lg">Now, go get &apos;em! 🚀</p>
             </div>
             <button 
               onClick={() => window.location.href = '/dashboard'} 
