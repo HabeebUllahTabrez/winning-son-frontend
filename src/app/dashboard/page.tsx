@@ -8,6 +8,7 @@ import { StatCard } from "./_components/StatCard";
 import { TrendChart } from "./_components/TrendChart";
 import { CallToAction } from "./_components/CallToAction";
 import { DashboardSkeleton } from "./_components/DashboardSkeleton";
+import { ProfileSetupGuard } from "@/components/ProfileSetupGuard";
 import { FaCalendarCheck, FaChartLine, FaFire, FaFlagCheckered, FaStar, FaTrophy } from "react-icons/fa";
 
 // Define nested User type and update DashboardData
@@ -117,7 +118,8 @@ export default function Dashboard() {
     const { user } = dashboardData;
 
     return (
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <ProfileSetupGuard>
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <div className="space-y-12">
                 <header className="flex items-center gap-4">
                     <img
@@ -211,5 +213,6 @@ export default function Dashboard() {
                 </section>
             </div>
         </div>
+        </ProfileSetupGuard>
     );
 }
