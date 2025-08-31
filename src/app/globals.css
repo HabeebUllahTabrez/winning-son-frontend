@@ -3,6 +3,8 @@
 /* Optional: define custom theme tokens */
 @theme {
   --color-card-shadow: #000;
+  /* NEW: Added a variable for error color for consistency */
+  --color-error: #ef4444; /* red-500 */
 }
 
 /* Base styles */
@@ -23,7 +25,7 @@
 
   /* Button */
   .btn {
-    @apply bg-black text-white font-bold border-2 border-black px-5 py-2 transition-all;
+    @apply bg-black text-white font-bold border-2 border-black px-5 py-2 transition-all cursor-pointer;
     border-radius: 5px 4px 6px 3px; /* Imperfect radius */
   }
   .btn:hover {
@@ -47,8 +49,18 @@
     transform: translate(-1px, -1px);
     box-shadow: 2px 2px 0px var(--color-card-shadow);
   }
+
+  /* NEW: Error state for inputs, matching your theme */
+  .input-error {
+    @apply border-red-500; /* Uses the --color-error variable implicitly */
+  }
+  .input-error:focus {
+    /* The focus shadow now becomes red to indicate the error */
+    box-shadow: 2px 2px 0px var(--color-error);
+  }
 }
 
+/* Your animations can remain as they are */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
