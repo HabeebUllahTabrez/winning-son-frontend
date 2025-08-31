@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 
@@ -24,27 +24,29 @@ export function ProfileSetupGuard({ children, redirectTo = "/setup" }: ProfileSe
   const [isLoading, setIsLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
   const router = useRouter();
+  const routerRef = useRef(router);
+  routerRef.current = router;
 
   useEffect(() => {
     const checkProfile = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          router.push("/");
+          routerRef.current.push("/");
           return;
         }
 
         const res = await apiFetch("/api/me");
 
-        if (!res.ok) {
+        if (res.status !== 200) {
           // If it's not a 401 (which would be handled by apiFetch), redirect to login
           if (res.status !== 401) {
-            router.push("/");
+            routerRef.current.push("/");
           }
           return;
         }
 
-        const profile: UserProfile = await res.json();
+        const profile: UserProfile = res.data;
         
         // Check if profile is incomplete
         const isIncomplete = !profile.first_name || 
@@ -55,18 +57,18 @@ export function ProfileSetupGuard({ children, redirectTo = "/setup" }: ProfileSe
 
         if (isIncomplete) {
           setNeedsSetup(true);
-          router.push(redirectTo);
+          routerRef.current.push(redirectTo);
         }
       } catch (error) {
         console.error("Error checking profile:", error);
-        router.push("/");
+        routerRef.current.push("/");
       } finally {
         setIsLoading(false);
       }
     };
 
     checkProfile();
-  }, [router, redirectTo]);
+  }, [redirectTo]);
 
   if (isLoading) {
     return (

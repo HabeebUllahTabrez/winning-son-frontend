@@ -36,11 +36,11 @@ export default function AdminPage() {
       if (res.status === 403) {
         throw new Error("You do not have permission to view this page.");
       }
-      if (!res.ok) {
+      if (res.status < 200 || res.status >= 300) {
         throw new Error(`Failed to fetch admin data: ${res.statusText}`);
       }
 
-      const data: AdminOverview = await res.json();
+      const data: AdminOverview = res.data;
       setOverviewData(data);
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "An unknown error occurred.";

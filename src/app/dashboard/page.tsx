@@ -59,8 +59,8 @@ export default function Dashboard() {
         try {
             const today = new Date().toISOString().split("T")[0];
             const res = await apiFetch(`/api/dashboard?local_date=${today}`);
-            if (!res.ok) throw new Error(`Failed to fetch dashboard data: ${res.statusText}`);
-            const data: DashboardData = await res.json();
+            if (res.status !== 200) throw new Error(`Failed to fetch dashboard data: ${res.statusText}`);
+            const data: DashboardData = res.data;
             setDashboardData(data);
         } catch (e: unknown) {
             const message = e instanceof Error ? e.message : "An unknown error occurred.";

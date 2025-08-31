@@ -54,8 +54,8 @@ export default function SubmissionsPage() {
 
             try {
                 const res = await apiFetch(`/api/journal?${params.toString()}`);
-                if (!res.ok) throw new Error(await res.text());
-                setData(await res.json());
+                if (res.status < 200 || res.status >= 300) throw new Error(res.statusText);
+                setData(res.data);
             } catch (e) {
                 toast.error(e instanceof Error ? e.message : "Failed to load submissions.");
                 setData([]);
@@ -114,9 +114,9 @@ export default function SubmissionsPage() {
             const res = await apiFetch("/api/journal", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...editData, local_date: date }),
+                data: { ...editData, local_date: date },
             });
-            if (!res.ok) throw new Error(await res.text());
+            if (res.status < 200 || res.status >= 300) throw new Error(res.statusText);
             setData(current => current.map(e => e.local_date === date ? { ...e, ...editData } : e));
             handleCancelEdit();
             toast.success("Entry saved successfully!");
@@ -139,9 +139,9 @@ export default function SubmissionsPage() {
             const res = await apiFetch(`/api/journal`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ local_date: entryToDelete }),
+                data: { local_date: entryToDelete },
             });
-            if (!res.ok) throw new Error(await res.text() || "Failed to delete from server.");
+            if (res.status < 200 || res.status >= 300) throw new Error(res.statusText || "Failed to delete from server.");
             setData(currentData => currentData.filter(entry => entry.local_date !== entryToDelete));
             setIsConfirmOpen(false);
             setEntryToDelete(null);

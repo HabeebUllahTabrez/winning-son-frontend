@@ -37,8 +37,8 @@ export default function ProfilePage() {
     if (!isEditing) setIsLoading(true);
     try {
       const res = await apiFetch("/api/me");
-      if (!res.ok) throw new Error("Failed to load profile.");
-      const data: UserProfile = await res.json();
+      if (!(res.status >= 200 && res.status < 300)) throw new Error("Failed to load profile.");
+      const data: UserProfile = res.data;
       setProfile(data);
       setInitialProfile(data);
     } catch (error) {
@@ -67,9 +67,9 @@ export default function ProfilePage() {
       const res = await apiFetch("/api/me", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        data: payload,
       });
-      if (res.status !== 204) throw new Error(await res.text() || "Failed to save profile.");
+      if (res.status !== 204) throw new Error(res.data || "Failed to save profile.");
       toast.success("Profile updated successfully!");
       setIsEditing(false);
       await loadProfile();

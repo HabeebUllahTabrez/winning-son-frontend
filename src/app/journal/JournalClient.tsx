@@ -38,9 +38,9 @@ export default function Journal() {
             const res = await apiFetch("/api/journal", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ topics, rating, local_date: journalDate }),
+                data: { topics, rating, local_date: journalDate },
             });
-            if (!res.ok) throw new Error(await res.text());
+            if (res.status < 200 || res.status >= 300) throw new Error(res.statusText);
             setSuccessMsg(`Saved entry for ${formatDisplayDate(journalDate)} successfully!`);
         } catch (e: unknown) {
             setErrorMsg(e instanceof Error ? e.message : "An unknown error occurred.");
