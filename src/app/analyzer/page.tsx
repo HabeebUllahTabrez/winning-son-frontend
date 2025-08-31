@@ -62,8 +62,8 @@ export default function AnalyzerPage() {
       // No need for a loading state here, it's a background task on page load
       try {
         const res = await apiFetch("/api/me", { headers: authHeader() });
-        if (!res.ok) throw new Error("Could not fetch your profile data.");
-        const user: UserProfile = await res.json();
+        if (res.status < 200 || res.status >= 300) throw new Error("Could not fetch your profile data.");
+        const user: UserProfile = res.data;
         setGoal(user.goal || "Achieve my personal best");
         setStartDate(formatDateForInput(user.start_date));
         setEndDate(formatDateForInput(user.end_date));
@@ -96,9 +96,9 @@ export default function AnalyzerPage() {
     setNoEntriesMessage("");
     try {
       const res = await apiFetch(`/api/journal?start_date=${startDate}&end_date=${endDate}`, { headers: authHeader() });
-      if (!res.ok) throw new Error("The archives are sealed! Failed to fetch journal entries.");
+      if (res.status < 200 || res.status >= 300) throw new Error("The archives are sealed! Failed to fetch journal entries.");
 
-      const entries: JournalEntry[] | null = await res.json();
+      const entries: JournalEntry[] | null = res.data;
 
       if (!entries || entries.length === 0) {
         setNoEntriesMessage("Your journal is a ghost town! 👻 The Oracle needs *something* to read. Go write about your day, you magnificent beast.");

@@ -27,26 +27,38 @@ export default function Home() {
   }, [router]);
 
   async function submit() {
-    setError("");
-    setLoading(true);
-    try {
-      const res = await apiFetch(`/api/auth/${mode}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const data: { token: string } = await res.json();
-      localStorage.setItem("token", data.token);
-      router.push("/dashboard");
-    } catch (e: unknown) {
-      const message =
-        e instanceof Error ? e.message : "An unknown error occurred.";
-      setError(message);
-    } finally {
-      setLoading(false);
+  setError("");
+  setLoading(true);
+  try {
+    const res = await apiFetch(`/api/auth/${mode}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: { email, password },
+    });
+
+    // If the response status is not in the 2xx range, read the error message and throw it.
+    if (res.status < 200 || res.status >= 300) {
+      const errorMessage = typeof res.data === "string" ? res.data : "An error occurred.";
+      throw new Error(errorMessage);
     }
+
+    // This part only runs if the response was successful
+    const data: { token: string } = res.data;
+    localStorage.setItem("token", data.token);
+    router.push("/dashboard");
+
+  } catch (e: unknown) {
+    let message = "An unknown error occurred.";
+    if (e instanceof Error) {
+      // If the error has a response property (e.g., AxiosError), use it
+      // @ts-expect-error: response may exist on some error types
+      message = e.response?.data ?? e.message;
+    }
+    setError(message);
+  } finally {
+    setLoading(false);
   }
+}
 
   if (authStatus !== "unauthed") {
     return (

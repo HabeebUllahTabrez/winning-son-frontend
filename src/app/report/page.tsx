@@ -38,8 +38,8 @@ export default function ReportsPage() {
         const fetchReports = async () => {
             try {
                 const res = await apiFetch("/api/progress/report", { headers: authHeader() });
-                if (!res.ok) throw new Error(await res.text());
-                const body: Entry[] = await res.json();
+                if (res.status < 200 || res.status >= 300) throw new Error(res.data?.message || "Failed to fetch reports.");
+                const body: Entry[] = res.data;
                 setData(body);
             } catch (e: unknown) {
                 const message = e instanceof Error ? e.message : "Failed to load reports.";
