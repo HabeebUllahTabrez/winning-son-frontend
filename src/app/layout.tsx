@@ -147,6 +147,25 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Favicon Configuration */}
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        
+        {/* Additional favicon sizes */}
+        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+        
+        {/* PWA Icons */}
+        <link rel="icon" type="image/png" sizes="192x192" href="/web-app-manifest-192x192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/web-app-manifest-512x512.png" />
+        
+        {/* PWA Meta Tags */}
+        <meta name="theme-color" content="#ffffff" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="WinningSoninator" />
+        
         <GoogleAnalytics />
         <Clarity />
       </head>
