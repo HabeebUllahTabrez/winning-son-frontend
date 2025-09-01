@@ -7,6 +7,8 @@ import { FaArrowRight, FaCheck, FaSmile, FaRocket, FaCalendarAlt, FaUser } from 
 import { AvatarPicker } from "@/app/profile/_components/AvatarPicker";
 import { AVATAR_MAP } from "@/lib/avatars";
 import { formatDateForAPI } from "@/lib/dateUtils";
+import { format, parseISO } from "date-fns";
+import Image from "next/image";
 
 const formatDateForInput = (dateString: string | null) => {
   if (!dateString) return "";
@@ -192,11 +194,12 @@ export function ProfileSetup() {
                         : "hover:bg-gray-100"
                     }`}
                   >
-                    <img
+                    <Image
                       src={`/avatars/${file}`}
                       alt={`Avatar option ${id}`}
-                      className="w-20 h-20 rounded-full object-cover"
-                      onError={(e) => { e.currentTarget.src = 'https://placehold.co/80x80/e2e8f0/333?text=...'; }}
+                      width={80}
+                      height={80}
+                      className="rounded-full"
                     />
                   </button>
                 ))}
@@ -315,16 +318,17 @@ export function ProfileSetup() {
             <h2 className="text-3xl font-bold text-gray-800">And just like that, you&apos;re all set!</h2>
             <div className="max-w-md mx-auto space-y-4">
               <div className="flex items-center justify-center gap-3">
-                <img
+                <Image
                   src={`/avatars/${AVATAR_MAP.find(a => a.id === profileData.avatar_id)?.file}`}
                   alt="Your avatar"
-                  className="w-16 h-16 rounded-full object-cover"
+                  width={64}
+                  height={64}
                 />
-                                  <div className="text-left">
+                  <div className="text-left">
                     <p className="font-semibold">{profileData.first_name} {profileData.last_name}</p>
                     <p className="text-sm text-gray-600">Goal: {profileData.goal}</p>
-                    <p className="text-sm text-gray-600">Start: {new Date(profileData.start_date).toLocaleDateString()}</p>
-                    <p className="text-sm text-gray-600">End: {new Date(profileData.end_date).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-600">Start: {format(parseISO(profileData.start_date),"dd/MM/yyyy")}</p>
+                    <p className="text-sm text-gray-600">End: {format(parseISO(profileData.end_date), "dd/MM/yyyy")}</p>
                   </div>
               </div>
               <p className="text-gray-600">
