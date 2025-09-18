@@ -11,6 +11,7 @@ import { DashboardSkeleton } from "./_components/DashboardSkeleton";
 import { ProfileSetupGuard } from "@/components/ProfileSetupGuard";
 import { FaCalendarCheck, FaChartLine, FaFire, FaFlagCheckered, FaStar, FaTrophy } from "react-icons/fa";
 import { formatDateForAPI } from "@/lib/dateUtils";
+import { isGuestUser } from "@/lib/guest";
 
 // Define nested User type and update DashboardData
 type User = {
@@ -34,7 +35,6 @@ type DashboardData = {
     current_streak_days: number;
     last7_days_trend: { local_date: string; points: number }[];
     user: User;
-    // ASSUMPTION: The API now includes points accumulated during the goal's date range.
     goal_points_to_date?: number;
 };
 
@@ -49,6 +49,7 @@ const formatDateForDisplay = (dateString: string | null) => {
 };
 
 export default function Dashboard() {
+    const isGuest = isGuestUser();
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -56,8 +57,21 @@ export default function Dashboard() {
     const loadDashboard = useCallback(async () => {
         setLoading(true);
         setError("");
+
+        // --- GUEST USER LOGIC ---
+        // If the user is a guest, we load mock data instead of calling the API.
+        if (isGuest) {
+            console.log("Loading dashboard for guest user.");
+            // Simulate a short network delay for a better UX
+            setTimeout(() => {
+                setDashboardData(localStorage.getItem("guestStats") ? JSON.parse(localStorage.getItem("guestStats") as string) : null);
+                setLoading(false);
+            }, 500);
+            return; // Stop execution for guest users here
+        }
+
+        // --- LOGGED-IN USER LOGIC ---
         try {
-            // Get today's date in the format YYYY-MM-DD
             const today = formatDateForAPI(new Date());
             const res = await apiFetch(`/api/dashboard?local_date=${today}`);
             if (res.status !== 200) throw new Error(`Failed to fetch dashboard data: ${res.statusText}`);
@@ -69,7 +83,7 @@ export default function Dashboard() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [isGuest]); // Add isGuest to the dependency array
 
     useEffect(() => {
         loadDashboard();
