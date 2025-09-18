@@ -3,11 +3,6 @@
 
 import { useState } from "react";
 import clsx from "clsx";
-
-// --- IMPORTANT ---
-// This map converts the integer ID from the API to a filename.
-// Ensure the files exist in your /public/avatars folder.
-
 import { AVATAR_MAP } from "@/lib/avatars";
 
 type AvatarPickerProps = {
@@ -30,7 +25,8 @@ export function AvatarPicker({ currentAvatarId, onSelectAvatar }: AvatarPickerPr
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-full mb-3 w-64 p-3 card bg-white z-10 left-1/2 -translate-x-1/2">
+        // --- UPDATED: Changed positioning from bottom-full to top-full ---
+        <div className="absolute top-full mt-3 w-64 p-3 card bg-white z-10 left-1/2 -translate-x-1/2">
           <p className="font-bold text-center mb-2">Choose an Avatar</p>
           <div className="grid grid-cols-3 gap-2">
             {AVATAR_MAP.map(({ id, file }) => (
