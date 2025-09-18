@@ -3,12 +3,12 @@
 import { useState, useCallback } from "react";
 import { apiFetch } from "@/lib/api";
 import toast from "react-hot-toast";
-import { FaArrowRight, FaCheck, FaSmile, FaRocket, FaCalendarAlt, FaUser } from "react-icons/fa";
-import { AvatarPicker } from "@/app/profile/_components/AvatarPicker";
+import { FaArrowRight, FaRocket } from "react-icons/fa";
 import { AVATAR_MAP } from "@/lib/avatars";
 import { formatDateForAPI } from "@/lib/dateUtils";
 import { format, parseISO } from "date-fns";
 import Image from "next/image";
+import { isGuestUser } from "@/lib/guest"; // 1. Import the guest check function
 
 const formatDateForInput = (dateString: string | null) => {
   if (!dateString) return "";
@@ -25,6 +25,9 @@ type ProfileSetupData = {
 };
 
 type SetupStep = 'welcome' | 'first_name' | 'last_name' | 'avatar' | 'goal' | 'start_date' | 'end_date' | 'complete';
+
+// 2. Define the key to be consistent with the ProfileSetupGuard
+const GUEST_PROFILE_KEY = "guestProfileData";
 
 export function ProfileSetup() {
   const [currentStep, setCurrentStep] = useState<SetupStep>('welcome');
@@ -53,7 +56,7 @@ export function ProfileSetup() {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      if (currentStep === 'welcome' || 
+      if (currentStep === 'welcome' ||
           (currentStep === 'first_name' && profileData.first_name.trim()) ||
           (currentStep === 'last_name' && profileData.last_name.trim()) ||
           (currentStep === 'avatar') ||
@@ -71,25 +74,51 @@ export function ProfileSetup() {
     setProfileData(prev => ({ ...prev, [field]: value }));
   };
 
+  // 3. Update the handleSubmit function to handle both guest and authenticated users
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    const isGuest = isGuestUser();
+
     try {
-      const payload = {
-        first_name: profileData.first_name,
-        last_name: profileData.last_name,
-        avatar_id: profileData.avatar_id,
-        goal: profileData.goal,
-        start_date: profileData.start_date,
-        end_date: profileData.end_date,
-      };
+      // --- GUEST LOGIC ---
+      if (isGuest) {
+        console.log("Saving profile for guest user to localStorage.");
+        localStorage.setItem(GUEST_PROFILE_KEY, JSON.stringify(profileData));
+        // also update user in object in dashboard stats
+        const guestStats = localStorage.getItem("guestStats");
+        if (guestStats) {
+          const stats = JSON.parse(guestStats);
+          stats.user = { ...stats.user, 
+            first_name: profileData.first_name,
+            last_name: profileData.last_name,
+            avatar_id: profileData.avatar_id,
+            goal: profileData.goal,
+            start_date: profileData.start_date,
+            end_date: profileData.end_date,
+            is_admin: false
+           };
+          localStorage.setItem("guestStats", JSON.stringify(stats));
+        }
+      } 
+      // --- AUTHENTICATED USER LOGIC ---
+      else {
+        const payload = {
+          first_name: profileData.first_name,
+          last_name: profileData.last_name,
+          avatar_id: profileData.avatar_id,
+          goal: profileData.goal,
+          start_date: profileData.start_date,
+          end_date: profileData.end_date,
+        };
 
-      const res = await apiFetch("/api/me", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...authHeader() },
-        data: payload,
-      });
+        const res = await apiFetch("/api/me", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", ...authHeader() },
+          data: payload,
+        });
 
-      if (res.status !== 204) throw new Error(res.data || "Failed to save profile.");
+        if (res.status !== 204) throw new Error(res.data || "Failed to save profile.");
+      }
       
       toast.success("Profile setup complete! 🎉");
       setCurrentStep('complete');
@@ -99,8 +128,9 @@ export function ProfileSetup() {
       setIsSubmitting(false);
     }
   };
-
+  
   const renderStep = () => {
+    // This entire render logic does not need to change, as the UI is the same for both users.
     switch (currentStep) {
       case 'welcome':
         return (
