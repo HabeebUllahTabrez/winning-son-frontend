@@ -7,8 +7,9 @@ import { apiFetch } from "@/lib/api";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { toast } from "react-hot-toast";
 import { getStartOfWeek, formatDateForAPI, formatDateRangeForDisplay } from "@/lib/dateUtils";
+import { isGuestUser, getGuestEntries, deleteGuestEntry, GUEST_STATS_KEY } from "@/lib/guest";
 
-type Entry = { local_date: string; topics: string; rating: number };
+type Entry = { local_date: string; topics: string; rating: number; id?: string };
 
 // --- SVG Icons ---
 const PencilIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>;
@@ -41,9 +42,32 @@ export default function SubmissionsPage() {
     const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
+    const isGuest = isGuestUser();
+
     useEffect(() => {
         const fetchSubmissions = async () => {
             setLoading(true);
+
+            if (isGuest) {
+                const endDate = new Date(weekStartDate);
+                endDate.setDate(weekStartDate.getDate() + 6);
+                const startDateStr = formatDateForAPI(weekStartDate);
+                const endDateStr = formatDateForAPI(endDate);
+
+                const entries = getGuestEntries().filter(entry => {
+                    const entryDate = entry.createdAt.split('T')[0];
+                    return entryDate >= startDateStr && entryDate <= endDateStr;
+                }).map(entry => ({
+                    local_date: entry.createdAt.split('T')[0],
+                    topics: entry.content,
+                    rating: entry.rating,
+                    id: entry.id
+                }));
+                setData(entries);
+                setLoading(false);
+                return;
+            }
+
             const endDate = new Date(weekStartDate);
             endDate.setDate(weekStartDate.getDate() + 6);
 
@@ -65,7 +89,7 @@ export default function SubmissionsPage() {
         };
 
         fetchSubmissions();
-    }, [weekStartDate]);
+    }, [weekStartDate, isGuest]);
     
     const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => {
         const day = new Date(weekStartDate);
@@ -127,7 +151,7 @@ export default function SubmissionsPage() {
         }
     };
 
-    const openDeleteConfirm = (date: string) => {
+    const handleDeleteClick = (date: string) => {
         setEntryToDelete(date);
         setIsConfirmOpen(true);
     };
@@ -135,22 +159,31 @@ export default function SubmissionsPage() {
     const handleConfirmDelete = async () => {
         if (!entryToDelete) return;
         setIsDeleting(true);
-        try {
-            const res = await apiFetch(`/api/journal`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                data: { local_date: entryToDelete },
-            });
-            if (res.status < 200 || res.status >= 300) throw new Error(res.statusText || "Failed to delete from server.");
-            setData(currentData => currentData.filter(entry => entry.local_date !== entryToDelete));
+
+        if (isGuest) {
+            const entry = data.find(e => e.local_date === entryToDelete);
+            if (entry && entry.id) {
+                deleteGuestEntry(entry.id);
+                setData(prev => prev.filter(e => e.local_date !== entryToDelete));
+                toast.success("Entry deleted successfully.");
+            }
+            setIsDeleting(false);
             setIsConfirmOpen(false);
             setEntryToDelete(null);
-            toast.success("Entry deleted successfully!");
+            return;
+        }
+
+        try {
+            const res = await apiFetch(`/api/journal?local_date=${entryToDelete}`, { method: 'DELETE' });
+            if (res.status < 200 || res.status >= 300) throw new Error(res.statusText);
+            setData(prev => prev.filter(e => e.local_date !== entryToDelete));
+            toast.success("Entry deleted successfully.");
         } catch (e) {
             toast.error(e instanceof Error ? e.message : "Failed to delete entry.");
-            setIsConfirmOpen(false);
         } finally {
             setIsDeleting(false);
+            setIsConfirmOpen(false);
+            setEntryToDelete(null);
         }
     };
     
@@ -158,18 +191,16 @@ export default function SubmissionsPage() {
 
     return (
         <>
-            <ConfirmDialog
-                isOpen={isConfirmOpen}
-                title="Delete Entry"
-                onConfirm={handleConfirmDelete}
-                onCancel={() => setIsConfirmOpen(false)}
-                confirmText="Delete"
-                isConfirming={isDeleting}
-            >
-                Are you sure you want to delete this journal entry? This action cannot be undone.
-            </ConfirmDialog>
-
-            <div className="max-w-5xl mx-auto px-4 py-10">
+<ConfirmDialog
+    isOpen={isConfirmOpen}
+    onCancel={() => setIsConfirmOpen(false)}
+    onConfirm={handleConfirmDelete}
+    title="Confirm Deletion"
+    isConfirming={isDeleting}
+    confirmText="Delete"
+>
+    Are you sure you want to delete this journal entry? This action cannot be undone.
+</ConfirmDialog>            <div className="max-w-5xl mx-auto px-4 py-10">
                 <header className="mb-8">
                     <h1 className="text-4xl font-bold">Journal Submissions</h1>
                     <p className="text-lg text-gray-600">Review your journal entries week by week.</p>
@@ -222,7 +253,7 @@ export default function SubmissionsPage() {
                                                         <span className="text-lg font-bold bg-black text-white py-1 px-3 rounded-full">Rating: {entry.rating}/10</span>
                                                         <div className="flex items-center gap-2">
                                                             <button className="p-2 rounded-full hover:bg-gray-200 transition-colors" onClick={() => handleEditClick(entry)} aria-label="Edit"><PencilIcon /></button>
-                                                            <button className="p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors" onClick={() => openDeleteConfirm(entry.local_date)} aria-label="Delete"><TrashIcon /></button>
+                                                            <button className="p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors" onClick={() => handleDeleteClick(entry.local_date)} aria-label="Delete"><TrashIcon /></button>
                                                         </div>
                                                     </div>
                                                     <p className="whitespace-pre-wrap text-lg leading-relaxed pt-2">{entry.topics}</p>
