@@ -5,15 +5,12 @@ import { apiFetch } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock } from "react-icons/fa";
-// NEW: Import the Next.js Image component for optimization
 import Image from "next/image";
 
-// NEW: A dedicated component for the thematic image.
-// This uses the Next.js Image component for performance benefits.
 const WinningSonImage = () => (
-  <div className="relative w-48 h-48 mx-auto">
+  <div className="relative w-20 h-20 mx-auto rounded-full border-4 border-black overflow-hidden">
     <Image
-      src="/are-ya-winning.jpeg" // Assumes your image is in the /public folder
+      src="/dad-head.png"
       alt="A cartoon father peeking through a door, asking 'Are ya winning?'"
       layout="fill"
       objectFit="contain"
@@ -21,36 +18,6 @@ const WinningSonImage = () => (
   </div>
 );
 
-// NEW: Centralized copy for easy management and wit.
-// const copyStrings = {
-//   login: {
-//     title: "Are ya winning?",
-//     subtitle: "Dad's checking in. Log in to see your progress.",
-//     emailPlaceholder: "your-gamertag@example.com",
-//     passwordPlaceholder: "Your secret cheat code",
-//     submitButton: "Check My Progress",
-//     toggleModeText: "or create a new save file",
-//   },
-//   signup: {
-//     title: "New Game?",
-//     subtitle: "Let's get you set up to start winning. No pressure.",
-//     emailPlaceholder: "The email dad has on file",
-//     passwordPlaceholder: "Make it stronger than your wifi password",
-//     confirmPasswordPlaceholder: "Enter the cheat code again",
-//     submitButton: "Start Winning",
-//     toggleModeText: "or I already have a save file",
-//   },
-//   errors: {
-//     emailRequired: "Need your gamertag to find your save file.",
-//     emailInvalid: "That email looks like it was entered with a joystick.",
-//     passwordRequired: "Can't access your progress without the key.",
-//     passwordTooShort: "Your cheat code needs to be at least 8 characters long.",
-//     confirmPasswordRequired: "Gotta confirm that cheat code.",
-//     passwordsDontMatch: "Your cheat codes are out of sync. Try again.",
-//   }
-// };
-
-// NEW: Centralized copy focused on journaling, motivation, and witty humor.
 const copyStrings = {
   login: {
     title: "How's it *really* going?",
@@ -112,7 +79,6 @@ export default function Home() {
     return false;
   }, [email, password, confirmPassword, mode]);
 
-  // UPDATED: Validation uses witty error messages from the copyStrings object.
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -185,126 +151,151 @@ export default function Home() {
     setClientErrors({});
     setServerError("");
   };
+
+  const handleGuestLogin = async () => {
+    console.log("Guest login initiated. (Not yet implemented)");
+  }
   
-  // No changes needed to the loading state, it's already good.
   if (authStatus !== "unauthed") {
     return (
-      <div className="flex items-center justify-center h-full text-xl animate-pulse">
+      <div className="flex items-center justify-center min-h-screen text-xl animate-pulse">
         Checking your save file...
       </div>
     );
   }
 
-  // Current mode's copy
   const currentCopy = copyStrings[mode];
 
   return (
-    <main className="flex items-center justify-center h-full p-4 bg-gray-50">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center space-y-4">
-          {/* UPDATED: Using the new Image component */}
-          <WinningSonImage />
-          {/* <h1 className="text-5xl font-bold tracking-tight">{currentCopy.title}</h1>
-          <p className="text-gray-600 text-lg">
-            {currentCopy.subtitle}
-          </p> */}
-        </div>
+    <main className="flex items-center justify-center h-[calc(100dvh-70px)] p-4 bg-gray-50 ">
+      
+      <div className="card w-full max-w-md max-h-[95dvh] flex flex-col">
+        
+        <div className="overflow-y-auto sm:p-8">
 
-        <div className="card shadow-lg">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-lg font-medium">Email</label>
-              <div className="relative mt-1">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <FaEnvelope className="h-5 w-5 text-gray-400 z-10" />
-                </span>
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  className={`input pl-10 ${clientErrors.email ? 'input-error' : ''}`}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={currentCopy.emailPlaceholder}
-                  disabled={loading}
-                />
-              </div>
-              {clientErrors.email && <p className="text-red-600 text-sm mt-1">{clientErrors.email}</p>}
+          <div className="space-y-6">
+
+            {/* Header Section */}
+            <div className="text-center">
+              <WinningSonImage />
+              <h1 className="text-3xl font-extrabold mt-4">{`Are ya winnin, son?`}</h1>
             </div>
 
-            {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-lg font-medium">Password</label>
-              <div className="relative mt-1">
-                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <FaLock className="h-5 w-5 text-gray-400 z-10" />
-                </span>
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                  className={`input pl-10 pr-10 ${clientErrors.password ? 'input-error' : ''}`}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={currentCopy.passwordPlaceholder}
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-800"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
-                </button>
-              </div>
-              {clientErrors.password && <p className="text-red-600 text-sm mt-1">{clientErrors.password}</p>}
-            </div>
-
-            {/* Confirm Password Field (Signup only) */}
-            {mode === "signup" && (
+            {/* Form Section */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Email Field */}
               <div>
-                <label htmlFor="confirm-password" className="block text-lg font-medium">Confirm Password</label>
+                {/* <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label> */}
+                <div className="relative mt-1">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <FaEnvelope className="h-5 w-5 text-gray-400" />
+                  </span>
+                  <input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    className={`input pl-10 ${clientErrors.email ? 'input-error' : ''}`}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={currentCopy.emailPlaceholder}
+                    disabled={loading}
+                  />
+                </div>
+                {clientErrors.email && <p className="text-red-600 text-sm mt-1">{clientErrors.email}</p>}
+              </div>
+
+              {/* Password Field */}
+              <div>
+                {/* <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label> */}
                 <div className="relative mt-1">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <FaLock className="h-5 w-5 text-gray-400 z-10" />
-                    </span>
-                    <input
-                    id="confirm-password"
+                    <FaLock className="h-5 w-5 text-gray-400" />
+                  </span>
+                  <input
+                    id="password"
                     type={showPassword ? "text" : "password"}
-                    autoComplete="new-password"
-                    className={`input pl-10 pr-10 ${clientErrors.confirmPassword ? 'input-error' : ''}`}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder={mode === "signup" ? copyStrings.signup.confirmPasswordPlaceholder : ""}
+                    autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                    className={`input pl-10 pr-10 ${clientErrors.password ? 'input-error' : ''}`}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={currentCopy.passwordPlaceholder}
                     disabled={loading}
-                    />
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-800"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+                  </button>
                 </div>
-                {clientErrors.confirmPassword && <p className="text-red-600 text-sm mt-1">{clientErrors.confirmPassword}</p>}
+                {clientErrors.password && <p className="text-red-600 text-sm mt-1">{clientErrors.password}</p>}
               </div>
-            )}
-            
-            {serverError && <p className="text-red-600 text-lg text-center">{serverError}</p>}
-            
-            <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
-              <button
-                type="submit"
-                disabled={loading || isFormInvalid}
-                className="btn w-full sm:w-auto"
-              >
-                {loading ? "Loading..." : currentCopy.submitButton}
-              </button>
-              <button
-                type="button"
-                className="text-md underline hover:opacity-75"
-                onClick={toggleMode}
-                disabled={loading}
-              >
-                {currentCopy.toggleModeText}
-              </button>
+
+              {/* Confirm Password Field (Signup only) */}
+              {mode === "signup" && (
+                <div>
+                  {/* <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">Confirm Password</label> */}
+                  <div className="relative mt-1">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                          <FaLock className="h-5 w-5 text-gray-400" />
+                      </span>
+                      <input
+                      id="confirm-password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      className={`input pl-10 pr-10 ${clientErrors.confirmPassword ? 'input-error' : ''}`}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder={mode === "signup" ? copyStrings.signup.confirmPasswordPlaceholder : ""}
+                      disabled={loading}
+                      />
+                  </div>
+                  {clientErrors.confirmPassword && <p className="text-red-600 text-sm mt-1">{clientErrors.confirmPassword}</p>}
+                </div>
+              )}
+              
+              {serverError && <p className="text-red-600 text-sm text-center">{serverError}</p>}
+              
+              <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
+                <button
+                  type="submit"
+                  disabled={loading || isFormInvalid}
+                  className="btn w-full sm:w-auto flex-grow"
+                >
+                  {loading ? "Loading..." : currentCopy.submitButton}
+                </button>
+                <button
+                  type="button"
+                  className="text-sm underline hover:opacity-75"
+                  onClick={toggleMode}
+                  disabled={loading}
+                >
+                  {currentCopy.toggleModeText}
+                </button>
+              </div>
+            </form>
+
+            {/* Guest Login Section */}
+            <div className="space-y-4">
+                <div className="relative flex py-1 items-center">
+                    <div className="flex-grow border-t border-gray-300"></div>
+                    <span className="flex-shrink mx-4 text-gray-500 text-xs uppercase">No Account? No Problem.</span>
+                    <div className="flex-grow border-t border-gray-300"></div>
+                </div>
+
+                <button
+                    type="button"
+                    className="btn btn-outline w-full"
+                    onClick={handleGuestLogin}
+                    disabled={loading}
+                >
+                    Peek Inside (Continue as Guest)
+                </button>
             </div>
-          </form>
+            
+          </div>
         </div>
       </div>
     </main>
