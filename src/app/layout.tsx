@@ -12,6 +12,7 @@ import { logout } from "@/lib/api";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import Clarity from "@/components/Clarity";
 import { Analytics } from '@vercel/analytics/next';
+import { isGuestUser } from "@/lib/guest";
 
 const scribble = Patrick_Hand({
   weight: "400",
@@ -23,15 +24,21 @@ const scribble = Patrick_Hand({
 function Nav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [authStatus, setAuthStatus] = useState<"loading" | "loggedIn" | "loggedOut">("loading");
+  const [authStatus, setAuthStatus] = useState<"loading" | "loggedIn" | "guest" | "loggedOut">("loading");
   const router = useRouter();
   const pathname = usePathname();
 
   // Effect to check login status and close menu on page change
   useEffect(() => {
     const token = localStorage.getItem("token");
-    // setIsLoggedIn(!!token);
-    setAuthStatus(token ? "loggedIn" : "loggedOut");
+    const guest = isGuestUser();
+
+    if (guest) {
+      setAuthStatus("guest");
+    } else {
+      setAuthStatus(token ? "loggedIn" : "loggedOut");
+    }
+    
     setIsMenuOpen(false); // Close mobile menu on navigation
   }, [pathname]);
 
@@ -66,32 +73,40 @@ function Nav() {
     </Link>
   );
 
+  const handleExitGuestMode = () => {
+    localStorage.removeItem("guestId");
+    localStorage.removeItem("guestProfileData");
+    localStorage.removeItem("guestJournalEntries");
+    localStorage.removeItem("guestStats");
+    router.push("/");
+  };
+
   const renderNavContent = () => {
-  // If we're still checking, render nothing to match the server.
-  if (authStatus === "loading") {
-    return null;
-  }
+    // If we're still checking, render nothing to match the server.
+    if (authStatus === "loading") {
+      return null;
+    }
 
-  // If we've confirmed the user is logged in...
-  if (authStatus === "loggedIn") {
-    return (
-      <>
-        {navLinks.map((link) => (
-          <NavLink key={link.href} {...link} />
-        ))}
-        <button
-          onClick={handleLogout}
-          className="px-2 py-1 hover:text-gray-600 transition-colors duration-200"
-        >
-          Logout
-        </button>
-      </>
-    );
-  }
+    // If we've confirmed the user is logged in or is a guest...
+    if (authStatus === "loggedIn" || authStatus === "guest") {
+      return (
+        <>
+          {navLinks.map((link) => (
+            <NavLink key={link.href} {...link} />
+          ))}
+          <button
+            onClick={authStatus === 'loggedIn' ? handleLogout : handleExitGuestMode}
+            className="px-2 py-1 hover:text-gray-600 transition-colors duration-200"
+          >
+            {authStatus === 'loggedIn' ? 'Logout' : 'Exit Guest Mode'}
+          </button>
+        </>
+      );
+    }
 
-  // Otherwise, the user is logged out.
-  return <NavLink href="/" label="Login" />;
-};
+    // Otherwise, the user is logged out.
+    return <NavLink href="/" label="Login" />;
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b-2 border-black">
