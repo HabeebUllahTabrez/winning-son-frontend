@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock } from "react-icons/fa";
 import Image from "next/image";
+import { getGuestId } from "@/lib/guest";
 
 const WinningSonImage = () => (
   <div className="relative w-20 h-20 mx-auto rounded-full border-4 border-black overflow-hidden">
@@ -153,13 +154,14 @@ export default function Home() {
   };
 
   const handleGuestLogin = async () => {
-    console.log("Guest login initiated. (Not yet implemented)");
+    getGuestId();
+    router.push("/dashboard");
   }
   
   if (authStatus !== "unauthed") {
     return (
       <div className="flex items-center justify-center min-h-screen text-xl animate-pulse">
-        Checking your save file...
+        Logging you in...
       </div>
     );
   }
