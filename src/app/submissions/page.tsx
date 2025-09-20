@@ -134,6 +134,26 @@ export default function SubmissionsPage() {
     const handleSaveEdit = async (date: string) => {
         if (!editData) return;
         setIsSaving(true);
+        if (isGuest) {
+            const entry = data.find(e => e.local_date === date);
+            if (entry && entry.id) {
+                // Update guest entry
+                const updatedEntry = { ...entry, topics: editData.topics, rating: editData.rating };
+                const guestEntries = getGuestEntries();
+                const entryIndex = guestEntries.findIndex(e => e.id === entry.id);
+                if (entryIndex !== -1) {
+                    guestEntries[entryIndex] = { ...guestEntries[entryIndex], content: editData.topics, rating: editData.rating };
+                    localStorage.setItem('guestJournalEntries', JSON.stringify(guestEntries));
+                    setData(current => current.map(e => e.local_date === date ? updatedEntry : e));
+                    handleCancelEdit();
+                    toast.success("Entry saved successfully!");
+                } else {
+                    toast.error("Failed to find the guest entry to update.");
+                }
+            }
+            setIsSaving(false);
+            return;
+        }
         try {
             const res = await apiFetch("/api/journal", {
                 method: "POST",
@@ -219,11 +239,6 @@ export default function SubmissionsPage() {
 
                 {loading ? (
                     <SubmissionsSkeleton />
-                ) : data?.length === 0 ? (
-                    <div className="card text-center py-12">
-                        <h2 className="text-2xl font-bold mb-2">No Submissions This Week</h2>
-                        <p className="text-gray-600">You haven&apos;t logged any journal entries for this date range.</p>
-                    </div>
                 ) : (
                     <div className="space-y-8">
                         {weekDays.map(day => {
