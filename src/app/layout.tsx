@@ -60,17 +60,27 @@ function Nav() {
   const helpLink = { href: "/help", label: "Help" };
 
   // Reusable component for links to handle active state styling
+  // Reusable component for links to handle active state styling
   const NavLink = ({ href, label }: { href: string; label: string }) => (
     <Link
       href={href}
       className={clsx(
-        "px-2 py-1 transition-colors duration-200",
-        pathname === href
-          ? "font-bold border-b-2 border-black" // Active link style
-          : "hover:text-gray-600"
+        // Makes the entire row a clickable, full-width block on mobile.
+        // Resets to auto-width on desktop (md screens and up).
+        "w-full md:w-auto", 
+        // Consistent padding and hover effect for both mobile and desktop.
+        "px-2 py-1 transition-colors duration-200 hover:text-gray-600"
       )}
     >
-      {label}
+      <span
+        className={clsx(
+          // Active state style is now on the span, so the border only
+          // underlines the text itself, not the full row.
+          pathname === href && "font-bold border-b-2 border-black"
+        )}
+      >
+        {label}
+      </span>
     </Link>
   );
 
