@@ -243,7 +243,7 @@ export default function RootLayout({
         </div>
         <Analytics />
         <Modal isOpen={isCreateAccountModalOpen} onClose={() => setIsCreateAccountModalOpen(false)} title="Create a Free Account" backdropClassName="backdrop-blur-sm">
-          <CreateAccountForm />
+          <CreateAccountForm closeModal={() => setIsCreateAccountModalOpen(false)} />
         </Modal>
       </body>
     </html>

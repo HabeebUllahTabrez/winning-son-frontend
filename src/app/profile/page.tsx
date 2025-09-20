@@ -140,7 +140,7 @@ export default function ProfilePage() {
     <>
       {/* --- Modals (Unchanged) --- */}
       <Modal isOpen={isCreateAccountModalOpen} onClose={() => setIsCreateAccountModalOpen(false)} title="Create a Free Account" backdropClassName="backdrop-blur-sm">
-        <CreateAccountForm />
+        <CreateAccountForm closeModal={() => setIsCreateAccountModalOpen(false)} />
       </Modal>
       <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Your Profile" backdropClassName="backdrop-blur-sm">
         {editData && (

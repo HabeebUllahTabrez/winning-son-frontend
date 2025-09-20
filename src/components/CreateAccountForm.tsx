@@ -9,7 +9,7 @@ import { FaRocket } from "react-icons/fa";
 const GUEST_PROFILE_KEY = "guestProfileData";
 const GUEST_JOURNAL_ENTRIES_KEY = "guestJournalEntries";
 
-export function CreateAccountForm() {
+export function CreateAccountForm({closeModal}: {closeModal?: () => void}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -32,25 +32,51 @@ export function CreateAccountForm() {
       const guestProfile = JSON.parse(localStorage.getItem(GUEST_PROFILE_KEY) || "{}");
       const guestJournalEntries = JSON.parse(localStorage.getItem(GUEST_JOURNAL_ENTRIES_KEY) || "[]");
 
-      const payload = {
-        email,
-        password,
-        profile: guestProfile,
-        journal_entries: guestJournalEntries,
+      type GuestJournalEntry = {
+        content: string;
+        rating: number;
+        createdAt: string;
       };
 
-      const res = await apiFetch("/api/register/guest", {
+      const modifiedJournalEntries = guestJournalEntries.map((entry: GuestJournalEntry) => ({
+        topics: entry.content,
+        rating: entry.rating,
+        local_date: entry.createdAt,
+      }));
+
+      const payload = {
+        profile: guestProfile,
+        entries: modifiedJournalEntries,
+      };
+
+      // first signup the user
+      const signupRes = await apiFetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        data: payload,
+        data: { email, password },
       });
 
-      if (!(res.status >= 200 && res.status < 300)) {
-        throw new Error(res.data.message || "Failed to create account.");
-      }
-      
-      const { token } = res.data;
+      const { token } = signupRes.data;
       localStorage.setItem("token", token);
+
+      if (!(signupRes.status >= 200 && signupRes.status < 300)) {
+        throw new Error(signupRes.data.message || "Failed to create account. please try again.");
+      } else{
+        // wait for 500ms to ensure the token is set before making the migrate call
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const res = await apiFetch("/api/migrate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          data: payload,
+        });
+        
+        if (!(res.status >= 200 && res.status < 300)) {
+          throw new Error(res.data.message || "Failed to create account.");
+        }
+      }
+
+
+      
 
       // Clear guest data
       localStorage.removeItem("guestId");
