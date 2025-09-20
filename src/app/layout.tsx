@@ -109,9 +109,19 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
             authStatus === "loggedIn" && (
               <button
                 onClick={handleLogout}
-                className="px-2 py-1 hover:text-gray-600 transition-colors duration-200"
+                className="px-2 py-1 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
               >
                 Logout
+              </button>
+            )
+          }
+          {
+            authStatus === "guest" && (
+              <button
+                onClick={handleExitGuestMode}
+                className="px-2 py-1 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
+              >
+                Exit Guest Mode
               </button>
             )
           }
