@@ -204,7 +204,7 @@ export function getGuestId(): string {
  */
 export function isGuestUser(): boolean {
   if (typeof window === 'undefined') return false;
-  return !localStorage.getItem('token');
+  return !localStorage.getItem('token') && !!localStorage.getItem(GUEST_ID_KEY);
 }
 
 /**

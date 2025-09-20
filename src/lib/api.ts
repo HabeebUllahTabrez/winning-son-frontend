@@ -65,4 +65,15 @@ export function logout() {
     }
 }
 
+export function exitGuestMode() {
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem("guestId");
+        localStorage.removeItem("guestProfileData");
+        localStorage.removeItem("guestJournalEntries");
+        localStorage.removeItem("guestStats");
+        localStorage.removeItem("isGuest"); // Clear guest status
+        window.location.href = "/";
+    }
+}
+
 export default apiClient;

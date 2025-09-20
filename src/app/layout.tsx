@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import clsx from "clsx"; // 1. Import clsx for cleaner conditional classes
 import "./globals.css";
-import { logout } from "@/lib/api";
+import { exitGuestMode, logout } from "@/lib/api";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import Clarity from "@/components/Clarity";
 import { Analytics } from '@vercel/analytics/next';
@@ -32,6 +32,7 @@ function Nav() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const guest = isGuestUser();
+    console.log("Token:", token, "Guest:", guest);
 
     if (guest) {
       setAuthStatus("guest");
@@ -74,11 +75,8 @@ function Nav() {
   );
 
   const handleExitGuestMode = () => {
-    localStorage.removeItem("guestId");
-    localStorage.removeItem("guestProfileData");
-    localStorage.removeItem("guestJournalEntries");
-    localStorage.removeItem("guestStats");
-    router.push("/");
+    exitGuestMode();
+    setAuthStatus("loggedOut");
   };
 
   const renderNavContent = () => {
@@ -86,6 +84,7 @@ function Nav() {
     if (authStatus === "loading") {
       return null;
     }
+    console.log("Auth Status:", authStatus);
 
     // If we've confirmed the user is logged in or is a guest...
     if (authStatus === "loggedIn" || authStatus === "guest") {
