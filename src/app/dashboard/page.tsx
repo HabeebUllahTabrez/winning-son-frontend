@@ -136,7 +136,7 @@ export default function Dashboard() {
                     />
                     <div>
                         <h1 className="text-4xl font-bold text-gray-900">
-                            Welcome back, {user.first_name || 'friend'}!
+                            Welcome, {user.first_name || 'friend'}!
                         </h1>
                         <p className="text-lg text-gray-600 mt-1">
                             Here’s your progress at a glance. Keep it up! ✨

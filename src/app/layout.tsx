@@ -13,6 +13,8 @@ import GoogleAnalytics from "@/components/GoogleAnalytics";
 import Clarity from "@/components/Clarity";
 import { Analytics } from '@vercel/analytics/next';
 import { isGuestUser } from "@/lib/guest";
+import { Modal } from "@/components/Modal";
+import { CreateAccountForm } from "@/components/CreateAccountForm";
 
 const scribble = Patrick_Hand({
   weight: "400",
@@ -21,7 +23,7 @@ const scribble = Patrick_Hand({
 });
 
 // --- New, Redesigned Nav Component ---
-function Nav() {
+function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (open: boolean) => void }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authStatus, setAuthStatus] = useState<"loading" | "loggedIn" | "guest" | "loggedOut">("loading");
@@ -123,9 +125,26 @@ function Nav() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b-2 border-black">
+      {/* banner for guest user showing changes are only on this device and create account to save data and use on multiple devices */}
+      {authStatus === "guest" && (
+        <div className="bg-yellow-100 border-b-2 border-yellow-400 text-yellow-800 text-center text-sm p-2">
+          You are in <span className="font-bold">Guest Mode</span>. Your data is only saved on this device.{" "}
+          <button
+            onClick={
+              () => setIsCreateAccountModalOpen(true)
+            }
+            className="underline font-bold"
+          >
+            Create an account
+          </button>{" "}
+          to save your data and access it from any device!
+        </div>
+      )}
+      {/* end banner for guest user */}
+      {/* Main Nav Bar */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-3 flex items-center justify-between">
-          <Link href="/" className="font-bold text-2xl">
+          <Link href={authStatus === "guest" ? "/dashboard" : "/"} className="font-bold text-2xl">
             WinningSon-inator
           </Link>
 
@@ -172,6 +191,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+    const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
   return (
     <html lang="en">
       <head>
@@ -202,7 +222,7 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-scribble), sans-serif" }}
       >
         <div className="flex flex-col min-h-screen">
-          <Nav />
+          <Nav setIsCreateAccountModalOpen={setIsCreateAccountModalOpen} />
           <main className="flex-grow w-full">{children}</main>
           <Toaster
             position="top-center"
@@ -222,6 +242,9 @@ export default function RootLayout({
           />
         </div>
         <Analytics />
+        <Modal isOpen={isCreateAccountModalOpen} onClose={() => setIsCreateAccountModalOpen(false)} title="Create a Free Account" backdropClassName="backdrop-blur-sm">
+          <CreateAccountForm />
+        </Modal>
       </body>
     </html>
   );

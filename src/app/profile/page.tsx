@@ -7,8 +7,8 @@ import { FaBullseye, FaEdit, FaCloudUploadAlt, FaShieldAlt } from "react-icons/f
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 import { AVATAR_MAP } from "@/lib/avatars";
 import { isGuestUser } from "@/lib/guest";
-import { CreateAccountForm } from "./_components/CreateAccountForm";
-import { Modal } from "./_components/Modal";
+import { CreateAccountForm } from "../../components/CreateAccountForm";
+import { Modal } from "../../components/Modal";
 import { format, parseISO } from "date-fns";
 import { AvatarPicker } from "./_components/AvatarPicker";
 
@@ -31,7 +31,16 @@ const DisplayValue = ({ children, className = "text-gray-800" }: { children: Rea
 );
 
 // HELPER: An input field for the edit modal.
-const FormInput = ({ label, name, value, onChange, type = "text", placeholder = "" }: any) => (
+type FormInputProps = {
+  label: string;
+  name: string;
+  value: string | number | null | undefined;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  type?: string;
+  placeholder?: string;
+};
+
+const FormInput = ({ label, name, value, onChange, type = "text", placeholder = "" }: FormInputProps) => (
   <div>
     <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
     <input

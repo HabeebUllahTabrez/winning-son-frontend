@@ -74,7 +74,7 @@ export function CreateAccountForm() {
     <section className="card p-6 sm:p-8">
       <h2 className="text-2xl font-bold text-gray-800 mb-2">Ready to Make it Official? 🚀</h2>
       <p className="text-gray-600 mb-4">
-        Don't let your epic progress vanish into the digital ether! Create an account to save your journey to the cloud. You'll get access from any device, and your data will be safer than a dragon's treasure hoard.
+        Don&apos;t let your epic progress vanish into the digital ether! Create an account to save your journey to the cloud. You&apos;ll get access from any device, and your data will be safer than a dragon&apos;s treasure hoard.
       </p>
       <form onSubmit={handleCreateAccount} className="space-y-4">
         <div className="form-group">
