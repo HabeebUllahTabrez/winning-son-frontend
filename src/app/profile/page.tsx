@@ -243,7 +243,6 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-        Ye dikra kya?
       </div>
     </>
   );
