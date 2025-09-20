@@ -8,10 +8,13 @@ import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import clsx from "clsx"; // 1. Import clsx for cleaner conditional classes
 import "./globals.css";
-import { logout } from "@/lib/api";
+import { exitGuestMode, logout } from "@/lib/api";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import Clarity from "@/components/Clarity";
 import { Analytics } from '@vercel/analytics/next';
+import { isGuestUser } from "@/lib/guest";
+import { Modal } from "@/components/Modal";
+import { CreateAccountForm } from "@/components/CreateAccountForm";
 
 const scribble = Patrick_Hand({
   weight: "400",
@@ -20,18 +23,25 @@ const scribble = Patrick_Hand({
 });
 
 // --- New, Redesigned Nav Component ---
-function Nav() {
+function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (open: boolean) => void }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [authStatus, setAuthStatus] = useState<"loading" | "loggedIn" | "loggedOut">("loading");
+  const [authStatus, setAuthStatus] = useState<"loading" | "loggedIn" | "guest" | "loggedOut">("loading");
   const router = useRouter();
   const pathname = usePathname();
 
   // Effect to check login status and close menu on page change
   useEffect(() => {
     const token = localStorage.getItem("token");
-    // setIsLoggedIn(!!token);
-    setAuthStatus(token ? "loggedIn" : "loggedOut");
+    const guest = isGuestUser();
+    console.log("Token:", token, "Guest:", guest);
+
+    if (guest) {
+      setAuthStatus("guest");
+    } else {
+      setAuthStatus(token ? "loggedIn" : "loggedOut");
+    }
+    
     setIsMenuOpen(false); // Close mobile menu on navigation
   }, [pathname]);
 
@@ -52,52 +62,89 @@ function Nav() {
   const helpLink = { href: "/help", label: "Help" };
 
   // Reusable component for links to handle active state styling
+  // Reusable component for links to handle active state styling
   const NavLink = ({ href, label }: { href: string; label: string }) => (
     <Link
       href={href}
       className={clsx(
-        "px-2 py-1 transition-colors duration-200",
-        pathname === href
-          ? "font-bold border-b-2 border-black" // Active link style
-          : "hover:text-gray-600"
+        // Makes the entire row a clickable, full-width block on mobile.
+        // Resets to auto-width on desktop (md screens and up).
+        "w-full md:w-auto", 
+        // Consistent padding and hover effect for both mobile and desktop.
+        "px-2 py-1 transition-colors duration-200 hover:text-gray-600"
       )}
     >
-      {label}
+      <span
+        className={clsx(
+          // Active state style is now on the span, so the border only
+          // underlines the text itself, not the full row.
+          pathname === href && "font-bold border-b-2 border-black"
+        )}
+      >
+        {label}
+      </span>
     </Link>
   );
 
+  const handleExitGuestMode = () => {
+    exitGuestMode();
+    setAuthStatus("loggedOut");
+  };
+
   const renderNavContent = () => {
-  // If we're still checking, render nothing to match the server.
-  if (authStatus === "loading") {
-    return null;
-  }
+    // If we're still checking, render nothing to match the server.
+    if (authStatus === "loading") {
+      return null;
+    }
+    console.log("Auth Status:", authStatus);
 
-  // If we've confirmed the user is logged in...
-  if (authStatus === "loggedIn") {
-    return (
-      <>
-        {navLinks.map((link) => (
-          <NavLink key={link.href} {...link} />
-        ))}
-        <button
-          onClick={handleLogout}
-          className="px-2 py-1 hover:text-gray-600 transition-colors duration-200"
-        >
-          Logout
-        </button>
-      </>
-    );
-  }
+    // If we've confirmed the user is logged in or is a guest...
+    if (authStatus === "loggedIn" || authStatus === "guest") {
+      return (
+        <>
+          {navLinks.map((link) => (
+            <NavLink key={link.href} {...link} />
+          ))}
+          {
+            authStatus === "loggedIn" && (
+              <button
+                onClick={handleLogout}
+                className="px-2 py-1 hover:text-gray-600 transition-colors duration-200"
+              >
+                Logout
+              </button>
+            )
+          }
+        </>
+      );
+    }
 
-  // Otherwise, the user is logged out.
-  return <NavLink href="/" label="Login" />;
-};
+    // Otherwise, the user is logged out.
+    return <NavLink href="/" label="Login" />;
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b-2 border-black">
+      {/* banner for guest user showing changes are only on this device and create account to save data and use on multiple devices */}
+      {authStatus === "guest" && (
+        <div className="bg-yellow-100 border-b-2 border-yellow-400 text-yellow-800 text-center text-sm p-2">
+          You are in <span className="font-bold">Guest Mode</span>. Your data is only saved on this device.{" "}
+          <button
+            onClick={
+              () => setIsCreateAccountModalOpen(true)
+            }
+            className="underline font-bold"
+          >
+            Create an account
+          </button>{" "}
+          to save your data and access it from any device!
+        </div>
+      )}
+      {/* end banner for guest user */}
+      {/* Main Nav Bar */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-3 flex items-center justify-between">
-          <Link href="/" className="font-bold text-2xl">
+          <Link href={authStatus === "guest" ? "/dashboard" : "/"} className="font-bold text-2xl">
             WinningSon-inator
           </Link>
 
@@ -144,6 +191,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+    const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
   return (
     <html lang="en">
       <head>
@@ -174,7 +222,7 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-scribble), sans-serif" }}
       >
         <div className="flex flex-col min-h-screen">
-          <Nav />
+          <Nav setIsCreateAccountModalOpen={setIsCreateAccountModalOpen} />
           <main className="flex-grow w-full">{children}</main>
           <Toaster
             position="top-center"
@@ -194,6 +242,9 @@ export default function RootLayout({
           />
         </div>
         <Analytics />
+        <Modal isOpen={isCreateAccountModalOpen} onClose={() => setIsCreateAccountModalOpen(false)} title="Create a Free Account" backdropClassName="backdrop-blur-sm">
+          <CreateAccountForm closeModal={() => setIsCreateAccountModalOpen(false)} />
+        </Modal>
       </body>
     </html>
   );

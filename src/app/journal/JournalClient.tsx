@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { formatDateForAPI } from "@/lib/dateUtils";
+import { getGuestEntries, isGuestUser, saveGuestEntry  } from "@/lib/guest";
 
 export default function Journal() {
     // State for the form
@@ -20,6 +21,7 @@ export default function Journal() {
     const [errorMsg, setErrorMsg] = useState("");
 
     const searchParams = useSearchParams();
+    const isGuest = isGuestUser();
 
     // Effect to set the journal date from URL or default to today
     useEffect(() => {
@@ -28,6 +30,47 @@ export default function Journal() {
         setJournalDate(targetDate);
     }, [searchParams]);
 
+    // Effect to fetch existing entry for the date
+    useEffect(() => {
+        if (!journalDate) return;
+
+        const fetchEntry = async () => {
+            setLoading(true);
+            if (isGuest) {
+                const entries = getGuestEntries();
+                const entry = entries.find(e => e.createdAt.startsWith(journalDate));
+                if (entry) {
+                    setTopics(entry.content);
+                    setRating(entry.rating);
+                } else {
+                    setTopics("");
+                    setRating(5);
+                }
+                setLoading(false);
+                return;
+            }
+            try {
+                const res = await apiFetch(`/api/journal?local_date=${journalDate}`);
+                if (res.status === 200 && res.data) {
+                    setTopics(res.data.content);
+                    setRating(res.data.rating);
+                } else if (res.status === 404) {
+                    // No entry for this date, so clear fields
+                    setTopics("");
+                    setRating(5);
+                } else {
+                    throw new Error(`Failed to fetch entry: ${res.statusText}`);
+                }
+            } catch (e: unknown) {
+                setErrorMsg(e instanceof Error ? e.message : "An unknown error occurred.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEntry();
+    }, [journalDate, isGuest]);
+
 
     async function submit() {
         if (!journalDate) return;
@@ -35,6 +78,19 @@ export default function Journal() {
         setSuccessMsg("");
         setErrorMsg("");
         setLoading(true);
+
+        if (isGuest) {
+            try {
+                saveGuestEntry({ content: topics, rating, createdAt: journalDate });
+                setSuccessMsg(`Saved entry for ${formatDisplayDate(journalDate)} successfully!`);
+            } catch (e: unknown) {
+                setErrorMsg(e instanceof Error ? e.message : "An unknown error occurred.");
+            } finally {
+                setLoading(false);
+            }
+            return;
+        }
+
         try {
             const res = await apiFetch("/api/journal", {
                 method: "POST",

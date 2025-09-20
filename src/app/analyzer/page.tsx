@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { apiFetch } from "@/lib/api";
 import toast from "react-hot-toast";
 import { FaCopy, FaFlask, FaMagic, FaUndo, } from "react-icons/fa";
-import clsx from "clsx";
+import { isGuestUser, getGuestEntries } from "@/lib/guest";
 
 // --- Type Definitions (Unchanged) ---
 type UserProfile = {
@@ -51,6 +51,8 @@ export default function AnalyzerPage() {
   const [error, setError] = useState<string>("");
   const [noEntriesMessage, setNoEntriesMessage] = useState<string>("");
 
+  const isGuest = isGuestUser();
+
   const authHeader = useCallback(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
     return { Authorization: `Bearer ${token}` };
@@ -59,6 +61,13 @@ export default function AnalyzerPage() {
   // --- Data Fetching ---
   useEffect(() => {
     const fetchUser = async () => {
+      if (isGuest) {
+        const guestProfile = JSON.parse(localStorage.getItem("guestProfileData") || "{}");
+        setGoal(guestProfile.goal || "Achieve my personal best");
+        setStartDate(formatDateForInput(guestProfile.start_date));
+        setEndDate(formatDateForInput(guestProfile.end_date));
+        return;
+      }
       // No need for a loading state here, it's a background task on page load
       try {
         const res = await apiFetch("/api/me", { headers: authHeader() });
@@ -72,7 +81,7 @@ export default function AnalyzerPage() {
       }
     };
     fetchUser();
-  }, [authHeader]);
+  }, [authHeader, isGuest]);
 
   // --- Event Handlers ---
   const handleCheckboxChange = (option: AnalysisOptionKey) => {
@@ -95,13 +104,26 @@ export default function AnalyzerPage() {
     setFinalPrompt("");
     setNoEntriesMessage("");
     try {
-      const res = await apiFetch(`/api/journal?start_date=${startDate}&end_date=${endDate}`, { headers: authHeader() });
-      if (res.status < 200 || res.status >= 300) throw new Error("The archives are sealed! Failed to fetch journal entries.");
-
-      const entries: JournalEntry[] | null = res.data;
+      let entries: JournalEntry[] = [];
+      if (isGuest) {
+        entries = getGuestEntries()
+          .filter(entry => {
+            const entryDate = entry.createdAt.split('T')[0];
+            return entryDate >= startDate && entryDate <= endDate;
+          })
+          .map(entry => ({
+            local_date: entry.createdAt.split('T')[0],
+            topics: entry.content,
+            rating: entry.rating,
+          }));
+      } else {
+        const res = await apiFetch(`/api/journal?start_date=${startDate}&end_date=${endDate}`, { headers: authHeader() });
+        if (res.status < 200 || res.status >= 300) throw new Error("The archives are sealed! Failed to fetch journal entries.");
+        entries = res.data;
+      }
 
       if (!entries || entries.length === 0) {
-        setNoEntriesMessage("Your journal is a ghost town! 👻 The Oracle needs *something* to read. Go write about your day, you magnificent beast.");
+        setNoEntriesMessage("No journal entries found for the selected date range. The crystal ball is cloudy.");
         setLoadingState("idle");
         return;
       }

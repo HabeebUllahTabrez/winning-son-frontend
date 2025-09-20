@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import { isGuestUser } from "@/lib/guest"; // 1. Import the guest check function
 
 type UserProfile = {
   first_name: string | null;
@@ -20,6 +21,9 @@ type ProfileSetupGuardProps = {
   redirectTo?: string;
 };
 
+// Define a key for the guest's profile data in localStorage
+const GUEST_PROFILE_KEY = "guestProfileData";
+
 export function ProfileSetupGuard({ children, redirectTo = "/setup" }: ProfileSetupGuardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
@@ -28,6 +32,45 @@ export function ProfileSetupGuard({ children, redirectTo = "/setup" }: ProfileSe
   routerRef.current = router;
 
   useEffect(() => {
+    // 2. Check if the user is a guest at the very beginning
+    const isGuest = isGuestUser();
+
+    // --- GUEST LOGIC ---
+    if (isGuest) {
+      try {
+        const guestProfileRaw = localStorage.getItem(GUEST_PROFILE_KEY);
+
+        if (!guestProfileRaw) {
+          // If no guest profile exists, they need to set one up.
+          setNeedsSetup(true);
+          routerRef.current.push(redirectTo);
+        } else {
+          // If a profile exists, check if it's complete.
+          const profile: Partial<UserProfile> = JSON.parse(guestProfileRaw);
+          const isIncomplete = !profile.first_name || 
+                             !profile.last_name || 
+                             !profile.goal || 
+                             !profile.start_date || 
+                             !profile.end_date;
+          
+          if (isIncomplete) {
+            setNeedsSetup(true);
+            routerRef.current.push(redirectTo);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking guest profile:", error);
+        // If there's an error (e.g., malformed JSON), clear it and send to setup
+        localStorage.removeItem(GUEST_PROFILE_KEY);
+        setNeedsSetup(true);
+        routerRef.current.push(redirectTo);
+      } finally {
+        setIsLoading(false);
+      }
+      return; // End the effect for guest users here
+    }
+
+    // --- AUTHENTICATED USER LOGIC (your original code) ---
     const checkProfile = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -39,7 +82,6 @@ export function ProfileSetupGuard({ children, redirectTo = "/setup" }: ProfileSe
         const res = await apiFetch("/api/me");
 
         if (res.status !== 200) {
-          // If it's not a 401 (which would be handled by apiFetch), redirect to login
           if (res.status !== 401) {
             routerRef.current.push("/");
           }
@@ -48,7 +90,6 @@ export function ProfileSetupGuard({ children, redirectTo = "/setup" }: ProfileSe
 
         const profile: UserProfile = res.data;
         
-        // Check if profile is incomplete
         const isIncomplete = !profile.first_name || 
                            !profile.last_name || 
                            !profile.goal || 
@@ -81,8 +122,9 @@ export function ProfileSetupGuard({ children, redirectTo = "/setup" }: ProfileSe
     );
   }
 
+  // If redirecting, return null to prevent brief flash of content
   if (needsSetup) {
-    return null; // Will redirect to setup
+    return null; 
   }
 
   return <>{children}</>;
