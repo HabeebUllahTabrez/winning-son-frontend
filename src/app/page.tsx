@@ -293,7 +293,7 @@ export default function Home() {
                     onClick={handleGuestLogin}
                     disabled={loading}
                 >
-                    Peek Inside (Continue as Guest) enter into infinity castle
+                    Peek Inside (Continue as Guest)
                 </button>
             </div>
             
