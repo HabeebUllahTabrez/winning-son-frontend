@@ -190,7 +190,7 @@ export default function Home() {
                 {/* <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label> */}
                 <div className="relative mt-1">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FaEnvelope className="h-5 w-5 text-gray-400" />
+                    <FaEnvelope className="h-5 w-5 text-gray-400 z-10" />
                   </span>
                   <input
                     id="email"
@@ -211,7 +211,7 @@ export default function Home() {
                 {/* <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label> */}
                 <div className="relative mt-1">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FaLock className="h-5 w-5 text-gray-400" />
+                    <FaLock className="h-5 w-5 text-gray-400 z-10" />
                   </span>
                   <input
                     id="password"
@@ -241,7 +241,7 @@ export default function Home() {
                   {/* <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">Confirm Password</label> */}
                   <div className="relative mt-1">
                       <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                          <FaLock className="h-5 w-5 text-gray-400" />
+                          <FaLock className="h-5 w-5 text-gray-400 z-10" />
                       </span>
                       <input
                       id="confirm-password"
