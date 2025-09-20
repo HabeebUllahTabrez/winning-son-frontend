@@ -93,12 +93,16 @@ function Nav() {
           {navLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
-          <button
-            onClick={authStatus === 'loggedIn' ? handleLogout : handleExitGuestMode}
-            className="px-2 py-1 hover:text-gray-600 transition-colors duration-200"
-          >
-            {authStatus === 'loggedIn' ? 'Logout' : 'Exit Guest Mode'}
-          </button>
+          {
+            authStatus === "loggedIn" && (
+              <button
+                onClick={handleLogout}
+                className="px-2 py-1 hover:text-gray-600 transition-colors duration-200"
+              >
+                Logout
+              </button>
+            )
+          }
         </>
       );
     }
