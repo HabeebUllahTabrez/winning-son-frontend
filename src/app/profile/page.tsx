@@ -1,9 +1,11 @@
+// src/app/profile/page.tsx
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link"; // Import the Link component
 import { apiFetch } from "@/lib/api";
 import toast from "react-hot-toast";
-import { FaBullseye, FaEdit, FaCloudUploadAlt, FaShieldAlt } from "react-icons/fa";
+import { FaBullseye, FaEdit, FaCloudUploadAlt, FaShieldAlt, FaCalendarCheck, FaCalendarPlus, FaUserShield, FaArrowRight } from "react-icons/fa"; // Added new icons
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 import { AVATAR_MAP } from "@/lib/avatars";
 import { isGuestUser } from "@/lib/guest";
@@ -12,6 +14,7 @@ import { Modal } from "../../components/Modal";
 import { format, parseISO } from "date-fns";
 import { AvatarPicker } from "./_components/AvatarPicker";
 
+// --- (No changes to types or helper components) ---
 const GUEST_PROFILE_KEY = "guestProfileData";
 
 type UserProfile = {
@@ -25,12 +28,6 @@ type UserProfile = {
   is_admin: boolean;
 };
 
-// HELPER: Renders a field's value or a placeholder.
-const DisplayValue = ({ children, className = "text-gray-800" }: { children: React.ReactNode; className?: string }) => (
-    <div className={className}>{children || <span className="text-gray-400">Not set</span>}</div>
-);
-
-// HELPER: An input field for the edit modal.
 type FormInputProps = {
   label: string;
   name: string;
@@ -55,6 +52,8 @@ const FormInput = ({ label, name, value, onChange, type = "text", placeholder = 
   </div>
 );
 
+// --- MAIN PROFILE PAGE COMPONENT ---
+
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [editData, setEditData] = useState<UserProfile | null>(null);
@@ -64,7 +63,7 @@ export default function ProfilePage() {
   const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // --- Data Loading Logic (Unchanged) ---
+  // --- (No changes to data loading, saving, or event handlers) ---
   const loadUserData = useCallback(async () => {
     setIsLoading(true);
     const guestMode = isGuestUser();
@@ -86,7 +85,6 @@ export default function ProfilePage() {
 
   useEffect(() => { loadUserData(); }, [loadUserData]);
 
-  // --- Modal & Saving Logic (Unchanged) ---
   const openEditModal = () => {
     setEditData(profile);
     setIsEditModalOpen(true);
@@ -127,7 +125,6 @@ export default function ProfilePage() {
     setEditData(prev => (prev ? { ...prev, avatar_id: avatarId } : null));
   };
   
-  // --- Helpers (Unchanged) ---
   const getAvatarFile = (id: number) => AVATAR_MAP.find(a => a.id === id)?.file || "avatar-1.png";
   const formatDate = (dateString: string | null) => dateString ? format(parseISO(dateString), 'MMM d, yyyy') : null;
 
@@ -138,7 +135,7 @@ export default function ProfilePage() {
 
   return (
     <>
-      {/* --- Modals (Unchanged) --- */}
+      {/* --- MODALS (Unchanged) --- */}
       <Modal isOpen={isCreateAccountModalOpen} onClose={() => setIsCreateAccountModalOpen(false)} title="Create a Free Account" backdropClassName="backdrop-blur-sm">
         <CreateAccountForm closeModal={() => setIsCreateAccountModalOpen(false)} />
       </Modal>
@@ -147,15 +144,8 @@ export default function ProfilePage() {
           <>
             <div className="space-y-6">
               <div className="flex flex-col items-center gap-4">
-                  <img
-                      src={`/avatars/${getAvatarFile(editData.avatar_id)}`}
-                      alt="Selected Avatar"
-                      className="w-24 h-24 rounded-full border-4 border-white shadow-md"
-                  />
-                  <AvatarPicker
-                      currentAvatarId={editData.avatar_id}
-                      onSelectAvatar={handleAvatarChange}
-                  />
+                  <img src={`/avatars/${getAvatarFile(editData.avatar_id)}`} alt="Selected Avatar" className="w-24 h-24 rounded-full border-4 border-black shadow-lg" />
+                  <AvatarPicker currentAvatarId={editData.avatar_id} onSelectAvatar={handleAvatarChange} />
               </div>
               <hr />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -164,84 +154,111 @@ export default function ProfilePage() {
               </div>
               <div>
                   <label htmlFor="goal" className="block text-sm font-medium text-gray-700 mb-1">Your Goal</label>
-                  <textarea id="goal" name="goal" value={editData.goal || ""} onChange={handleInputChange} className="input w-full" rows={3} placeholder="e.g., Complete a marathon"/>
+                  <textarea id="goal" name="goal" value={editData.goal || ""} onChange={handleInputChange} className="input w-full" rows={3} placeholder="e.g., Master React Hooks"/>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormInput label="Start Date" name="start_date" value={editData.start_date?.split("T")[0]} onChange={handleInputChange} type="date"/>
                   <FormInput label="End Date" name="end_date" value={editData.end_date?.split("T")[0]} onChange={handleInputChange} type="date"/>
               </div>
             </div>
-            <div className="px-6 py-4 bg-gray-50 border-t flex justify-end gap-3 -mx-6 -mb-6 mt-6">
-                <button onClick={() => setIsEditModalOpen(false)} className="btn-secondary">Cancel</button>
+            <div className="mt-6 pt-4 border-t flex justify-end gap-3">
+                <button onClick={() => setIsEditModalOpen(false)} className="btn btn-outline">Cancel</button>
                 <button onClick={handleSave} disabled={isSaving} className="btn">{isSaving ? "Saving..." : "Save Changes"}</button>
             </div>
           </>
         )}
       </Modal>
 
-      {/* --- Main Page Content --- */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="space-y-8">
+      {/* --- MAIN PAGE LAYOUT --- */}
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)] p-4">
+        <div className="w-full max-w-md space-y-6">
+
           {isGuest && (
-             <div className="p-4 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left bg-blue-50 border border-blue-200 rounded-lg">
+             <div className="p-4 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left bg-yellow-50 border-2 border-black rounded-lg shadow-[4px_4px_0_0_#000]">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800">Your Progress is Saved Locally</h3>
-                  <p className="text-gray-600 mt-1">Create an account to sync across devices.</p>
+                  <h3 className="text-lg font-bold text-gray-800">Your Progress is Local!</h3>
+                  <p className="text-gray-600 mt-1">Create an account to save your wins permanently.</p>
                 </div>
-                <button onClick={() => setIsCreateAccountModalOpen(true)} className="btn mt-3 sm:mt-0 sm:ml-4 flex-shrink-0 flex items-center">
-                  <FaCloudUploadAlt className="mr-2"/> Create Free Account
+                <button onClick={() => setIsCreateAccountModalOpen(true)} className="btn mt-3 sm:mt-0 sm:ml-4 flex-shrink-0">
+                  <FaCloudUploadAlt className="mr-2"/> Save to Cloud
                 </button>
               </div>
           )}
 
-          <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 border border-gray-200">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-                <div className="flex-shrink-0">
+          <div className="relative w-full">
+            <div className="pt-16">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10">
                     <img
                         src={`/avatars/${getAvatarFile(profile.avatar_id)}`}
                         alt="User Avatar"
-                        className="w-28 h-28 rounded-full border-4 border-white shadow-md"
+                        className="w-28 h-28 rounded-full border-4 border-black shadow-lg bg-white"
                     />
                 </div>
-                <div className="flex-grow text-center sm:text-left w-full">
-                    <div className="flex flex-col sm:flex-row sm:justify-between items-center">
-                        <div className="mb-4 sm:mb-0">
-                            <h1 className="text-3xl font-bold text-gray-900">{fullName}</h1>
-                            <p className="text-md text-gray-500">{profile.email}</p>
-                             {profile.is_admin && (
-                               <p className="mt-2 inline-flex items-center gap-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">
-                                <FaShieldAlt /> Administrator
-                              </p>
-                            )}
-                        </div>
-                        {/* --- UPDATED: Edit button now stacks vertically on mobile --- */}
-                        <button onClick={openEditModal} className="btn-secondary w-full sm:w-auto flex flex-col sm:flex-row items-center justify-center p-2 sm:p-2 sm:px-4 rounded-lg">
-                            <FaEdit className="mb-1 sm:mb-0 sm:mr-2 h-5 w-5"/>
-                            <span className="text-sm sm:text-base">Edit Profile</span>
+                
+                <div className="card p-6 pt-20 text-center">
+                    <h1 className="text-3xl font-bold text-gray-900">{fullName}</h1>
+                    <p className="text-md text-gray-500 break-all">{profile.email}</p>
+                    {profile.is_admin && (
+                        <p className="mt-2 inline-flex items-center gap-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold border border-yellow-300">
+                        <FaShieldAlt /> Administrator
+                        </p>
+                    )}
+
+                    <div className="my-6">
+                        <button onClick={openEditModal} className="btn btn-outline w-full flex items-center w-full m-auto justify-center sm:w-auto">
+                            <FaEdit className="mr-2"/> Edit Profile
                         </button>
                     </div>
-                </div>
-            </div>
 
-            <hr className="my-8" />
-
-            <div className="space-y-8">
-                <div>
-                    <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3"><FaBullseye/> Active Goal</h3>
-                    <DisplayValue className="text-gray-700 text-lg leading-relaxed">{profile.goal}</DisplayValue>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                     <div>
-                        <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Start Date</h3>
-                        <DisplayValue className="font-semibold text-gray-700 mt-2">{formatDate(profile.start_date)}</DisplayValue>
-                     </div>
-                     <div>
-                        <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">End Date</h3>
-                        <DisplayValue className="font-semibold text-gray-700 mt-2">{formatDate(profile.end_date)}</DisplayValue>
-                     </div>
+                    <dl className="text-left space-y-5">
+                        <div>
+                            <dt className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                                <FaBullseye /> Active Goal
+                            </dt>
+                            <dd className="mt-1 text-gray-800 text-lg">
+                                {profile.goal || <span className="text-gray-400">Not set</span>}
+                            </dd>
+                        </div>
+                        <div className="flex flex-wrap justify-between gap-4 pt-4 border-t-2 border-dashed">
+                            <div className="flex-1 min-w-[120px]">
+                                <dt className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                                    <FaCalendarPlus /> Start Date
+                                </dt>
+                                <dd className="mt-1 text-gray-800 text-lg">
+                                    {formatDate(profile.start_date) || <span className="text-gray-400">Not set</span>}
+                                </dd>
+                            </div>
+                            <div className="flex-1 min-w-[120px]">
+                                <dt className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                                    <FaCalendarCheck /> Target Date
+                                </dt>
+                                <dd className="mt-1 text-gray-800 text-lg">
+                                    {formatDate(profile.end_date) || <span className="text-gray-400">Not set</span>}
+                                </dd>
+                            </div>
+                        </div>
+                    </dl>
                 </div>
             </div>
           </div>
+          
+          {/* --- NEW: ADMIN TOOLS PANEL (Conditionally Rendered) --- */}
+          {profile.is_admin && (
+            <div className="card p-6 text-center">
+              <h2 className="text-xl font-bold flex items-center justify-center gap-2">
+                <FaUserShield />
+                Administrator Tools
+              </h2>
+              <p className="text-gray-600 mt-2 mb-4">
+                You have access to the admin panel to manage the application.
+              </p>
+              <Link href="/admin" className="btn w-full sm:w-auto inline-flex items-center justify-center">
+                Access Admin Panel
+                <FaArrowRight className="ml-2" />
+              </Link>
+            </div>
+          )}
+
         </div>
       </div>
     </>
