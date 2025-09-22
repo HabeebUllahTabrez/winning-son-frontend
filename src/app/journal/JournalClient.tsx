@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { formatDateForAPI } from "@/lib/dateUtils";
 import { getGuestEntries, isGuestUser, saveGuestEntry } from "@/lib/guest";
 import clsx from "clsx";
 import { FaInfoCircle } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 // --- NEW, THEMATICALLY ALIGNED RATING COMPONENT ---
 const ThemedRatingScale = ({
@@ -68,6 +70,7 @@ export default function Journal() {
 
   const searchParams = useSearchParams();
   const isGuest = isGuestUser();
+    const router = useRouter();
 
   // (Simplified useEffect for date)
   useEffect(() => {
@@ -124,6 +127,7 @@ export default function Journal() {
     try {
       if (isGuest) {
         saveGuestEntry(entryData);
+        router.push(`/submissions?highlighted=${journalDate}`);
       } else {
         const res = await apiFetch("/api/journal", {
           method: "POST",
@@ -133,6 +137,7 @@ export default function Journal() {
         if (res.status < 200 || res.status >= 300)
           throw new Error(res.statusText);
       }
+      router.push(`/submissions?highlighted=${journalDate}`);
       setSuccessMsg(
         `Saved entry for ${formatDisplayDate(journalDate)} successfully!`
       );

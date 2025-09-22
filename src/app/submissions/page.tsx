@@ -1,14 +1,15 @@
 // src/app/submissions/page.tsx
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // Corrected import for App Router
+import { useRouter, useSearchParams } from "next/navigation"; // Corrected import for App Router
 import { apiFetch } from "@/lib/api";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { toast } from "react-hot-toast";
 import { getStartOfWeek, formatDateForAPI, formatDateRangeForDisplay } from "@/lib/dateUtils";
 import { isGuestUser, getGuestEntries, deleteGuestEntry } from "@/lib/guest";
+import clsx from "clsx";
 
 // Updated Entry type to include both ratings for display
 type Entry = {
@@ -52,6 +53,10 @@ export default function SubmissionsPage() {
     const router = useRouter(); // Correct router hook
     const isGuest = isGuestUser();
 
+    const searchParams = useSearchParams();
+    const highlightedDate = searchParams.get("highlighted");
+    const entryRefs = useRef(new Map<string, HTMLDivElement>());
+
     useEffect(() => {
         const fetchSubmissions = async () => {
             setLoading(true);
@@ -91,6 +96,24 @@ export default function SubmissionsPage() {
 
         fetchSubmissions();
     }, [weekStartDate, isGuest]);
+
+    useEffect(() => {
+        if (loading || !highlightedDate || !entryRefs.current.has(highlightedDate)) {
+            return;
+        }
+
+        const node = entryRefs.current.get(highlightedDate);
+        if (node) {
+            // Wait a fraction of a second for the page to settle before scrolling
+            setTimeout(() => {
+                node.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                });
+            }, 100);
+        }
+    }, [highlightedDate, loading, data]); // Depends on data to ensure element exists
+
     
     // --- (No changes to memoized values or week navigation handlers) ---
     const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => {
@@ -189,12 +212,21 @@ export default function SubmissionsPage() {
                             const dateString = formatDateForAPI(day);
                             const entry = entriesByDate.get(dateString);
                             return (
-                                <div key={dateString}>
+                                <div key={dateString}
+                                ref={(node) => {
+                                        if (node) entryRefs.current.set(dateString, node);
+                                        else entryRefs.current.delete(dateString);
+                                    }}
+                                >
                                     <h3 className="text-2xl font-bold border-b-2 border-black/10 pb-2 mb-4">
                                         {day.toLocaleDateString('en-US', { weekday: 'long' })}, <span className="text-gray-600">{day.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</span>
                                     </h3>
                                     {entry ? (
-                                        <div className="card">
+                                        <div
+                                        className={clsx("card", {
+                                                'highlight': dateString === highlightedDate
+                                            })}
+                                        >
                                             {/* Simplified Display View - No more editing UI */}
                                             <div>
                                                 <div className="flex flex-wrap justify-between items-start gap-2 border-b-2 border-black/10 pb-3 mb-3">
