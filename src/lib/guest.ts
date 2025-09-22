@@ -17,8 +17,10 @@ export interface UserProfile {
 // Define the shape of a journal entry for type safety
 export interface JournalEntry {
   id: string;
-  content: string;
-  rating: number;
+  topics: string;
+  alignment_rating: number;
+  contentment_rating: number; 
+  localDate?: string;
   createdAt: string; // Format: 'yyyy-MM-dd'
 }
 
@@ -89,45 +91,45 @@ const calculateDashboardStats = (journalEntries: JournalEntry[]): DashboardStats
     const startOfWeek = subDays(today, getDay(today));
 
     // --- Initialize Statistic Variables ---
-    let week_points = 0;
-    let month_points = 0;
-    let year_points = 0;
-    let entries_this_week = 0;
-    let entries_this_year = 0;
-    let monthEntriesCount = 0;
+    const week_points = 0;
+    const month_points = 0;
+    const year_points = 0;
+    const entries_this_week = 0;
+    const entries_this_year = 0;
+    const monthEntriesCount = 0;
 
     // --- Calculate Aggregated Stats by Iterating Through All Entries ---
-    for (const entry of journalEntries) {
-        const entryDate = new Date(entry.createdAt);
+    // for (const entry of journalEntries) {
+    //     const entryDate = new Date(entry.createdAt);
         
-        if (getYear(entryDate) === currentYear) {
-            year_points += entry.rating;
-            entries_this_year++;
+    //     if (getYear(entryDate) === currentYear) {
+    //         year_points += entry.rating;
+    //         entries_this_year++;
 
-            if (getMonth(entryDate) === currentMonth) {
-                month_points += entry.rating;
-                monthEntriesCount++;
-            }
-        }
+    //         if (getMonth(entryDate) === currentMonth) {
+    //             month_points += entry.rating;
+    //             monthEntriesCount++;
+    //         }
+    //     }
         
-        if (entryDate >= startOfWeek) {
-            week_points += entry.rating;
-            entries_this_week++;
-        }
-    }
+    //     if (entryDate >= startOfWeek) {
+    //         week_points += entry.rating;
+    //         entries_this_week++;
+    //     }
+    // }
 
     // --- Calculate Day-Specific and Trend Stats ---
     const todayEntry = entriesMap.get(todayStr);
     const has_today_entry = !!todayEntry;
-    const day_points = todayEntry ? todayEntry.rating : 0;
+    const day_points = 0;
 
     const last7_days_trend = Array.from({ length: 7 }, (_, i) => {
         const date = subDays(today, i);
         const dateString = format(date, 'yyyy-MM-dd');
-        const entry = entriesMap.get(dateString);
+        // const entry = entriesMap.get(dateString);
         return {
             local_date: dateString,
-            points: entry ? entry.rating : 0,
+            points: 0,
         };
     }).reverse();
 
@@ -244,7 +246,7 @@ export function getGuestEntries(): JournalEntry[] {
  * @param entry - The entry content, rating, and date.
  * @returns The newly created or updated JournalEntry object.
  */
-export function saveGuestEntry(entry: { content: string; rating: number; createdAt: string }): JournalEntry | null {
+export function saveGuestEntry(entry: { topics: string; alignment_rating: number; contentment_rating: number; createdAt: string; local_date: string }): JournalEntry | null {
   if (typeof window === 'undefined') return null;
   
   try {

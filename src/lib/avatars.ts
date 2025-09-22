@@ -1,12 +1,12 @@
 // src/lib/avatars.ts
 
 export const AVATAR_MAP = [
-  { id: 1, file: "1.jpeg" },
-  { id: 2, file: "2.jpeg" },
-  { id: 3, file: "3.jpeg" },
-  { id: 4, file: "4.jpeg" },
-  { id: 5, file: "5.jpeg" },
-  { id: 6, file: "6.jpeg" },
+  { id: 1, file: "1.webp" },
+  { id: 2, file: "2.webp" },
+  { id: 3, file: "3.webp" },
+  { id: 4, file: "4.webp" },
+  { id: 5, file: "5.webp" },
+  { id: 6, file: "6.webp" },
 ];
 
 /**

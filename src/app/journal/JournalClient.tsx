@@ -5,194 +5,212 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { formatDateForAPI } from "@/lib/dateUtils";
-import { getGuestEntries, isGuestUser, saveGuestEntry  } from "@/lib/guest";
+import { getGuestEntries, isGuestUser, saveGuestEntry } from "@/lib/guest";
+import clsx from "clsx";
+import { FaInfoCircle } from "react-icons/fa";
 
+// --- NEW, THEMATICALLY ALIGNED RATING COMPONENT ---
+const ThemedRatingScale = ({
+  title,
+  description,
+  value,
+  setValue,
+  loading,
+}: {
+  title: string;
+  description: string;
+  value: number;
+  setValue: (value: number) => void;
+  loading: boolean;
+}) => {
+  const ratingOptions = Array.from({ length: 10 }, (_, i) => i + 1);
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-2 font-bold text-lg">
+        <label>{title}</label>
+        <button title={description} className="text-gray-400 hover:text-black">
+          <FaInfoCircle />
+        </button>
+      </div>
+      <div className="flex w-full cursor-pointer">
+        {ratingOptions.map((num) => (
+          <button
+            key={num}
+            disabled={loading}
+            onClick={() => setValue(num)}
+            className={clsx(
+              "h-10 flex-1 border-2 border-black -ml-px first:ml-0 first:rounded-l-lg last:rounded-r-lg transition-transform duration-150 focus:z-10",
+              {
+                "bg-black text-white": num <= value,
+                "bg-white text-black": num > value,
+              }
+            )}
+            aria-label={`Set ${title} rating to ${num}`}
+          >
+            {num}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --- MAIN JOURNAL PAGE COMPONENT ---
 export default function Journal() {
-    // State for the form
-    const [topics, setTopics] = useState("");
-    const [rating, setRating] = useState(5);
-    
-    // State for the specific date of the journal entry
-    const [journalDate, setJournalDate] = useState<string | null>(null);
+  const [topics, setTopics] = useState("");
+  const [alignmentRating, setAlignmentRating] = useState(0); // Default to 0 (unrated)
+  const [contentmentRating, setContentmentRating] = useState(0); // Default to 0 (unrated)
+  const [journalDate, setJournalDate] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
-    // UI/UX states
-    const [loading, setLoading] = useState(false); // Start loading to fetch existing data
-    const [successMsg, setSuccessMsg] = useState("");
-    const [errorMsg, setErrorMsg] = useState("");
+  const searchParams = useSearchParams();
+  const isGuest = isGuestUser();
 
-    const searchParams = useSearchParams();
-    const isGuest = isGuestUser();
+  // (Simplified useEffect for date)
+  useEffect(() => {
+    const dateParam = searchParams.get("date");
+    const targetDate = dateParam || formatDateForAPI(new Date());
+    setJournalDate(targetDate);
+  }, [searchParams]);
 
-    // Effect to set the journal date from URL or default to today
-    useEffect(() => {
-        const dateParam = searchParams.get('date');
-        const targetDate = dateParam || formatDateForAPI(new Date());
-        setJournalDate(targetDate);
-    }, [searchParams]);
-
-    // Effect to fetch existing entry for the date
-    useEffect(() => {
-        if (!journalDate) return;
-
-        const fetchEntry = async () => {
-            setLoading(true);
-            if (isGuest) {
-                const entries = getGuestEntries();
-                const entry = entries.find(e => e.createdAt.startsWith(journalDate));
-                if (entry) {
-                    setTopics(entry.content);
-                    setRating(entry.rating);
-                } else {
-                    setTopics("");
-                    setRating(5);
-                }
-                setLoading(false);
-                return;
-            }
-            try {
-                const res = await apiFetch(`/api/journal?local_date=${journalDate}`);
-                if (res.status === 200 && res.data) {
-                    setTopics(res.data.content);
-                    setRating(res.data.rating);
-                } else if (res.status === 404) {
-                    // No entry for this date, so clear fields
-                    setTopics("");
-                    setRating(5);
-                } else {
-                    throw new Error(`Failed to fetch entry: ${res.statusText}`);
-                }
-            } catch (e: unknown) {
-                setErrorMsg(e instanceof Error ? e.message : "An unknown error occurred.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchEntry();
-    }, [journalDate, isGuest]);
-
-
-    async function submit() {
-        if (!journalDate) return;
-
-        setSuccessMsg("");
-        setErrorMsg("");
-        setLoading(true);
-
+  // (Fetch logic remains the same, adjusted for 0 default)
+  useEffect(() => {
+    if (!journalDate) return;
+    const fetchEntry = async () => {
+      setLoading(true);
+      setTopics("");
+      setAlignmentRating(0);
+      setContentmentRating(0);
+      setSuccessMsg("");
+      setErrorMsg("");
+      try {
+        let entry;
         if (isGuest) {
-            try {
-                saveGuestEntry({ content: topics, rating, createdAt: journalDate });
-                setSuccessMsg(`Saved entry for ${formatDisplayDate(journalDate)} successfully!`);
-            } catch (e: unknown) {
-                setErrorMsg(e instanceof Error ? e.message : "An unknown error occurred.");
-            } finally {
-                setLoading(false);
-            }
-            return;
+          const entries = getGuestEntries();
+          entry = entries.find((e) => e.createdAt.startsWith(journalDate));
+        } else {
+          const res = await apiFetch(`/api/journal?local_date=${journalDate}`);
+          if (res.status === 200 && res.data) entry = res.data;
         }
-
-        try {
-            const res = await apiFetch("/api/journal", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                data: { topics, rating, local_date: journalDate },
-            });
-            if (res.status < 200 || res.status >= 300) throw new Error(res.statusText);
-            setSuccessMsg(`Saved entry for ${formatDisplayDate(journalDate)} successfully!`);
-        } catch (e: unknown) {
-            setErrorMsg(e instanceof Error ? e.message : "An unknown error occurred.");
-        } finally {
-            setLoading(false);
+        if (entry) {
+          setTopics(entry.content);
+          setAlignmentRating(entry.alignment_rating ?? 0);
+          setContentmentRating(entry.contentment_rating ?? 0);
         }
-    }
-
-    const formatDisplayDate = (dateString: string | null) => {
-        if (!dateString) return "Today";
-        const today = formatDateForAPI(new Date());
-        if (dateString === today) return "Today";
-        const date = new Date(dateString + 'T00:00:00');
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
+      } catch (e: unknown) {
+        setErrorMsg(e instanceof Error ? e.message : "An unknown error occurred.");
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchEntry();
+  }, [journalDate, isGuest]);
 
-    const ratingOptions = Array.from({ length: 10 }, (_, i) => i + 1);
+  async function submit() {
+    if (!journalDate) return;
+    setSuccessMsg("");
+    setErrorMsg("");
+    setLoading(true);
+    const entryData = {
+      topics,
+      alignment_rating: alignmentRating,
+      contentment_rating: contentmentRating,
+      createdAt: journalDate,
+      local_date: journalDate,
+    };
+    try {
+      if (isGuest) {
+        saveGuestEntry(entryData);
+      } else {
+        const res = await apiFetch("/api/journal", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          data: entryData,
+        });
+        if (res.status < 200 || res.status >= 300)
+          throw new Error(res.statusText);
+      }
+      setSuccessMsg(
+        `Saved entry for ${formatDisplayDate(journalDate)} successfully!`
+      );
+    } catch (e: unknown) {
+      setErrorMsg(
+        e instanceof Error ? e.message : "An unknown error occurred."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    return (
-        <div className="max-w-5xl mx-auto px-4 py-10">
-            <div className="space-y-8">
-                <header>
-                    {/* <h1 className="text-4xl font-bold">Journal for {formatDisplayDate(journalDate)}</h1> */}
-                    <h1 className="text-4xl font-bold">
-                    {journalDate ? `Journal for ${formatDisplayDate(journalDate)}` : "Loading Journal..."}
-                    </h1>
-                    <p className="text-lg text-gray-600">Log your progress and how you felt about it.</p>
-                </header>
+  
+  const formatDisplayDate = (dateString: string | null) => {
+    if (!dateString) return "Today";
+    if (dateString === formatDateForAPI(new Date())) return "Today";
+    const date = new Date(dateString + "T00:00:00");
+    return date.toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric' });
+  };
+  
+  const dotPatternStyle = {
+    backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0,0,0,0.2) 1px, transparent 0)',
+    backgroundSize: '12px 12px',
+  }
 
-                <div className="card space-y-6">
-                    {/* Topics Covered Section */}
-                    <div>
-                        <label htmlFor="topics" className="block text-2xl font-bold mb-2">
-                            Topics Covered
-                        </label>
-                        <textarea
-                            id="topics"
-                            className="input w-full min-h-[150px] text-lg"
-                            value={topics}
-                            onChange={(e) => setTopics(e.target.value)}
-                            placeholder="What did you work on? e.g., Next.js routing, database schemas..."
-                            disabled={loading}
-                        />
-                    </div>
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-10">
+      <div className="space-y-6">
+        <header>
+          <h1 className="text-4xl font-bold">
+            {journalDate ? `Journal for ${formatDisplayDate(journalDate)}` : "Loading..."}
+          </h1>
+          <p className="text-lg text-gray-600">A quick reflection is all it takes.</p>
+        </header>
 
-                    {/* Satisfaction Rating Section */}
-                    <div>
-                        <label className="block text-2xl font-bold mb-3">
-                            Satisfaction Rating ({rating}/10)
-                        </label>
-                        <div className="flex flex-wrap items-center gap-2">
-                            {ratingOptions.map((num) => (
-                                <button
-                                    key={num}
-                                    onClick={() => setRating(num)}
-                                    disabled={loading}
-                                    className={`w-12 h-12 text-lg font-bold border-2 border-black rounded-full transition-colors duration-200
-                                        ${rating === num
-                                            ? 'bg-black text-white'
-                                            : 'bg-white text-black hover:bg-gray-100'
-                                        }`}
-                                >
-                                    {num}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-wrap items-center gap-4 pt-4">
-                        <button className="btn text-lg" onClick={submit} disabled={loading || !topics || !rating}>
-                            {loading ? "Loading..." : "Save Entry"}
-                        </button>
-                        <Link className="text-lg underline" href="/submissions">
-                            Back to Submissions
-                        </Link>
-                    </div>
-
-                    {/* Success and Error Messages */}
-                    {successMsg && (
-                        <div className="p-4 border-2 border-green-700 bg-green-50 rounded-lg">
-                            <p className="text-green-800 font-bold">{successMsg}</p>
-                        </div>
-                    )}
-                    {errorMsg && (
-                        <div className="p-4 border-2 border-red-700 bg-red-50 rounded-lg">
-                            <p className="text-red-800 font-bold">{errorMsg}</p>
-                        </div>
-                    )}
-                </div>
+        <div className="card space-y-6">
+          <div className="border-2 border-black rounded-lg overflow-hidden">
+            <div className="p-4">
+              <label className="text-xs uppercase font-bold tracking-widest text-gray-500">Your Thoughts</label>
+              <textarea
+                id="topics"
+                className="w-full min-h-[150px] mt-1 text-lg border-none focus:ring-0 p-0 resize-y"
+                value={topics}
+                onChange={(e) => setTopics(e.target.value)}
+                placeholder="Jot down your wins, your worries, and your 'what-ifs'..."
+                disabled={loading}
+              />
             </div>
+            <div className="p-4 border-t-2 border-dashed border-gray-300 space-y-4" style={dotPatternStyle}>
+              <label className="text-xs uppercase font-bold tracking-widest text-gray-500">Your Ratings</label>
+              <ThemedRatingScale
+                title="Alignment"
+                description="How closely did this work reflect your main goals?"
+                value={alignmentRating}
+                setValue={setAlignmentRating}
+                loading={loading}
+              />
+              <ThemedRatingScale
+                title="Contentment"
+                description="How at peace did you feel about this experience?"
+                value={contentmentRating}
+                setValue={setContentmentRating}
+                loading={loading}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <button className="btn text-lg" onClick={submit} disabled={loading || !topics || !alignmentRating || !contentmentRating}>
+              {loading ? "Saving..." : "Save Entry"}
+            </button>
+            <Link className="text-lg underline" href="/submissions">Back to Submissions</Link>
+          </div>
+
+          {successMsg && <div className="p-4 border-2 border-green-700 bg-green-50 rounded-lg"><p className="text-green-800 font-bold">{successMsg}</p></div>}
+          {errorMsg && <div className="p-4 border-2 border-red-700 bg-red-50 rounded-lg"><p className="text-red-800 font-bold">{errorMsg}</p></div>}
         </div>
-    );
+      </div>
+    </div>
+  );
 }
