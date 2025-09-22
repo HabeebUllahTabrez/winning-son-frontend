@@ -29,12 +29,14 @@ const ThemedRatingScale = ({
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-2 font-bold text-lg">
-        <label>{title}</label>
-        <button title={description} className="text-gray-400 hover:text-black">
-          <FaInfoCircle />
-        </button>
+      {/* The main changes are here */}
+      <div className="mb-2">
+        <label className="font-bold text-lg">{title}</label>
+        {/* 1. The 'i' button has been removed */}
+        {/* 2. The description is now a simple paragraph below the title */}
+        <p className="text-sm text-gray-600">{description}</p>
       </div>
+
       <div className="flex w-full cursor-pointer">
         {ratingOptions.map((num) => (
           <button
@@ -70,7 +72,7 @@ export default function Journal() {
 
   const searchParams = useSearchParams();
   const isGuest = isGuestUser();
-    const router = useRouter();
+  const router = useRouter();
 
   // (Simplified useEffect for date)
   useEffect(() => {
@@ -95,7 +97,9 @@ export default function Journal() {
           const entries = getGuestEntries();
           entry = entries.find((e) => e.createdAt.startsWith(journalDate));
         } else {
-          const res = await apiFetch(`/api/journal?start_date=${journalDate}&end_date=${journalDate}`);
+          const res = await apiFetch(
+            `/api/journal?start_date=${journalDate}&end_date=${journalDate}`
+          );
           if (res.status === 200 && res.data) entry = res.data[0];
         }
         if (entry) {
@@ -104,7 +108,9 @@ export default function Journal() {
           setContentmentRating(entry.contentment_rating ?? 0);
         }
       } catch (e: unknown) {
-        setErrorMsg(e instanceof Error ? e.message : "An unknown error occurred.");
+        setErrorMsg(
+          e instanceof Error ? e.message : "An unknown error occurred."
+        );
       } finally {
         setLoading(false);
       }
@@ -150,44 +156,71 @@ export default function Journal() {
     }
   }
 
-  
   const formatDisplayDate = (dateString: string | null) => {
     if (!dateString) return "Today";
     if (dateString === formatDateForAPI(new Date())) return "Today";
     const date = new Date(dateString + "T00:00:00");
-    return date.toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
   };
-  
+
   const dotPatternStyle = {
-    backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0,0,0,0.2) 1px, transparent 0)',
-    backgroundSize: '12px 12px',
-  }
+    backgroundImage:
+      "radial-gradient(circle at 1px 1px, rgba(0,0,0,0.2) 1px, transparent 0)",
+    backgroundSize: "12px 12px",
+  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       <div className="space-y-6">
         <header>
           <h1 className="text-4xl font-bold">
-            {journalDate ? `Journal for ${formatDisplayDate(journalDate)}` : "Loading..."}
+            {journalDate
+              ? `Journal for ${formatDisplayDate(journalDate)}`
+              : "Loading..."}
           </h1>
-          <p className="text-lg text-gray-600">A quick reflection is all it takes.</p>
+          <p className="text-lg text-gray-600">
+            A quick reflection is all it takes.
+          </p>
         </header>
 
         <div className="card space-y-6">
           <div className="border-2 border-black rounded-lg overflow-hidden">
-            <div className="p-4">
-              <label className="text-xs uppercase font-bold tracking-widest text-gray-500">Your Thoughts</label>
+            <div className="p-4 space-y-4">
+              {" "}
+              {/* Added space-y for consistent spacing */}
+              {/* 1. Replaced the old label with the new divider style */}
+              <div className="flex items-center text-center">
+                <div className="flex-grow border-t-2 border-gray-200"></div>
+                <span className="flex-shrink mx-4 text-xs uppercase font-bold tracking-widest text-gray-500">
+                  Your Thoughts
+                </span>
+                <div className="flex-grow border-t-2 border-gray-200"></div>
+              </div>
               <textarea
                 id="topics"
-                className="w-full min-h-[150px] mt-1 text-lg border-none focus:ring-0 focus:outline-none p-0 resize-y"
+                // 2. Removed margin-top as space-y now handles it
+                className="w-full min-h-[150px] text-lg border-none focus:ring-0 focus:outline-none p-0 resize-y"
                 value={topics}
                 onChange={(e) => setTopics(e.target.value)}
                 placeholder="Jot down your wins, your worries, and your 'what-ifs'..."
                 disabled={loading}
               />
             </div>
-            <div className="p-4 border-t-2 border-dashed border-gray-300 space-y-4" style={dotPatternStyle}>
-              <label className="text-xs uppercase font-bold tracking-widest text-gray-500">Your Ratings</label>
+
+            {/* This "Your Ratings" section remains the same */}
+            <div className="p-4 space-y-6">
+              <div className="flex items-center text-center">
+                <div className="flex-grow border-t-2 border-gray-200"></div>
+                <span className="flex-shrink mx-4 text-xs uppercase font-bold tracking-widest text-gray-500">
+                  Your Ratings
+                </span>
+                <div className="flex-grow border-t-2 border-gray-200"></div>
+              </div>
+
               <ThemedRatingScale
                 title="Alignment"
                 description="How closely did this work reflect your main goals?"
@@ -204,17 +237,33 @@ export default function Journal() {
               />
             </div>
           </div>
-
-          <div className="flex flex-wrap items-center gap-4">
-            <button className="btn text-lg" onClick={submit} disabled={loading || !topics || !alignmentRating || !contentmentRating}>
-              {loading ? "Saving..." : "Save Entry"}
-            </button>
-            <Link className="text-lg underline" href="/submissions">Back to Submissions</Link>
-          </div>
-
-          {successMsg && <div className="p-4 border-2 border-green-700 bg-green-50 rounded-lg"><p className="text-green-800 font-bold">{successMsg}</p></div>}
-          {errorMsg && <div className="p-4 border-2 border-red-700 bg-red-50 rounded-lg"><p className="text-red-800 font-bold">{errorMsg}</p></div>}
         </div>
+
+        <div className="flex flex-wrap items-center gap-4">
+          <button
+            className="btn text-lg"
+            onClick={submit}
+            disabled={
+              loading || !topics || !alignmentRating || !contentmentRating
+            }
+          >
+            {loading ? "Saving..." : "Save Entry"}
+          </button>
+          <Link className="text-lg underline" href="/submissions">
+            Back to Submissions
+          </Link>
+        </div>
+
+        {successMsg && (
+          <div className="p-4 border-2 border-green-700 bg-green-50 rounded-lg">
+            <p className="text-green-800 font-bold">{successMsg}</p>
+          </div>
+        )}
+        {errorMsg && (
+          <div className="p-4 border-2 border-red-700 bg-red-50 rounded-lg">
+            <p className="text-red-800 font-bold">{errorMsg}</p>
+          </div>
+        )}
       </div>
     </div>
   );
