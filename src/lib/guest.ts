@@ -1,80 +1,77 @@
 import { v4 as uuidv4 } from 'uuid';
 import { format, subDays, getDay, getMonth, getYear, startOfDay } from 'date-fns';
 
-// Define the shape of a user profile for type safety
-export interface UserProfile {
-  id: number;
-  email: string;
-  first_name: string;
-  last_name: string;
-  avatar_id: number;
-  goal: string;
-  start_date: string; // Using string for easy serialization
-  end_date: string;   // Using string for easy serialization
-  is_admin: boolean;
-}
-
-// Define the shape of a journal entry for type safety
-export interface JournalEntry {
-  id: string;
-  topics: string;
-  alignment_rating: number;
-  contentment_rating: number; 
-  localDate?: string;
-  createdAt: string; // Format: 'yyyy-MM-dd'
-}
-
-// Define the shape of the calculated stats object
-export interface DashboardStats {
-    has_today_entry: boolean;
-    day_points: number;
-    week_points: number;
-    month_points: number;
-    year_points: number;
-    entries_this_week: number;
-    entries_this_year: number;
-    average_month_rating: number;
-    current_streak_days: number;
-    last7_days_trend: { local_date: string; points: number }[];
-}
-
-
 // Key names for localStorage
 export const GUEST_ID_KEY = 'guestId';
 export const JOURNAL_ENTRIES_KEY = 'guestJournalEntries';
 export const GUEST_STATS_KEY = 'guestStats';
 
+// --- UPDATED INTERFACES ---
+
+/**
+ * Defines the shape of a journal entry using a single 'karma' score.
+ */
+export interface JournalEntry {
+  id: string;
+  topics: string;
+  karma: number; // Replaces alignment_rating and contentment_rating
+  localDate?: string;
+  createdAt: string; // Format: 'yyyy-MM-dd'
+  alignment_rating: number; 
+  contentment_rating: number;
+}
+
+/**
+ * Defines the shape of the calculated stats object using 'karma'.
+ */
+export interface DashboardStats {
+    has_today_entry: boolean;
+    day_karma: number;
+    week_karma: number;
+    month_karma: number;
+    year_karma: number;
+    entries_this_week: number;
+    entries_this_year: number;
+    average_month_karma: number;
+    current_streak_days: number;
+    last7_days_trend: { local_date: string; karma: number }[];
+}
+
+// --- UPDATED DEFAULT STATE ---
+
 const DEFAULT_GUEST_STATS = {
   has_today_entry: false,
-  day_points: 0,
-  week_points: 0,
-  month_points: 0,
-  year_points: 0,
+  day_karma: 0,
+  week_karma: 0,
+  month_karma: 0,
+  year_karma: 0,
   entries_this_week: 0,
   entries_this_year: 0,
-  average_month_rating: 0,
+  average_month_karma: 0,
   current_streak_days: 0,
   last7_days_trend: Array.from({ length: 7 }, (_, i) => ({
     local_date: format(subDays(new Date(), i), "yyyy-MM-dd"),
-    points: 0
+    karma: 0 // Changed from points
   })).reverse(),
   user: {
     id: 3,
     email: "",
-    first_name: "Guest",
-    last_name: "User",
+    first_name: "",
+    last_name: "",
     avatar_id: 1,
-    goal: "Try out the app!",
-    start_date: format(new Date(), "yyyy-MM-dd"),
+    goal: "",
+    start_date: "",
     end_date: "",
     is_admin: false
   }
 };
 
 
+// --- UPDATED CALCULATION LOGIC ---
+
 /**
  * Calculates dashboard statistics from a list of journal entries.
- * It processes all entries to compute daily, weekly, monthly, yearly, and streak data.
+ * It processes all entries to compute daily, weekly, monthly, and yearly karma, plus streak data.
  * @param journalEntries - An array of journal entry objects.
  * @returns An object containing the calculated dashboard statistics.
  */
@@ -84,59 +81,60 @@ const calculateDashboardStats = (journalEntries: JournalEntry[]): DashboardStats
 
     const entriesMap = new Map(journalEntries.map(entry => [entry.createdAt, entry]));
 
-    // --- Define Time Boundaries for Calculations ---
+    // Define Time Boundaries
     const currentYear = getYear(today);
     const currentMonth = getMonth(today);
-    // Get the start of the week (Sunday)
-    const startOfWeek = subDays(today, getDay(today));
+    const startOfWeek = subDays(today, getDay(today)); // Assumes week starts on Sunday
 
-    // --- Initialize Statistic Variables ---
-    const week_points = 0;
-    const month_points = 0;
-    const year_points = 0;
-    const entries_this_week = 0;
-    const entries_this_year = 0;
-    const monthEntriesCount = 0;
+    // Initialize Statistic Variables
+    let week_karma = 0;
+    let month_karma = 0;
+    let year_karma = 0;
+    let entries_this_week = 0;
+    let entries_this_year = 0;
+    let monthEntriesCount = 0;
 
-    // --- Calculate Aggregated Stats by Iterating Through All Entries ---
-    // for (const entry of journalEntries) {
-    //     const entryDate = new Date(entry.createdAt);
+    // Calculate Aggregated Stats by Iterating Through All Entries
+    for (const entry of journalEntries) {
+        // Ensure date is treated as local by parsing it this way
+        const entryDate = new Date(entry.createdAt + 'T00:00:00');
         
-    //     if (getYear(entryDate) === currentYear) {
-    //         year_points += entry.rating;
-    //         entries_this_year++;
+        if (getYear(entryDate) === currentYear) {
+            year_karma += entry.karma;
+            entries_this_year++;
 
-    //         if (getMonth(entryDate) === currentMonth) {
-    //             month_points += entry.rating;
-    //             monthEntriesCount++;
-    //         }
-    //     }
+            if (getMonth(entryDate) === currentMonth) {
+                month_karma += entry.karma;
+                monthEntriesCount++;
+            }
+        }
         
-    //     if (entryDate >= startOfWeek) {
-    //         week_points += entry.rating;
-    //         entries_this_week++;
-    //     }
-    // }
+        if (entryDate >= startOfWeek) {
+            week_karma += entry.karma;
+            entries_this_week++;
+        }
+    }
 
-    // --- Calculate Day-Specific and Trend Stats ---
+    // Calculate Day-Specific and Trend Stats
     const todayEntry = entriesMap.get(todayStr);
     const has_today_entry = !!todayEntry;
-    const day_points = 0;
+    const day_karma = todayEntry ? todayEntry.karma : 0;
 
     const last7_days_trend = Array.from({ length: 7 }, (_, i) => {
         const date = subDays(today, i);
         const dateString = format(date, 'yyyy-MM-dd');
-        // const entry = entriesMap.get(dateString);
+        const entry = entriesMap.get(dateString);
         return {
             local_date: dateString,
-            points: 0,
+            karma: entry ? entry.karma : 0,
         };
     }).reverse();
 
-    // --- Calculate Current Streak ---
+    // Calculate Current Streak
     let current_streak_days = 0;
     let streakDate = today;
 
+    // If no entry today, start checking from yesterday for the streak
     if (!has_today_entry) {
         streakDate = subDays(streakDate, 1);
     }
@@ -148,13 +146,13 @@ const calculateDashboardStats = (journalEntries: JournalEntry[]): DashboardStats
 
     return {
         has_today_entry,
-        day_points,
-        week_points,
-        month_points,
-        year_points,
+        day_karma,
+        week_karma,
+        month_karma,
+        year_karma,
         entries_this_week,
         entries_this_year,
-        average_month_rating: monthEntriesCount > 0 ? (month_points / monthEntriesCount) : 0,
+        average_month_karma: monthEntriesCount > 0 ? (month_karma / monthEntriesCount) : 0,
         current_streak_days,
         last7_days_trend,
     };
@@ -168,7 +166,7 @@ function updateGuestStats(): void {
 
     const allEntries = getGuestEntries();
     const calculatedStats = calculateDashboardStats(allEntries);
-    const currentStats = getGuestStats(); // Preserves the user profile
+    const currentStats = getGuestStats(); // Preserves user profile and other non-calculated fields
 
     const newStats = {
         ...currentStats,
@@ -179,14 +177,11 @@ function updateGuestStats(): void {
 }
 
 // ===================================================================
-// EXPORTED GUEST UTILITY FUNCTIONS
+// EXPORTED GUEST UTILITY FUNCTIONS (No logic change needed below)
 // ===================================================================
-
 
 /**
  * Ensures a unique guest ID exists in localStorage.
- * If one doesn't exist, it generates and stores a new one.
- * @returns The unique guest ID.
  */
 export function getGuestId(): string {
   if (typeof window === 'undefined') return '';
@@ -195,14 +190,14 @@ export function getGuestId(): string {
   if (!guestId) {
     guestId = uuidv4();
     localStorage.setItem(GUEST_ID_KEY, guestId);
+    // Initialize with default stats when a new guest ID is created
     localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(DEFAULT_GUEST_STATS));
   }
   return guestId;
 }
 
 /**
- * Checks if the current user is a guest (i.e., no auth token).
- * @returns True if the user is a guest, false otherwise.
+ * Checks if the current user is a guest.
  */
 export function isGuestUser(): boolean {
   if (typeof window === 'undefined') return false;
@@ -211,7 +206,6 @@ export function isGuestUser(): boolean {
 
 /**
  * Retrieves guest dashboard stats from localStorage.
- * @returns The guest stats object.
  */
 export function getGuestStats() {
   if (typeof window === 'undefined') return DEFAULT_GUEST_STATS;
@@ -226,8 +220,7 @@ export function getGuestStats() {
 }
 
 /**
- * Retrieves all journal entries for the current guest from localStorage.
- * @returns An array of JournalEntry objects.
+ * Retrieves all journal entries for the current guest.
  */
 export function getGuestEntries(): JournalEntry[] {
   if (typeof window === 'undefined') return [];
@@ -243,10 +236,10 @@ export function getGuestEntries(): JournalEntry[] {
 
 /**
  * Saves or updates a journal entry and recalculates all stats.
- * @param entry - The entry content, rating, and date.
+ * @param entry - The entry content, karma, and date.
  * @returns The newly created or updated JournalEntry object.
  */
-export function saveGuestEntry(entry: { topics: string; alignment_rating: number; contentment_rating: number; createdAt: string; local_date: string }): JournalEntry | null {
+export function saveGuestEntry(entry: { topics: string; karma: number; createdAt: string; localDate: string }): JournalEntry | null {
   if (typeof window === 'undefined') return null;
   
   try {
@@ -261,11 +254,19 @@ export function saveGuestEntry(entry: { topics: string; alignment_rating: number
       savedEntry = updatedEntry;
     } else {
       // Add new entry
-      const newEntry: JournalEntry = { id: uuidv4(), ...entry };
+      const newEntry: JournalEntry = { 
+        id: uuidv4(), 
+        ...entry, 
+        alignment_rating: 0, // Default value, adjust as needed
+        contentment_rating: 0 // Default value, adjust as needed
+      };
       entries.push(newEntry);
       savedEntry = newEntry;
     }
     
+    // Sort entries by date to be safe, though not strictly required by current logic
+    entries.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
     localStorage.setItem(JOURNAL_ENTRIES_KEY, JSON.stringify(entries));
     updateGuestStats(); // Recalculate and save stats after any change
     return savedEntry;
@@ -294,7 +295,6 @@ export function deleteGuestEntry(entryId: string): void {
 
 /**
  * Clears all guest data from localStorage.
- * This should be called after a successful migration to a real user.
  */
 export function clearGuestData(): void {
   if (typeof window === 'undefined') return;
