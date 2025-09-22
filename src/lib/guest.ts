@@ -14,7 +14,6 @@ export const GUEST_STATS_KEY = 'guestStats';
 export interface JournalEntry {
   id: string;
   topics: string;
-  karma: number; // Replaces alignment_rating and contentment_rating
   localDate?: string;
   createdAt: string; // Format: 'yyyy-MM-dd'
   alignment_rating: number; 
@@ -26,15 +25,15 @@ export interface JournalEntry {
  */
 export interface DashboardStats {
     has_today_entry: boolean;
-    day_karma: number;
-    week_karma: number;
-    month_karma: number;
-    year_karma: number;
-    entries_this_week: number;
-    entries_this_year: number;
-    average_month_karma: number;
+    // day_karma: number;
+    // week_karma: number;
+    // month_karma: number;
+    // year_karma: number;
+    // entries_this_week: number;
+    // entries_this_year: number;
+    // average_month_karma: number;
     current_streak_days: number;
-    last7_days_trend: { local_date: string; karma: number }[];
+    // last7_days_trend: { local_date: string; karma: number }[];
 }
 
 // --- UPDATED DEFAULT STATE ---
@@ -87,38 +86,38 @@ const calculateDashboardStats = (journalEntries: JournalEntry[]): DashboardStats
     const startOfWeek = subDays(today, getDay(today)); // Assumes week starts on Sunday
 
     // Initialize Statistic Variables
-    let week_karma = 0;
-    let month_karma = 0;
-    let year_karma = 0;
-    let entries_this_week = 0;
-    let entries_this_year = 0;
-    let monthEntriesCount = 0;
+    // let week_karma = 0;
+    // let month_karma = 0;
+    // let year_karma = 0;
+    // let entries_this_week = 0;
+    // let entries_this_year = 0;
+    // let monthEntriesCount = 0;
 
     // Calculate Aggregated Stats by Iterating Through All Entries
-    for (const entry of journalEntries) {
-        // Ensure date is treated as local by parsing it this way
-        const entryDate = new Date(entry.createdAt + 'T00:00:00');
+    // for (const entry of journalEntries) {
+    //     // Ensure date is treated as local by parsing it this way
+    //     const entryDate = new Date(entry.createdAt + 'T00:00:00');
         
-        if (getYear(entryDate) === currentYear) {
-            year_karma += entry.karma;
-            entries_this_year++;
+    //     if (getYear(entryDate) === currentYear) {
+    //         year_karma += entry.karma;
+    //         entries_this_year++;
 
-            if (getMonth(entryDate) === currentMonth) {
-                month_karma += entry.karma;
-                monthEntriesCount++;
-            }
-        }
+    //         if (getMonth(entryDate) === currentMonth) {
+    //             month_karma += entry.karma;
+    //             monthEntriesCount++;
+    //         }
+    //     }
         
-        if (entryDate >= startOfWeek) {
-            week_karma += entry.karma;
-            entries_this_week++;
-        }
-    }
+    //     if (entryDate >= startOfWeek) {
+    //         week_karma += entry.karma;
+    //         entries_this_week++;
+    //     }
+    // }
 
     // Calculate Day-Specific and Trend Stats
     const todayEntry = entriesMap.get(todayStr);
     const has_today_entry = !!todayEntry;
-    const day_karma = todayEntry ? todayEntry.karma : 0;
+    // const day_karma = todayEntry ? todayEntry.karma : 0;
 
     const last7_days_trend = Array.from({ length: 7 }, (_, i) => {
         const date = subDays(today, i);
@@ -126,7 +125,7 @@ const calculateDashboardStats = (journalEntries: JournalEntry[]): DashboardStats
         const entry = entriesMap.get(dateString);
         return {
             local_date: dateString,
-            karma: entry ? entry.karma : 0,
+            // karma: entry ? entry.karma : 0,
         };
     }).reverse();
 
@@ -146,15 +145,15 @@ const calculateDashboardStats = (journalEntries: JournalEntry[]): DashboardStats
 
     return {
         has_today_entry,
-        day_karma,
-        week_karma,
-        month_karma,
-        year_karma,
-        entries_this_week,
-        entries_this_year,
-        average_month_karma: monthEntriesCount > 0 ? (month_karma / monthEntriesCount) : 0,
+        // day_karma,
+        // week_karma,
+        // month_karma,
+        // year_karma,
+        // entries_this_week,
+        // entries_this_year,
+        // average_month_karma: monthEntriesCount > 0 ? (month_karma / monthEntriesCount) : 0,
         current_streak_days,
-        last7_days_trend,
+        // last7_days_trend,
     };
 };
 
@@ -239,7 +238,7 @@ export function getGuestEntries(): JournalEntry[] {
  * @param entry - The entry content, karma, and date.
  * @returns The newly created or updated JournalEntry object.
  */
-export function saveGuestEntry(entry: { topics: string; karma: number; createdAt: string; localDate: string }): JournalEntry | null {
+export function saveGuestEntry(entry: { topics: string; alignment_rating: number; contentment_rating: number; createdAt: string; localDate: string }): JournalEntry | null {
   if (typeof window === 'undefined') return null;
   
   try {
