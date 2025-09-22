@@ -174,7 +174,7 @@ export default function Dashboard() {
                                 <p className="text-gray-600 mt-2 mb-6">
                                     Sign up to track your Karma score, visualize trends, and set goals.
                                 </p>
-                                <a href="/signup" className="btn text-lg">
+                                <a href="/profile" className="btn text-lg">
                                     Create a Free Account
                                 </a>
                             </div>
