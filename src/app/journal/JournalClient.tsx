@@ -125,10 +125,9 @@ export default function Journal() {
     setLoading(true);
     const entryData = {
       topics,
-      alignment_rating: alignmentRating,
-      contentment_rating: contentmentRating,
+      karma: alignmentRating, // Use alignmentRating for karma
       createdAt: journalDate,
-      local_date: journalDate,
+      localDate: journalDate, // Use localDate instead of local_date
     };
     try {
       if (isGuest) {
@@ -138,7 +137,13 @@ export default function Journal() {
         const res = await apiFetch("/api/journal", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          data: entryData,
+          data: {
+            topics,
+            alignment_rating: alignmentRating,
+            contentment_rating: contentmentRating,
+            createdAt: journalDate,
+            local_date: journalDate,
+          },
         });
         if (res.status < 200 || res.status >= 300)
           throw new Error(res.statusText);

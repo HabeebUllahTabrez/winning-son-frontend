@@ -78,7 +78,7 @@ export default function Dashboard() {
                         month_karma: storedStats.month_karma ?? storedStats.month_points ?? 0,
                         year_karma: storedStats.year_karma ?? storedStats.year_points ?? 0,
                         average_month_karma: storedStats.average_month_karma ?? storedStats.average_month_rating ?? 0,
-                        last7_days_trend: (storedStats.last7_days_trend || []).map((day: any) => ({
+                        last7_days_trend: (storedStats.last7_days_trend || []).map((day: { local_date: string; karma?: number; points?: number }) => ({
                             local_date: day.local_date,
                             karma: day.karma ?? day.points ?? 0,
                         })),
