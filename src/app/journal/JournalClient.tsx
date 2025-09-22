@@ -179,7 +179,7 @@ export default function Journal() {
               <label className="text-xs uppercase font-bold tracking-widest text-gray-500">Your Thoughts</label>
               <textarea
                 id="topics"
-                className="w-full min-h-[150px] mt-1 text-lg border-none focus:ring-0 p-0 resize-y"
+                className="w-full min-h-[150px] mt-1 text-lg border-none focus:ring-0 focus:outline-none p-0 resize-y"
                 value={topics}
                 onChange={(e) => setTopics(e.target.value)}
                 placeholder="Jot down your wins, your worries, and your 'what-ifs'..."
