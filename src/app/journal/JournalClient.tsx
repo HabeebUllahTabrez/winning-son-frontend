@@ -92,11 +92,11 @@ export default function Journal() {
           const entries = getGuestEntries();
           entry = entries.find((e) => e.createdAt.startsWith(journalDate));
         } else {
-          const res = await apiFetch(`/api/journal?local_date=${journalDate}`);
-          if (res.status === 200 && res.data) entry = res.data;
+          const res = await apiFetch(`/api/journal?start_date=${journalDate}&end_date=${journalDate}`);
+          if (res.status === 200 && res.data) entry = res.data[0];
         }
         if (entry) {
-          setTopics(entry.content);
+          setTopics(entry.topics || "");
           setAlignmentRating(entry.alignment_rating ?? 0);
           setContentmentRating(entry.contentment_rating ?? 0);
         }
