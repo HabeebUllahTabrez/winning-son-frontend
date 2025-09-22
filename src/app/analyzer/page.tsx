@@ -7,13 +7,20 @@ import toast from "react-hot-toast";
 import { FaCopy, FaFlask, FaMagic, FaUndo, } from "react-icons/fa";
 import { isGuestUser, getGuestEntries } from "@/lib/guest";
 
-// --- Type Definitions (Unchanged) ---
+// --- Type Definitions (Updated) ---
 type UserProfile = {
   goal: string | null;
   start_date: string | null;
   end_date: string | null;
 };
-type JournalEntry = { local_date: string; topics: string; rating: number };
+// Note: JournalEntry type now correctly reflects the data structure
+type JournalEntry = { 
+  local_date: string; 
+  topics: string; 
+  alignment_rating: number; 
+  contentment_rating: number; 
+  createdAt?: string // Optional for API responses that might not have it
+};
 type LoadingState = "idle" | "fetching" | "summoning";
 
 // --- Constants (Unchanged) ---
@@ -34,7 +41,7 @@ const formatDateForInput = (dateString: string | null) => {
 
 // --- Main Component ---
 export default function AnalyzerPage() {
-  // --- State Management ---
+  // --- State Management (Unchanged) ---
   const [goal, setGoal] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -58,7 +65,7 @@ export default function AnalyzerPage() {
     return { Authorization: `Bearer ${token}` };
   }, []);
 
-  // --- Data Fetching ---
+  // --- Data Fetching (Unchanged) ---
   useEffect(() => {
     const fetchUser = async () => {
       if (isGuest) {
@@ -68,7 +75,6 @@ export default function AnalyzerPage() {
         setEndDate(formatDateForInput(guestProfile.end_date));
         return;
       }
-      // No need for a loading state here, it's a background task on page load
       try {
         const res = await apiFetch("/api/me", { headers: authHeader() });
         if (res.status < 200 || res.status >= 300) throw new Error("Could not fetch your profile data.");
@@ -83,7 +89,7 @@ export default function AnalyzerPage() {
     fetchUser();
   }, [authHeader, isGuest]);
 
-  // --- Event Handlers ---
+  // --- Event Handlers (Unchanged) ---
   const handleCheckboxChange = (option: AnalysisOptionKey) => {
     setSelectedOptions(prev => ({ ...prev, [option]: !prev[option] }));
   };
@@ -106,6 +112,7 @@ export default function AnalyzerPage() {
     try {
       let entries: JournalEntry[] = [];
       if (isGuest) {
+        // Guest entries are filtered and mapped to ensure they have the correct shape
         entries = getGuestEntries()
           .filter(entry => {
             const entryDate = entry.createdAt.split('T')[0];
@@ -113,8 +120,9 @@ export default function AnalyzerPage() {
           })
           .map(entry => ({
             local_date: entry.createdAt.split('T')[0],
-            topics: entry.content,
-            rating: entry.rating,
+            topics: entry.topics,
+            alignment_rating: entry.alignment_rating ?? 0,
+            contentment_rating: entry.contentment_rating ?? 0,
           }));
       } else {
         const res = await apiFetch(`/api/journal?start_date=${startDate}&end_date=${endDate}`, { headers: authHeader() });
@@ -128,7 +136,11 @@ export default function AnalyzerPage() {
         return;
       }
 
-      const entryLines = entries.map(e => `- ${e.local_date} | rating: ${e.rating} | topics: ${e.topics}`).join("\n");
+      // MODIFIED: The prompt now includes both alignment_rating and contentment_rating.
+      const entryLines = entries.map(e => 
+        `- ${e.local_date} | alignment: ${e.alignment_rating}/10 | contentment: ${e.contentment_rating}/10 | topics: ${e.topics}`
+      ).join("\n");
+      
       const returnItems = activeOptions.map(key => `- ${key} – ${ANALYSIS_OPTIONS[key as AnalysisOptionKey]}`).join("\n");
 
       const generatedPrompt = `You are my personal progress assistant.
@@ -155,6 +167,7 @@ Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
     }
   };
   
+  // --- (Remaining event handlers and JSX are unchanged) ---
   const handleReset = () => {
       setFinalPrompt("");
       setNoEntriesMessage("");
@@ -183,7 +196,6 @@ Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
       <div className="card p-8 space-y-6 transition-all duration-500">
         {!finalPrompt ? (
           <>
-            {/* <h2 className="text-2xl font-bold">Summon Your Blueprint</h2> */}
              <h2 className="text-2xl font-bold flex items-center gap-2"><FaFlask /> Tweak the Ingredients</h2>
             <div className="form-group">
               <label htmlFor="goal">Your Ultimate Goal</label>

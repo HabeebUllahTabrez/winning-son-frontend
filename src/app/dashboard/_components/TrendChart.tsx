@@ -4,7 +4,7 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 type TrendChartProps = {
-    data: { local_date: string; points: number }[];
+    data: { local_date: string; karma: number }[];
 };
 
 export function TrendChart({ data }: TrendChartProps) {
@@ -28,12 +28,9 @@ export function TrendChart({ data }: TrendChartProps) {
                         borderRadius: '0.5rem',
                     }}
                     labelStyle={{ fontWeight: 'bold', color: '#111827', paddingBottom: '5px' }}
-                    // --- CHANGE FOR TOOLTIP ---
-                    // This function formats the tooltip's main label (the date)
                     labelFormatter={(label, payload) => {
                         if (payload && payload.length) {
                             const dateStr = payload[0].payload.local_date;
-                            // Format the date string into a more readable format
                             return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'long',
@@ -43,7 +40,7 @@ export function TrendChart({ data }: TrendChartProps) {
                         return label;
                     }}
                 />
-                <Bar dataKey="points" fill="#111827" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="karma" fill="#111827" radius={[4, 4, 0, 0]} />
             </BarChart>
         </ResponsiveContainer>
     );

@@ -34,7 +34,6 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
   useEffect(() => {
     const token = localStorage.getItem("token");
     const guest = isGuestUser();
-    console.log("Token:", token, "Guest:", guest);
 
     if (guest) {
       setAuthStatus("guest");
@@ -96,7 +95,6 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
     if (authStatus === "loading") {
       return null;
     }
-    console.log("Auth Status:", authStatus);
 
     // If we've confirmed the user is logged in or is a guest...
     if (authStatus === "loggedIn" || authStatus === "guest") {

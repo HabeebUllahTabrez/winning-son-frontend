@@ -58,12 +58,36 @@
     /* The focus shadow now becomes red to indicate the error */
     box-shadow: 2px 2px 0px var(--color-error);
   }
+
+  /* Highlight */
+  .highlight {
+  /* Lifts the card above other content */
+  position: relative;
+  z-index: 50; 
+  /* Points to our new, more dramatic animation */
+  animation: spotlight 3.5s ease-in-out;
+}
 }
 
 /* Your animations can remain as they are */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spotlight {
+  /* Start with just the card's normal shadow */
+  0% {
+    box-shadow: 8px 8px 0px var(--color-card-shadow), 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+  /* At 20%, fade in the dark overlay. It stays until 80% */
+  20%, 80% {
+    box-shadow: 8px 8px 0px var(--color-card-shadow), 0 0 0 200vmax rgba(0, 0, 0, 0.6);
+  }
+  /* At 100%, fade the overlay out, returning to normal */
+  100% {
+    box-shadow: 8px 8px 0px var(--color-card-shadow), 0 0 0 0 rgba(0, 0, 0, 0);
+  }
 }
 
 .animate-fade-in {
