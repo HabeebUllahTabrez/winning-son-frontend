@@ -125,7 +125,8 @@ export default function Journal() {
     setLoading(true);
     const entryData = {
       topics,
-      karma: alignmentRating, // Use alignmentRating for karma
+      alignment_rating: alignmentRating,
+      contentment_rating: contentmentRating,
       createdAt: journalDate,
       localDate: journalDate, // Use localDate instead of local_date
     };

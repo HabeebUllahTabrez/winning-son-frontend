@@ -33,15 +33,19 @@ export function CreateAccountForm({closeModal}: {closeModal?: () => void}) {
       const guestJournalEntries = JSON.parse(localStorage.getItem(GUEST_JOURNAL_ENTRIES_KEY) || "[]");
 
       type GuestJournalEntry = {
-        content: string;
-        rating: number;
+        topics: string;
+        alignment_rating: number;
+        contentment_rating: number;
+        local_date: string;
         createdAt: string;
+        rating?: number;
       };
 
       const modifiedJournalEntries = guestJournalEntries.map((entry: GuestJournalEntry) => ({
-        topics: entry.content,
-        rating: entry.rating,
-        local_date: entry.createdAt,
+        topics: entry.topics,
+        alignment_rating: entry.alignment_rating || entry.rating,
+        contentment_rating: entry.contentment_rating || entry.rating,
+        local_date: entry.local_date || entry.createdAt.split('T')[0],
       }));
 
       const payload = {
