@@ -118,7 +118,30 @@ export default function SubmissionsClient({ initialWeekStart }: { initialWeekSta
       router.replace(newUrl.pathname + newUrl.search);
     }
   };
-  const handleConfirmDelete = async () => { if (!entryToDelete) return; setIsDeleting(true); try { if (isGuest) { const entry = data.find(e => e.local_date === entryToDelete); if (entry && entry.id) deleteGuestEntry(entry.id); } else { await apiFetch(`/api/journal?local_date=${entryToDelete}`, { method: 'DELETE' }); } setData(prev => prev.filter(e => e.local_date !== entryToDelete)); toast.success("Entry deleted successfully."); } catch (e) { toast.error(e instanceof Error ? e.message : "Failed to delete entry."); } finally { setIsDeleting(false); setIsConfirmOpen(false); setEntryToDelete(null); } };
+  const handleConfirmDelete = async () => {
+    if (!entryToDelete) return;
+    setIsDeleting(true);
+    try {
+      if (isGuest) {
+        const entry = data.find(e => e.local_date === entryToDelete);
+        if (entry && entry.id) deleteGuestEntry(entry.id);
+      } else {
+        await apiFetch('/api/journal', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          data: { local_date: entryToDelete }
+        });
+      }
+      setData(prev => prev.filter(e => e.local_date !== entryToDelete));
+      toast.success("Entry deleted successfully.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to delete entry.");
+    } finally {
+      setIsDeleting(false);
+      setIsConfirmOpen(false);
+      setEntryToDelete(null);
+    }
+  };
 
   // --- (JSX remains the same) ---
   return (
