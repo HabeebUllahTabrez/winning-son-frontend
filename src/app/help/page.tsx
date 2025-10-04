@@ -82,7 +82,7 @@ export default function HelpPage() {
               </div>
               <h3 className="text-xl font-bold text-center">Log Daily (30 sec)</h3>
               <p className="text-base text-gray-700">
-                Every evening, log what you worked on and link it to your goals. Rate your satisfaction. That's it. Build the habit.
+                Every evening, log what you worked on and link it to your goals. Rate your satisfaction. That&apos;s it. Build the habit.
               </p>
             </div>
 
@@ -119,11 +119,11 @@ export default function HelpPage() {
               question="Will I actually stick with this? (I've tried other apps...)"
               answer={
                 <div>
-                  <p className="mb-2">Fair question. Here's why this is different:</p>
+                  <p className="mb-2">Fair question. Here&apos;s why this is different:</p>
                   <ul className="list-disc pl-6 space-y-1">
-                    <li><strong>30 seconds to log.</strong> Not 10 minutes of "deep reflection."</li>
-                    <li><strong>You see results fast.</strong> After just 7 days, you'll discover patterns you never knew existed.</li>
-                    <li><strong>No guilt trips.</strong> We're not here to shame you. We're here to show you the truth so you can choose better.</li>
+                    <li><strong>30 seconds to log.</strong> Not 10 minutes of &quot;deep reflection.&quot;</li>
+                    <li><strong>You see results fast.</strong> After just 7 days, you&apos;ll discover patterns you never knew existed.</li>
+                    <li><strong>No guilt trips.</strong> We&apos;re not here to shame you. We&apos;re here to show you the truth so you can choose better.</li>
                   </ul>
                 </div>
               }
@@ -182,7 +182,7 @@ export default function HelpPage() {
             <FaComments className="text-5xl text-green-600 mx-auto" />
             <h2 className="text-2xl md:text-3xl font-bold">Have Feedback?</h2>
             <p className="text-base md:text-lg text-gray-700">
-              We'd love to hear your thoughts and suggestions!
+              We&apos;d love to hear your thoughts and suggestions!
             </p>
             <a
               href="https://winningsoninator.featurebase.app/"
