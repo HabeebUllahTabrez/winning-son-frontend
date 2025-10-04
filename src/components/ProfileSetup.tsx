@@ -41,9 +41,10 @@ export function ProfileSetup() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Auth header no longer needed - httpOnly cookies handle authentication
+  // Keeping this function for backward compatibility but it returns empty object
   const authHeader = useCallback(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    return { Authorization: `Bearer ${token}` };
+    return {};
   }, []);
 
   const handleNext = () => {

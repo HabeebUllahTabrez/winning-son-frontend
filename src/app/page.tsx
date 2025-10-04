@@ -60,13 +60,22 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setAuthStatus("authed");
-      router.push("/dashboard");
-    } else {
-      setAuthStatus("unauthed");
-    }
+    // Check authentication status via API (checks httpOnly cookie)
+    const checkAuth = async () => {
+      try {
+        const res = await apiFetch("/api/auth/check");
+        if (res.status === 200 && res.data?.authenticated) {
+          setAuthStatus("authed");
+          router.push("/dashboard");
+        } else {
+          setAuthStatus("unauthed");
+        }
+      } catch {
+        setAuthStatus("unauthed");
+      }
+    };
+
+    checkAuth();
   }, [router]);
 
   const isFormInvalid = useMemo(() => {
@@ -112,7 +121,7 @@ export default function Home() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setServerError("");
-    
+
     if (!validateForm()) return;
 
     setLoading(true);
@@ -124,12 +133,12 @@ export default function Home() {
       });
 
       if (res.status < 200 || res.status >= 300) {
-        const errorMessage = typeof res.data === "string" ? res.data : "An unexpected error occurred.";
+        const errorMessage = typeof res.data === "string" ? res.data : res.data?.message || "An unexpected error occurred.";
         throw new Error(errorMessage);
       }
 
-      const data: { token: string } = res.data;
-      localStorage.setItem("token", data.token);
+      // No need to store token - it's in httpOnly cookie
+      // Just redirect to dashboard
       router.push("/dashboard");
 
     } catch (e: unknown) {

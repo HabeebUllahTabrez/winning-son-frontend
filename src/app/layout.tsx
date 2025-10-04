@@ -32,15 +32,28 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
 
   // Effect to check login status and close menu on page change
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const guest = isGuestUser();
+    const checkAuthStatus = async () => {
+      const guest = isGuestUser();
 
-    if (guest) {
-      setAuthStatus("guest");
-    } else {
-      setAuthStatus(token ? "loggedIn" : "loggedOut");
-    }
-    
+      if (guest) {
+        setAuthStatus("guest");
+      } else {
+        try {
+          // Check auth via httpOnly cookie
+          const res = await fetch("/api/auth/check");
+          if (res.ok) {
+            const data = await res.json();
+            setAuthStatus(data.authenticated ? "loggedIn" : "loggedOut");
+          } else {
+            setAuthStatus("loggedOut");
+          }
+        } catch {
+          setAuthStatus("loggedOut");
+        }
+      }
+    };
+
+    checkAuthStatus();
     setIsMenuOpen(false); // Close mobile menu on navigation
   }, [pathname]);
 

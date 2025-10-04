@@ -60,9 +60,9 @@ export default function AnalyzerPage() {
 
   const isGuest = isGuestUser();
 
+  // Auth header no longer needed - httpOnly cookies handle authentication
   const authHeader = useCallback(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    return { Authorization: `Bearer ${token}` };
+    return {};
   }, []);
 
   // --- Data Fetching (Unchanged) ---
