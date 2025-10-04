@@ -66,46 +66,82 @@ export function SubmissionHistoryChart() {
     };
 
     const groupByWeekAndMonth = () => {
-        if (!data) return [];
+        if (!data || !data.history.length) return [];
 
-        const monthsData: { [key: string]: { monthName: string; weeks: HistoryItem[][] } } = {};
-
+        // Create a map of dates for quick lookup
+        const dateMap = new Map<string, HistoryItem>();
         data.history.forEach(item => {
-            const date = new Date(item.local_date + 'T00:00:00');
-            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-            const monthName = date.toLocaleDateString('en-US', { month: 'short' });
-
-            if (!monthsData[monthKey]) {
-                monthsData[monthKey] = { monthName, weeks: [] };
-            }
+            dateMap.set(item.local_date, item);
         });
 
-        // Group days into weeks (rows)
-        data.history.forEach(item => {
-            const date = new Date(item.local_date + 'T00:00:00');
-            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-            const dayOfWeek = date.getDay();
+        const firstDate = new Date(data.history[0].local_date + 'T00:00:00');
+        const lastDate = new Date(data.history[data.history.length - 1].local_date + 'T00:00:00');
 
-            // Find or create the appropriate week
-            const monthData = monthsData[monthKey];
-            let currentWeek = monthData.weeks[monthData.weeks.length - 1];
+        // Find the Sunday before or on the first date
+        const startDate = new Date(firstDate);
+        startDate.setDate(startDate.getDate() - startDate.getDay());
 
-            if (!currentWeek || (currentWeek.length > 0 && dayOfWeek === 0)) {
-                currentWeek = [];
-                monthData.weeks.push(currentWeek);
-            }
+        // Find the Saturday after or on the last date
+        const endDate = new Date(lastDate);
+        endDate.setDate(endDate.getDate() + (6 - endDate.getDay()));
 
-            // Add empty days if this is the first item in first week
-            if (monthData.weeks.length === 1 && currentWeek.length === 0) {
-                for (let i = 0; i < dayOfWeek; i++) {
-                    currentWeek.push({ local_date: '', has_submission: false });
+        // Build weeks as columns (each week is an array of 7 days)
+        const weeks: HistoryItem[][] = [];
+        const currentDate = new Date(startDate);
+
+        while (currentDate <= endDate) {
+            const week: HistoryItem[] = [];
+
+            for (let day = 0; day < 7; day++) {
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const item = dateMap.get(dateStr);
+
+                if (item) {
+                    week.push(item);
+                } else {
+                    week.push({ local_date: '', has_submission: false });
                 }
+
+                currentDate.setDate(currentDate.getDate() + 1);
             }
 
-            currentWeek.push(item);
+            weeks.push(week);
+        }
+
+        // Group weeks by month for labels
+        const monthsData: { monthName: string; weeks: HistoryItem[][] }[] = [];
+        let currentMonth = -1;
+        let currentMonthData: { monthName: string; weeks: HistoryItem[][] } | null = null;
+
+        weeks.forEach(week => {
+            // Use the first real date in the week to determine the month
+            const firstRealDay = week.find(d => d.local_date !== '');
+            if (!firstRealDay) return;
+
+            const date = new Date(firstRealDay.local_date + 'T00:00:00');
+            const month = date.getMonth();
+
+            if (month !== currentMonth) {
+                if (currentMonthData) {
+                    monthsData.push(currentMonthData);
+                }
+                currentMonth = month;
+                currentMonthData = {
+                    monthName: date.toLocaleDateString('en-US', { month: 'short' }),
+                    weeks: []
+                };
+            }
+
+            if (currentMonthData) {
+                currentMonthData.weeks.push(week);
+            }
         });
 
-        return Object.values(monthsData);
+        if (currentMonthData) {
+            monthsData.push(currentMonthData);
+        }
+
+        return monthsData;
     };
 
     return (
@@ -173,7 +209,7 @@ export function SubmissionHistoryChart() {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
                 </div>
             ) : data ? (
-                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border-2 border-black">
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border-2 border-black min-h-[200px] overflow-y-hidden">
                     {viewMode === 'month' ? (
                         /* Month View with Weekday Labels */
                         <div className="max-w-xs mx-auto">
@@ -196,70 +232,85 @@ export function SubmissionHistoryChart() {
                                 ))}
 
                                 {/* Render days */}
-                                {data.history.map((item) => (
-                                    <div
-                                        key={item.local_date}
-                                        className={`
-                                            aspect-square rounded transition-all cursor-pointer hover:scale-105
-                                            ${item.has_submission ? 'bg-green-500' : 'bg-gray-200'}
-                                        `}
-                                        title={`${item.local_date}: ${item.has_submission ? 'Entry created' : 'No entry'}`}
-                                    />
-                                ))}
+                                {data.history.map((item) => {
+                                    const formattedDate = new Date(item.local_date + 'T00:00:00').toLocaleDateString('en-US', {
+                                        weekday: 'short',
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                    });
+                                    return (
+                                        <div
+                                            key={item.local_date}
+                                            className={`
+                                                aspect-square rounded transition-all cursor-pointer hover:scale-105
+                                                ${item.has_submission ? 'bg-green-500' : 'bg-gray-200'}
+                                            `}
+                                            title={`${formattedDate}: ${item.has_submission ? 'Entry created' : 'No entry'}`}
+                                        />
+                                    );
+                                })}
                             </div>
                         </div>
                     ) : (
                         /* Year View - GitHub Style */
-                        <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
-                            <div className="min-w-max">
+                        <div className="overflow-x-auto overflow-y-hidden">
+                            <div className="inline-block min-w-full">
                                 {/* Month Labels */}
-                                <div className="flex gap-[2px] sm:gap-1 mb-2 ml-6 sm:ml-8">
-                                    {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((month, idx) => {
-                                        const monthData = groupByWeekAndMonth()[idx];
-                                        if (!monthData) return null;
-                                        const weekCount = monthData.weeks.length;
-                                        const cellSize = typeof window !== 'undefined' && window.innerWidth < 640 ? 7 : 10;
-                                        return (
+                                <div className="flex items-center mb-3">
+                                    <div className="w-12 flex-shrink-0"></div>
+                                    <div className="flex gap-1">
+                                        {groupByWeekAndMonth().map((monthData, idx) => (
                                             <div
-                                                key={month}
-                                                className="text-[9px] sm:text-[10px] font-medium text-gray-600"
-                                                style={{ width: `${weekCount * cellSize}px` }}
+                                                key={idx}
+                                                className="text-xs font-semibold text-gray-700"
+                                                style={{ width: `${monthData.weeks.length * 12 + (monthData.weeks.length - 1) * 4}px` }}
                                             >
-                                                {month}
+                                                {monthData.monthName}
                                             </div>
-                                        );
-                                    })}
+                                        ))}
+                                    </div>
                                 </div>
 
                                 {/* Grid with Day Labels */}
-                                <div className="flex gap-[2px] sm:gap-1">
+                                <div className="flex items-start">
                                     {/* Day of week labels */}
-                                    <div className="flex flex-col gap-[2px] sm:gap-1 justify-between text-[9px] sm:text-[10px] text-gray-600 pr-1 sm:pr-2">
-                                        <div>Mon</div>
-                                        <div className="invisible">Tue</div>
-                                        <div>Wed</div>
-                                        <div className="invisible">Thu</div>
-                                        <div>Fri</div>
-                                        <div className="invisible">Sat</div>
-                                        <div className="invisible">Sun</div>
+                                    <div className="w-12 flex-shrink-0 flex flex-col gap-1 text-xs font-medium text-gray-600 pr-3 sticky left-0 bg-gray-50 z-10">
+                                        <div className="h-3 flex items-center">Sun</div>
+                                        <div className="h-3 flex items-center">Mon</div>
+                                        <div className="h-3 flex items-center">Tue</div>
+                                        <div className="h-3 flex items-center">Wed</div>
+                                        <div className="h-3 flex items-center">Thu</div>
+                                        <div className="h-3 flex items-center">Fri</div>
+                                        <div className="h-3 flex items-center">Sat</div>
                                     </div>
 
                                     {/* Calendar Grid */}
-                                    <div className="flex gap-[2px] sm:gap-1">
+                                    <div className="flex gap-1">
                                         {groupByWeekAndMonth().map((monthData, monthIdx) => (
-                                            <div key={monthIdx} className="flex gap-[2px] sm:gap-1">
+                                            <div key={monthIdx} className="flex gap-1">
                                                 {monthData.weeks.map((week, weekIdx) => (
-                                                    <div key={weekIdx} className="flex flex-col gap-[2px] sm:gap-1">
-                                                        {week.map((item, dayIdx) => (
-                                                            <div
-                                                                key={`${weekIdx}-${dayIdx}`}
-                                                                className={`
-                                                                    w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-sm transition-all cursor-pointer hover:scale-110 sm:hover:scale-125
-                                                                    ${item.local_date ? (item.has_submission ? 'bg-green-500' : 'bg-gray-200') : ''}
-                                                                `}
-                                                                title={item.local_date ? `${item.local_date}: ${item.has_submission ? 'Entry created' : 'No entry'}` : ''}
-                                                            />
-                                                        ))}
+                                                    <div key={weekIdx} className="flex flex-col gap-1">
+                                                        {week.map((item, dayIdx) => {
+                                                            const formattedDate = item.local_date
+                                                                ? new Date(item.local_date + 'T00:00:00').toLocaleDateString('en-US', {
+                                                                    weekday: 'short',
+                                                                    year: 'numeric',
+                                                                    month: 'short',
+                                                                    day: 'numeric'
+                                                                  })
+                                                                : '';
+                                                            return (
+                                                                <div
+                                                                    key={`${weekIdx}-${dayIdx}`}
+                                                                    className={`
+                                                                        w-3 h-3 rounded transition-all cursor-pointer hover:scale-110
+                                                                        ${item.local_date ? (item.has_submission ? 'bg-green-500' : 'bg-gray-200') : ''}
+                                                                    `}
+                                                                    title={item.local_date ? `${formattedDate}: ${item.has_submission ? 'Entry created' : 'No entry'}` : ''}
+                                                                />
+                                                            );
+                                                        })}
                                                     </div>
                                                 ))}
                                             </div>
