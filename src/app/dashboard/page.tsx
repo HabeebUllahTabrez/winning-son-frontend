@@ -164,6 +164,22 @@ export default function Dashboard() {
                             <StatCard title="Entries This Week" value={dashboardData?.entries_this_week || 0} icon={<FaCalendarCheck className="text-blue-500" />} />
                         </div>
                     </section>
+
+                    {/* Also show SubmissionHistory for Guest */}
+                    <section className="card p-6">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Submission History</h2>
+                        <p className="text-gray-600 mb-4">Track your journal entries over time (max 1 year)</p>
+                        <SubmissionHistoryChart
+                            isGuest={isGuest}
+                            journalEntries={(() => {
+                                const entries = JSON.parse(localStorage.getItem("guestJournalEntries") || "[]");
+                                return entries.map((entry: any) => ({
+                                    local_date: entry.localDate,
+                                    has_submission: true
+                                }));
+                            })()}
+                        />
+                    </section>
                     
                     {/* Locked Stats for Guest */}
                     <div className="relative pt-6">

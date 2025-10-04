@@ -18,7 +18,8 @@ type SubmissionHistoryData = {
 
 type ViewMode = 'month' | 'year';
 
-export function SubmissionHistoryChart() {
+export function SubmissionHistoryChart({ isGuest, journalEntries = [] }: { isGuest?: boolean; journalEntries?: any[] }) {
+
     const [data, setData] = useState<SubmissionHistoryData | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -31,9 +32,61 @@ export function SubmissionHistoryChart() {
 
     useEffect(() => {
         loadHistory();
-    }, [viewMode, selectedMonth, selectedYear]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [viewMode, selectedMonth, selectedYear, isGuest]);
 
     const loadHistory = async () => {
+        if (isGuest) {
+            // For guests: generate full calendar view from sparse journal entries
+            if (!journalEntries || journalEntries.length === 0) {
+                setData(null);
+                return;
+            }
+
+            // Create a Set of dates that have journal entries for O(1) lookup
+            const entryDatesSet = new Set(journalEntries.map(entry => entry.local_date));
+
+            // Determine the date range based on view mode
+            let startDate: Date;
+            let endDate: Date;
+
+            if (viewMode === 'month') {
+                // Month view: show selected month
+                const [year, month] = selectedMonth.split('-').map(Number);
+                startDate = new Date(year, month - 1, 1);
+                endDate = new Date(year, month, 0);
+            } else {
+                // Year view: show selected year
+                startDate = new Date(selectedYear, 0, 1);
+                endDate = new Date(selectedYear, 11, 31);
+            }
+
+            // Build complete history for the selected period
+            const fullHistory: HistoryItem[] = [];
+            const currentDate = new Date(startDate);
+
+            while (currentDate <= endDate) {
+                const dateStr = currentDate.toISOString().split('T')[0];
+                fullHistory.push({
+                    local_date: dateStr,
+                    has_submission: entryDatesSet.has(dateStr)
+                });
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            // Safety check: ensure we have data before setting
+            if (fullHistory.length === 0) {
+                setData(null);
+                return;
+            }
+
+            setData({
+                start_date: fullHistory[0].local_date,
+                end_date: fullHistory[fullHistory.length - 1].local_date,
+                history: fullHistory,
+            });
+            return;
+        }
         setLoading(true);
         setError("");
         try {
