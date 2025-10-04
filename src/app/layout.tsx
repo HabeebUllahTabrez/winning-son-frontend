@@ -140,7 +140,7 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
     }
 
     // Otherwise, the user is logged out.
-    return <NavLink href="/" label="Login" />;
+    return <NavLink href="/login" label="Login" />;
   };
 
   return (
