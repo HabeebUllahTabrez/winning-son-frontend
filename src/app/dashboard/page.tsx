@@ -8,6 +8,7 @@ import { StatCard } from "./_components/StatCard";
 import { TrendChart } from "./_components/TrendChart";
 import { CallToAction } from "./_components/CallToAction";
 import { DashboardSkeleton } from "./_components/DashboardSkeleton";
+import { SubmissionHistoryChart } from "./_components/SubmissionHistoryChart";
 import { ProfileSetupGuard } from "@/components/ProfileSetupGuard";
 import { FaCalendarCheck, FaChartLine, FaFire, FaFlagCheckered, FaLock, FaStar } from "react-icons/fa";
 import { formatDateForAPI } from "@/lib/dateUtils";
@@ -163,6 +164,22 @@ export default function Dashboard() {
                             <StatCard title="Entries This Week" value={dashboardData?.entries_this_week || 0} icon={<FaCalendarCheck className="text-blue-500" />} />
                         </div>
                     </section>
+
+                    {/* Also show SubmissionHistory for Guest */}
+                    <section className="card p-6">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Submission History</h2>
+                        <p className="text-gray-600 mb-4">Track your journal entries over time (max 1 year)</p>
+                        <SubmissionHistoryChart
+                            isGuest={isGuest}
+                            journalEntries={(() => {
+                                const entries = JSON.parse(localStorage.getItem("guestJournalEntries") || "[]") as Array<{ localDate: string }>;
+                                return entries.map((entry) => ({
+                                    local_date: entry.localDate,
+                                    has_submission: true
+                                }));
+                            })()}
+                        />
+                    </section>
                     
                     {/* Locked Stats for Guest */}
                     <div className="relative pt-6">
@@ -279,6 +296,12 @@ export default function Dashboard() {
                         <div className="h-72">
                             <TrendChart data={dashboardData.last7_days_trend} />
                         </div>
+                    </section>
+
+                    <section className="card p-6">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Submission History</h2>
+                        <p className="text-gray-600 mb-4">Track your journal entries over time (max 1 year)</p>
+                        <SubmissionHistoryChart />
                     </section>
                     
                     <section>
