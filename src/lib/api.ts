@@ -36,16 +36,18 @@ apiClient.interceptors.response.use(
     (error) => {
         // Check for a 401 Unauthorized response
         if (error.response && error.response.status === 401) {
-            const responseData = error.response.data;
-            const errorMessage = typeof responseData === 'string' ? responseData : JSON.stringify(responseData);
+            // Only redirect authenticated users (not guests)
+            if (typeof window !== 'undefined' && !isGuestUser()) {
+                console.error("Authentication failed. Redirecting to login.");
 
-            if (errorMessage.includes("Invalid token") || errorMessage.includes("invalid token") || errorMessage.includes("authenticated")) {
-                // Only redirect authenticated users (not guests)
-                if (typeof window !== 'undefined' && !isGuestUser()) {
-                    console.error("Invalid or expired token. Logging out.");
-                    // Call logout endpoint to clear cookie
-                    logout();
-                }
+                // Clear the auth cookie by calling logout endpoint
+                // Use fetch directly to avoid infinite loop with interceptor
+                fetch('/api/auth/logout', { method: 'POST' })
+                    .catch(err => console.error('Logout error:', err))
+                    .finally(() => {
+                        // Redirect to login page
+                        window.location.href = "/login";
+                    });
             }
         }
         return Promise.reject(error);
