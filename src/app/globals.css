@@ -63,7 +63,7 @@
   .highlight {
   /* Lifts the card above other content */
   position: relative;
-  z-index: 50; 
+  z-index: 10;
   /* Points to our new, more dramatic animation */
   animation: spotlight 3.5s ease-in-out;
 }

@@ -108,7 +108,16 @@ export default function SubmissionsClient({ initialWeekStart }: { initialWeekSta
   const handlePreviousWeek = () => { const newDate = new Date(weekStartDate); newDate.setDate(weekStartDate.getDate() - 7); setWeekStartDate(newDate); };
   const handleNextWeek = () => { const newDate = new Date(weekStartDate); newDate.setDate(weekStartDate.getDate() + 7); setWeekStartDate(newDate); };
   const handleGoToToday = () => { setWeekStartDate(getStartOfWeek(new Date())); };
-  const handleDeleteClick = (date: string) => { setEntryToDelete(date); setIsConfirmOpen(true); };
+  const handleDeleteClick = (date: string) => {
+    setEntryToDelete(date);
+    setIsConfirmOpen(true);
+    // Clear highlight from URL to prevent z-index conflicts
+    if (highlightedDate) {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('highlighted');
+      router.replace(newUrl.pathname + newUrl.search);
+    }
+  };
   const handleConfirmDelete = async () => { if (!entryToDelete) return; setIsDeleting(true); try { if (isGuest) { const entry = data.find(e => e.local_date === entryToDelete); if (entry && entry.id) deleteGuestEntry(entry.id); } else { await apiFetch(`/api/journal?local_date=${entryToDelete}`, { method: 'DELETE' }); } setData(prev => prev.filter(e => e.local_date !== entryToDelete)); toast.success("Entry deleted successfully."); } catch (e) { toast.error(e instanceof Error ? e.message : "Failed to delete entry."); } finally { setIsDeleting(false); setIsConfirmOpen(false); setEntryToDelete(null); } };
 
   // --- (JSX remains the same) ---
