@@ -120,7 +120,7 @@ export default function HomePage() {
 
           {/* Subheadline - Funny but Real */}
           <p className="text-center text-lg sm:text-xl md:text-2xl font-semibold text-gray-700 max-w-3xl mx-auto mb-16 px-4 leading-relaxed">
-            Because "busy" doesn't mean "productive"<br className="hidden sm:block" />
+            Because &quot;busy&quot; doesn&apos;t mean &quot;productive&quot;<br className="hidden sm:block" />
             and your to-do list is <span className="underline decoration-wavy decoration-red-500">lying</span> to you.
           </p>
 
@@ -163,10 +163,10 @@ export default function HomePage() {
 
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-5xl font-bold mb-4">
-              Let's Be Honest For a Second...
+              Let&apos;s Be Honest For a Second...
             </h2>
             <p className="text-lg md:text-xl text-gray-600">
-              (Don't worry, your therapist won't see this)
+              (Don&apos;t worry, your therapist won&apos;t see this)
             </p>
           </div>
 
@@ -177,7 +177,7 @@ export default function HomePage() {
               <div className="text-5xl md:text-6xl mb-4">🎭</div>
               <h3 className="text-xl md:text-2xl font-bold mb-3">The Busy-ness Theater</h3>
               <p className="text-base md:text-lg text-gray-700 leading-relaxed">
-                You're in 47 meetings, sent 200 emails, and updated 12 spreadsheets.
+                You&apos;re in 47 meetings, sent 200 emails, and updated 12 spreadsheets.
                 <span className="block mt-2 font-bold text-red-700">
                   But did you actually move the needle on what matters?
                 </span>
@@ -189,9 +189,9 @@ export default function HomePage() {
               <div className="text-5xl md:text-6xl mb-4">🔄</div>
               <h3 className="text-xl md:text-2xl font-bold mb-3">The Groundhog Day Loop</h3>
               <p className="text-base md:text-lg text-gray-700 leading-relaxed">
-                Same mistakes. Same distractions. Same "I'll start tomorrow."
+                Same mistakes. Same distractions. Same &quot;I&apos;ll start tomorrow.&quot;
                 <span className="block mt-2 font-bold text-orange-700">
-                  Without data, you're just guessing why you keep failing.
+                  Without data, you&apos;re just guessing why you keep failing.
                 </span>
               </p>
             </div>
@@ -201,7 +201,7 @@ export default function HomePage() {
               <div className="text-5xl md:text-6xl mb-4">🎢</div>
               <h3 className="text-xl md:text-2xl font-bold mb-3">The Passenger Seat Life</h3>
               <p className="text-base md:text-lg text-gray-700 leading-relaxed">
-                Your calendar controls you. Urgent tasks hijack your day. You're reacting, not creating.
+                Your calendar controls you. Urgent tasks hijack your day. You&apos;re reacting, not creating.
                 <span className="block mt-2 font-bold text-purple-700">
                   When did you stop driving your own life?
                 </span>
@@ -219,15 +219,15 @@ export default function HomePage() {
           <div className="text-center mb-12">
             <div className="inline-block mb-4">
               <span className="bg-green-300 text-black px-4 py-2 font-bold text-sm md:text-base border-2 border-black transform rotate-1 inline-block">
-                🎯 HERE'S THE TWIST
+                🎯 HERE&apos;S THE TWIST
               </span>
             </div>
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              You Don't Need Another Guru.<br />
+              You Don&apos;t Need Another Guru.<br />
               You Need a Mirror.
             </h2>
             <p className="text-lg md:text-2xl text-gray-700 max-w-3xl mx-auto">
-              We don't tell you what to do. We show you <span className="font-bold underline">what you're actually doing</span> vs. what you <span className="italic">think</span> you're doing.
+              We don&apos;t tell you what to do. We show you <span className="font-bold underline">what you&apos;re actually doing</span> vs. what you <span className="italic">think</span> you&apos;re doing.
             </p>
           </div>
 
@@ -236,7 +236,7 @@ export default function HomePage() {
             <div className="flex items-start gap-4 mb-6">
               <div className="text-4xl">🔮</div>
               <div>
-                <h3 className="text-2xl md:text-3xl font-bold mb-2">The "Wait, WTF?" Moment</h3>
+                <h3 className="text-2xl md:text-3xl font-bold mb-2">The &quot;Wait, WTF?&quot; Moment</h3>
                 <p className="text-lg text-gray-600 italic">
                   (Also known as: AI-powered self-awareness)
                 </p>
@@ -247,28 +247,28 @@ export default function HomePage() {
               <div className="bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300">
                 <p className="text-base md:text-lg text-gray-800 font-semibold mb-2">💡 For Example:</p>
                 <p className="text-base md:text-lg text-gray-700 italic">
-                  "We noticed you're 3x more productive on days you work out in the morning. But you only did it twice this month. What's stopping you?"
+                  &quot;We noticed you&apos;re 3x more productive on days you work out in the morning. But you only did it twice this month. What&apos;s stopping you?&quot;
                 </p>
               </div>
 
               <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-300">
                 <p className="text-base md:text-lg text-gray-800 font-semibold mb-2">📊 Or This:</p>
                 <p className="text-base md:text-lg text-gray-700 italic">
-                  "You spent 40% of your time on 'urgent' tasks that contributed 0% to your main goal. Time to rethink priorities?"
+                  &quot;You spent 40% of your time on &apos;urgent&apos; tasks that contributed 0% to your main goal. Time to rethink priorities?&quot;
                 </p>
               </div>
 
               <div className="bg-red-50 p-6 rounded-lg border-2 border-red-300">
                 <p className="text-base md:text-lg text-gray-800 font-semibold mb-2">🚨 And Sometimes:</p>
                 <p className="text-base md:text-lg text-gray-700 italic">
-                  "You haven't touched that 'important' project in 12 days. Maybe it's time to admit it's not important to you?"
+                  &quot;You haven&apos;t touched that &apos;important&apos; project in 12 days. Maybe it&apos;s time to admit it&apos;s not important to you?&quot;
                 </p>
               </div>
             </div>
 
             <div className="mt-8 text-center">
               <p className="text-xl md:text-2xl font-bold text-gray-800">
-                This isn't generic advice.<br />
+                This isn&apos;t generic advice.<br />
                 <span className="text-blue-600">This is YOUR truth.</span>
               </p>
             </div>
@@ -286,7 +286,7 @@ export default function HomePage() {
               What You Actually Get
             </h2>
             <p className="text-lg md:text-xl text-gray-600">
-              (Spoiler: It's stupidly simple)
+              (Spoiler: It&apos;s stupidly simple)
             </p>
           </div>
 
@@ -345,7 +345,7 @@ export default function HomePage() {
               </div>
               <div className="space-y-4">
                 <p className="text-base md:text-lg text-gray-700">
-                  <span className="font-bold">"I thought I was killing it.</span> 60-hour weeks, always available, always in meetings."
+                  <span className="font-bold">&quot;I thought I was killing it.</span> 60-hour weeks, always available, always in meetings.&quot;
                 </p>
                 <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
                   <p className="text-sm md:text-base font-semibold text-red-800">The Truth:</p>
@@ -369,11 +369,11 @@ export default function HomePage() {
               </div>
               <div className="space-y-4">
                 <p className="text-base md:text-lg text-gray-700">
-                  <span className="font-bold">"I felt so guilty</span> whenever I wasn't 'hustling.' Was I doing enough?"
+                  <span className="font-bold">&quot;I felt so guilty</span> whenever I wasn&apos;t &apos;hustling.&apos; Was I doing enough?&quot;
                 </p>
                 <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
                   <p className="text-sm md:text-base font-semibold text-red-800">The Truth:</p>
-                  <p className="text-sm md:text-base text-red-700">Instagram 'marketing' had ZERO correlation with new clients.</p>
+                  <p className="text-sm md:text-base text-red-700">Instagram &apos;marketing&apos; had ZERO correlation with new clients.</p>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
                   <p className="text-sm md:text-base font-semibold text-green-800">After Using This:</p>
@@ -405,7 +405,7 @@ export default function HomePage() {
 
           <p className="text-lg md:text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
             30 seconds a day. 7 days to see patterns. Zero bullsh*t. <br />
-            Your future self is watching. Don't let them down.
+            Your future self is watching. Don&apos;t let them down.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
