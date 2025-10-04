@@ -89,68 +89,71 @@ export default function HomePage() {
     <main className="bg-gray-50">
 
       {/* HERO SECTION - Dramatic & Funny */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 border-b-4 border-black">
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 border-b-4 border-black min-h-screen flex items-center">
         {/* Decorative Elements */}
-        <div className="absolute top-10 left-10 text-6xl opacity-20 animate-pulse">💪</div>
-        <div className="absolute bottom-20 right-20 text-6xl opacity-20 animate-pulse" style={{ animationDelay: "1s" }}>🔥</div>
-        <div className="absolute top-1/2 left-1/4 text-4xl opacity-10">📊</div>
-        <div className="absolute top-1/3 right-1/3 text-4xl opacity-10">🎯</div>
+        <div className="absolute top-10 left-10 text-7xl md:text-8xl opacity-30 animate-pulse hidden md:block">💪</div>
+        <div className="absolute bottom-20 right-20 text-7xl md:text-8xl opacity-30 animate-pulse hidden md:block" style={{ animationDelay: "1s" }}>🔥</div>
+        <div className="absolute top-1/4 right-1/4 text-5xl opacity-20 hidden lg:block">📊</div>
+        <div className="absolute bottom-1/3 left-1/3 text-5xl opacity-20 hidden lg:block">🎯</div>
 
-        <div className="max-w-6xl mx-auto px-4 py-16 md:py-24 relative z-10">
-          <div className="text-center space-y-8">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
 
-            {/* Eyebrow */}
-            <div className="inline-block">
-              <span className="bg-yellow-300 text-black px-4 py-2 font-bold text-sm md:text-base border-2 border-black transform -rotate-1 inline-block">
-                ⚡ STOP LYING TO YOURSELF ⚡
-              </span>
-            </div>
-
-            {/* Main Headline - Dramatic */}
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold leading-none">
-              <span className="block text-black">Are Ya</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mt-2">
-                WINNING
-              </span>
-              <span className="block text-black mt-2">Son?</span>
-            </h1>
-
-            {/* Subheadline - Funny but Real */}
-            <p className="text-xl md:text-3xl font-bold text-gray-800 max-w-4xl mx-auto leading-relaxed">
-              Because "busy" doesn't mean "productive"<br className="hidden md:block" />
-              and your to-do list is <span className="underline decoration-wavy decoration-red-500">lying</span> to you.
-            </p>
-
-            {/* Social Proof / Hook */}
-            <div className="flex flex-wrap justify-center gap-4 md:gap-8 pt-4">
-              <StatBox number="30 sec" label="Daily Logging" />
-              <StatBox number="7 days" label="To See Patterns" />
-              <StatBox number="0%" label="Bullsh*t" />
-            </div>
-
-            {/* Primary CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-              <Link
-                href="/login"
-                className="group card px-8 py-4 bg-black text-white hover:bg-white hover:text-black transition-all text-center font-bold text-lg md:text-xl w-full sm:w-auto border-4 border-black relative overflow-hidden"
-              >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  Start Winning <FaBolt className="group-hover:animate-pulse" />
-                </span>
-              </Link>
-
-              <button
-                onClick={handleGuestMode}
-                className="card px-8 py-4 bg-white hover:bg-gray-100 transition-all text-center font-bold text-lg md:text-xl w-full sm:w-auto border-4 border-black"
-              >
-                Just Browsing 👀
-              </button>
-            </div>
-
-            <p className="text-sm text-gray-600">
-              No credit card. No commitment. No dad jokes... okay maybe one.
-            </p>
+          {/* Eyebrow */}
+          <div className="flex justify-center mb-12">
+            <span className="bg-yellow-300 text-black px-6 py-3 font-bold text-base md:text-lg border-2 border-black transform -rotate-1 inline-block shadow-lg">
+              ⚡ STOP LYING TO YOURSELF ⚡
+            </span>
           </div>
+
+          {/* Main Headline - Dramatic */}
+          <h1 className="text-center mb-12 leading-tight">
+            <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-black mb-2">
+              Are Ya
+            </span>
+            <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 my-6">
+              WINNING
+            </span>
+            <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-black mt-2">
+              Son?
+            </span>
+          </h1>
+
+          {/* Subheadline - Funny but Real */}
+          <p className="text-center text-lg sm:text-xl md:text-2xl font-semibold text-gray-700 max-w-3xl mx-auto mb-16 px-4 leading-relaxed">
+            Because "busy" doesn't mean "productive"<br className="hidden sm:block" />
+            and your to-do list is <span className="underline decoration-wavy decoration-red-500">lying</span> to you.
+          </p>
+
+          {/* Social Proof / Hook */}
+          <div className="flex flex-wrap justify-center gap-12 md:gap-20 mb-16 px-4">
+            <StatBox number="59 sec" label="Daily Logging" />
+            <StatBox number="7 days" label="To See Patterns" />
+            <StatBox number="0%" label="Bullsh*t" />
+          </div>
+
+          {/* Primary CTAs */}
+          <div className="flex flex-col sm:flex-row justify-center gap-5 max-w-2xl mx-auto mb-8 px-4">
+            <Link
+              href="/login"
+              className="group card px-10 py-5 bg-black text-white hover:bg-white hover:text-black transition-all text-center font-bold text-lg md:text-xl border-4 border-black relative overflow-hidden"
+            >
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                Start Winning <FaBolt className="group-hover:animate-pulse" />
+              </span>
+            </Link>
+
+            <button
+              onClick={handleGuestMode}
+              className="card px-10 py-5 bg-white hover:bg-gray-100 transition-all text-center font-bold text-lg md:text-xl border-4 border-black"
+            >
+              Just Browsing 👀
+            </button>
+          </div>
+
+          <p className="text-center text-base text-gray-600">
+            No credit card. No commitment. No dad jokes... okay maybe one.
+          </p>
+
         </div>
       </section>
 
