@@ -126,7 +126,7 @@ export default function HomePage() {
 
           {/* Social Proof / Hook */}
           <div className="flex flex-wrap justify-center gap-12 md:gap-20 mb-16 px-4">
-            <StatBox number="59 sec" label="Daily Logging" />
+            <StatBox number="60 sec" label="Daily Logging" />
             <StatBox number="7 days" label="To See Patterns" />
             <StatBox number="0%" label="Bullsh*t" />
           </div>
@@ -404,7 +404,7 @@ export default function HomePage() {
           </p>
 
           <p className="text-lg md:text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-            30 seconds a day. 7 days to see patterns. Zero bullsh*t. <br />
+            60 seconds a day. 7 days to see patterns. Zero bullsh*t. <br />
             Your future self is watching. Don&apos;t let them down.
           </p>
 

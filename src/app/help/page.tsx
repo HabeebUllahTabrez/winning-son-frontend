@@ -8,7 +8,8 @@ import {
   FaPlay,
   FaComments,
   FaChevronDown,
-  FaChevronUp
+  FaChevronUp,
+  FaRocket
 } from "react-icons/fa";
 
 // FAQ Item Component
@@ -80,7 +81,7 @@ export default function HelpPage() {
               <div className="w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto">
                 2
               </div>
-              <h3 className="text-xl font-bold text-center">Log Daily (30 sec)</h3>
+              <h3 className="text-xl font-bold text-center">Log Daily (60 sec)</h3>
               <p className="text-base text-gray-700">
                 Every evening, log what you worked on and link it to your goals. Rate your satisfaction. That&apos;s it. Build the habit.
               </p>
@@ -121,7 +122,7 @@ export default function HelpPage() {
                 <div>
                   <p className="mb-2">Fair question. Here&apos;s why this is different:</p>
                   <ul className="list-disc pl-6 space-y-1">
-                    <li><strong>30 seconds to log.</strong> Not 10 minutes of &quot;deep reflection.&quot;</li>
+                    <li><strong>60 seconds to log.</strong> Not 10 minutes of &quot;deep reflection.&quot;</li>
                     <li><strong>You see results fast.</strong> After just 7 days, you&apos;ll discover patterns you never knew existed.</li>
                     <li><strong>No guilt trips.</strong> We&apos;re not here to shame you. We&apos;re here to show you the truth so you can choose better.</li>
                   </ul>
@@ -165,6 +166,7 @@ export default function HelpPage() {
         <section className="grid md:grid-cols-2 gap-6">
           {/* Dashboard */}
           <div className="card p-6 md:p-8 bg-gradient-to-br from-blue-50 to-purple-50 text-center space-y-4">
+            <FaRocket className="text-5xl text-blue-600 mx-auto" />
             <h2 className="text-2xl md:text-3xl font-bold">Ready to Start?</h2>
             <p className="text-base md:text-lg text-gray-700">
               Head to your dashboard and create your first entry!
