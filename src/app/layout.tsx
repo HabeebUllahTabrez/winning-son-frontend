@@ -10,7 +10,6 @@ import clsx from "clsx"; // 1. Import clsx for cleaner conditional classes
 import "./globals.css";
 import { exitGuestMode, logout } from "@/lib/api";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
-import Clarity from "@/components/Clarity";
 import { Analytics } from '@vercel/analytics/next';
 import { isGuestUser } from "@/lib/guest";
 import { Modal } from "@/components/Modal";
@@ -236,7 +235,6 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="WinningSoninator" />
         
         <GoogleAnalytics />
-        <Clarity />
       </head>
       <body
         className={`${scribble.variable} min-h-screen bg-gray-50 text-black`}
