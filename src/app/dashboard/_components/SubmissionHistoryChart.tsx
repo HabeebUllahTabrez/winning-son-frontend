@@ -18,7 +18,12 @@ type SubmissionHistoryData = {
 
 type ViewMode = 'month' | 'year';
 
-export function SubmissionHistoryChart({ isGuest, journalEntries = [] }: { isGuest?: boolean; journalEntries?: any[] }) {
+type JournalEntry = {
+    local_date: string;
+    has_submission: boolean;
+};
+
+export function SubmissionHistoryChart({ isGuest, journalEntries = [] }: { isGuest?: boolean; journalEntries?: JournalEntry[] }) {
 
     const [data, setData] = useState<SubmissionHistoryData | null>(null);
     const [loading, setLoading] = useState(false);

@@ -172,8 +172,8 @@ export default function Dashboard() {
                         <SubmissionHistoryChart
                             isGuest={isGuest}
                             journalEntries={(() => {
-                                const entries = JSON.parse(localStorage.getItem("guestJournalEntries") || "[]");
-                                return entries.map((entry: any) => ({
+                                const entries = JSON.parse(localStorage.getItem("guestJournalEntries") || "[]") as Array<{ localDate: string }>;
+                                return entries.map((entry) => ({
                                     local_date: entry.localDate,
                                     has_submission: true
                                 }));
