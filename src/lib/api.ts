@@ -76,4 +76,12 @@ export function exitGuestMode() {
     }
 }
 
+/**
+ * Fetches submission history for a date range (max 365 days)
+ */
+export async function fetchSubmissionHistory(startDate: string, endDate: string) {
+    const res = await apiFetch(`/api/dashboard/submission-history?start_date=${startDate}&end_date=${endDate}`);
+    return res.data;
+}
+
 export default apiClient;
