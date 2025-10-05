@@ -1,7 +1,7 @@
 # Migration to httpOnly Cookies Authentication
 
 ## Overview
-Successfully migrated from localStorage-based token authentication to secure httpOnly cookies, eliminating XSS vulnerabilities and improving security posture.
+Successfully migrated from localStorage-based token authentication to secure httpOnly cookies, eliminating XSS vulnerabilities and improving security posture. Includes automatic migration script that removes old localStorage tokens when users load the app.
 
 ## What Changed
 
@@ -157,7 +157,7 @@ curl -X POST http://localhost:3000/api/auth/logout \
 
 ### For Users
 - **Existing sessions will be logged out** - Users need to log in again
-- **Old localStorage tokens are ignored** - Clean migration
+- **Old localStorage tokens are automatically removed** - Clean migration with auto-cleanup on app load
 
 ### For Developers
 - **No more `localStorage.getItem("token")`** - Use `/api/auth/check` instead
@@ -175,7 +175,7 @@ NODE_ENV=production                          # For secure cookies
 
 ### Immediate
 1. ✅ **Test thoroughly** - All auth flows (login, signup, logout)
-2. ✅ **Clear localStorage** - Remove old tokens: `localStorage.removeItem("token")`
+2. ✅ **Auto-cleanup old tokens** - Migration script automatically removes old localStorage tokens on app load
 3. ✅ **Update documentation** - Inform team of new auth flow
 
 ### Short-term (Priority Order from Analysis)
@@ -220,4 +220,26 @@ For issues or questions:
 
 **Migration completed**: ✅ All localStorage token usage removed
 **Security status**: ✅ XSS vulnerability eliminated
+**Auto-migration**: ✅ Old tokens automatically cleaned up on app load
 **Next priority**: Input validation with Zod
+
+## Auth Migration Utility
+
+A migration script (`src/lib/auth-migration.ts`) has been implemented to handle users with old localStorage tokens:
+
+### How It Works
+1. **Automatic cleanup**: Runs on every app load in the main layout
+2. **Detects old tokens**: Checks for `localStorage.getItem('token')`
+3. **Removes old tokens**: Cleans up automatically
+4. **Silent migration**: Users just need to log in again
+
+### Implementation
+```typescript
+// In src/app/layout.tsx
+useEffect(() => {
+  migrateFromOldAuth(); // Removes old localStorage token
+  checkAuthStatus();     // Checks new cookie-based auth
+}, [pathname]);
+```
+
+This ensures a seamless transition for existing users without any manual intervention required.
