@@ -70,7 +70,7 @@ async function handleRequest(
 
     // Get request body for methods that support it
     let body: string | undefined;
-    if (method !== 'GET' && method !== 'DELETE') {
+    if (method !== 'GET') {
       try {
         const requestBody = await request.json();
         body = JSON.stringify(requestBody);
@@ -89,6 +89,12 @@ async function handleRequest(
     // Get response data
     let data;
     const contentType = response.headers.get('content-type');
+
+    // Handle empty responses (204 No Content, etc.)
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return new NextResponse(null, { status: response.status });
+    }
+
     if (contentType?.includes('application/json')) {
       data = await response.json();
     } else {
