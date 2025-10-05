@@ -21,10 +21,9 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Auth header no longer needed - httpOnly cookies handle authentication
   const authHeader = useCallback(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    if (!token) return undefined;
-    return { Authorization: `Bearer ${token}` };
+    return {};
   }, []);
 
   const loadOverview = useCallback(async () => {

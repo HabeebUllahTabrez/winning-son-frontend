@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import SubmissionsClient from './_components/SubmissionsClient';
-import { getStartOfWeek } from "@/lib/dateUtils";
 
 // A simple loading skeleton for the Suspense fallback
 function SubmissionsSkeleton() {
@@ -17,25 +16,17 @@ function SubmissionsSkeleton() {
     );
 }
 
-// This is no longer an async component
 export default function SubmissionsPage() {
-    // We only need to calculate the initial start date to pass to the client
-    const initialWeekStart = getStartOfWeek(new Date());
-    
     return (
         <div className="max-w-5xl mx-auto px-4 py-10">
             <header className="mb-8">
                 <h1 className="text-4xl font-bold">Journal Submissions</h1>
                 <p className="text-lg text-gray-600">Review your journal entries week by week.</p>
             </header>
-            
-            {/* Suspense is still required here because SubmissionsClient uses the
-              useSearchParams() hook, which suspends rendering.
-            */}
+
+            {/* Suspense is required because SubmissionsClient uses useSearchParams() */}
             <Suspense fallback={<SubmissionsSkeleton />}>
-                <SubmissionsClient 
-                    initialWeekStart={initialWeekStart.toISOString()}
-                />
+                <SubmissionsClient />
             </Suspense>
         </div>
     );

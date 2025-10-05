@@ -70,15 +70,19 @@ export function ProfileSetupGuard({ children, redirectTo = "/setup" }: ProfileSe
       return; // End the effect for guest users here
     }
 
-    // --- AUTHENTICATED USER LOGIC (your original code) ---
+    // --- AUTHENTICATED USER LOGIC (using httpOnly cookies) ---
     const checkProfile = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
+        // First check if user is authenticated via cookie
+        const authCheck = await apiFetch("/api/auth/check");
+
+        if (authCheck.status !== 200 || !authCheck.data?.authenticated) {
+          // Don't redirect if user just became a guest, redirect to home
           routerRef.current.push("/");
           return;
         }
 
+        // Then get user profile
         const res = await apiFetch("/api/me");
 
         if (res.status !== 200) {
@@ -89,11 +93,11 @@ export function ProfileSetupGuard({ children, redirectTo = "/setup" }: ProfileSe
         }
 
         const profile: UserProfile = res.data;
-        
-        const isIncomplete = !profile.first_name || 
-                           !profile.last_name || 
-                           !profile.goal || 
-                           !profile.start_date || 
+
+        const isIncomplete = !profile.first_name ||
+                           !profile.last_name ||
+                           !profile.goal ||
+                           !profile.start_date ||
                            !profile.end_date;
 
         if (isIncomplete) {

@@ -10,7 +10,6 @@ import clsx from "clsx"; // 1. Import clsx for cleaner conditional classes
 import "./globals.css";
 import { exitGuestMode, logout } from "@/lib/api";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
-import Clarity from "@/components/Clarity";
 import { Analytics } from '@vercel/analytics/next';
 import { isGuestUser } from "@/lib/guest";
 import { Modal } from "@/components/Modal";
@@ -32,15 +31,28 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
 
   // Effect to check login status and close menu on page change
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const guest = isGuestUser();
+    const checkAuthStatus = async () => {
+      const guest = isGuestUser();
 
-    if (guest) {
-      setAuthStatus("guest");
-    } else {
-      setAuthStatus(token ? "loggedIn" : "loggedOut");
-    }
-    
+      if (guest) {
+        setAuthStatus("guest");
+      } else {
+        try {
+          // Check auth via httpOnly cookie
+          const res = await fetch("/api/auth/check");
+          if (res.ok) {
+            const data = await res.json();
+            setAuthStatus(data.authenticated ? "loggedIn" : "loggedOut");
+          } else {
+            setAuthStatus("loggedOut");
+          }
+        } catch {
+          setAuthStatus("loggedOut");
+        }
+      }
+    };
+
+    checkAuthStatus();
     setIsMenuOpen(false); // Close mobile menu on navigation
   }, [pathname]);
 
@@ -128,7 +140,7 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
     }
 
     // Otherwise, the user is logged out.
-    return <NavLink href="/" label="Login" />;
+    return <NavLink href="/login" label="Login" />;
   };
 
   return (
@@ -223,7 +235,6 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="WinningSoninator" />
         
         <GoogleAnalytics />
-        <Clarity />
       </head>
       <body
         className={`${scribble.variable} min-h-screen bg-gray-50 text-black`}

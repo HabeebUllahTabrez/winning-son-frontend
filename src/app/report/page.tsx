@@ -30,9 +30,9 @@ export default function ReportsPage() {
     const [error, setError] = useState("");
 
     useEffect(() => {
+        // Auth header no longer needed - httpOnly cookies handle authentication
         const authHeader = () => {
-            const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-            return { Authorization: `Bearer ${token}` } as const;
+            return {} as const;
         };
 
         const fetchReports = async () => {

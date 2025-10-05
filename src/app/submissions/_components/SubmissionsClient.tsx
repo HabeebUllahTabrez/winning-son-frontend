@@ -35,8 +35,20 @@ type GuestEntry = {
 };
 
 
-export default function SubmissionsClient({ initialWeekStart }: { initialWeekStart: string }) {
-  const [weekStartDate, setWeekStartDate] = useState(() => new Date(initialWeekStart));
+export default function SubmissionsClient() {
+  const searchParams = useSearchParams();
+  const highlightedDate = searchParams.get("highlighted");
+
+  // Calculate initial week start based on highlighted date or current week
+  const [weekStartDate, setWeekStartDate] = useState(() => {
+    if (highlightedDate) {
+      // If there's a highlighted date, show the week containing that date
+      return getStartOfWeek(new Date(highlightedDate + 'T00:00:00'));
+    }
+    // Otherwise, show the current week
+    return getStartOfWeek(new Date());
+  });
+
   const [data, setData] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,9 +58,6 @@ export default function SubmissionsClient({ initialWeekStart }: { initialWeekSta
 
   const router = useRouter();
   const isGuest = isGuestUser();
-  
-  const searchParams = useSearchParams();
-  const highlightedDate = searchParams.get("highlighted");
   const entryRefs = useRef(new Map<string, HTMLDivElement>());
 
   useEffect(() => {
@@ -108,8 +117,40 @@ export default function SubmissionsClient({ initialWeekStart }: { initialWeekSta
   const handlePreviousWeek = () => { const newDate = new Date(weekStartDate); newDate.setDate(weekStartDate.getDate() - 7); setWeekStartDate(newDate); };
   const handleNextWeek = () => { const newDate = new Date(weekStartDate); newDate.setDate(weekStartDate.getDate() + 7); setWeekStartDate(newDate); };
   const handleGoToToday = () => { setWeekStartDate(getStartOfWeek(new Date())); };
-  const handleDeleteClick = (date: string) => { setEntryToDelete(date); setIsConfirmOpen(true); };
-  const handleConfirmDelete = async () => { if (!entryToDelete) return; setIsDeleting(true); try { if (isGuest) { const entry = data.find(e => e.local_date === entryToDelete); if (entry && entry.id) deleteGuestEntry(entry.id); } else { await apiFetch(`/api/journal?local_date=${entryToDelete}`, { method: 'DELETE' }); } setData(prev => prev.filter(e => e.local_date !== entryToDelete)); toast.success("Entry deleted successfully."); } catch (e) { toast.error(e instanceof Error ? e.message : "Failed to delete entry."); } finally { setIsDeleting(false); setIsConfirmOpen(false); setEntryToDelete(null); } };
+  const handleDeleteClick = (date: string) => {
+    setEntryToDelete(date);
+    setIsConfirmOpen(true);
+    // Clear highlight from URL to prevent z-index conflicts
+    if (highlightedDate) {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('highlighted');
+      router.replace(newUrl.pathname + newUrl.search);
+    }
+  };
+  const handleConfirmDelete = async () => {
+    if (!entryToDelete) return;
+    setIsDeleting(true);
+    try {
+      if (isGuest) {
+        const entry = data.find(e => e.local_date === entryToDelete);
+        if (entry && entry.id) deleteGuestEntry(entry.id);
+      } else {
+        await apiFetch('/api/journal', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          data: { local_date: entryToDelete }
+        });
+      }
+      setData(prev => prev.filter(e => e.local_date !== entryToDelete));
+      toast.success("Entry deleted successfully.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to delete entry.");
+    } finally {
+      setIsDeleting(false);
+      setIsConfirmOpen(false);
+      setEntryToDelete(null);
+    }
+  };
 
   // --- (JSX remains the same) ---
   return (

@@ -39,6 +39,22 @@
     box-shadow: none;
   }
 
+  /* Secondary Button */
+  .btn-secondary {
+    @apply bg-white text-black font-bold border-2 border-black px-5 py-2 transition-all cursor-pointer;
+    border-radius: 5px 4px 6px 3px; /* Imperfect radius */
+  }
+  .btn-secondary:hover {
+    @apply bg-gray-100;
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0px var(--color-card-shadow);
+  }
+  .btn-secondary:disabled {
+    @apply bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
   /* Input */
   .input {
     @apply bg-white w-full border-2 border-black p-2 transition-all;
@@ -63,7 +79,7 @@
   .highlight {
   /* Lifts the card above other content */
   position: relative;
-  z-index: 50; 
+  z-index: 10;
   /* Points to our new, more dramatic animation */
   animation: spotlight 3.5s ease-in-out;
 }
@@ -92,4 +108,8 @@
 
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease-out forwards;
 }

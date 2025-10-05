@@ -2,277 +2,213 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { FaRocket, FaChartLine, FaBrain, FaThLarge, FaLightbulb, FaTrophy, FaCalendarCheck, FaMagic } from "react-icons/fa";
+import { useState } from "react";
+import {
+  FaQuestion,
+  FaPlay,
+  FaComments,
+  FaChevronDown,
+  FaChevronUp,
+  FaRocket
+} from "react-icons/fa";
+
+// FAQ Item Component
+function FAQItem({
+  question,
+  answer,
+  defaultOpen = false
+}: {
+  question: string;
+  answer: string | React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="card p-4 md:p-6">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between text-left hover:opacity-70 transition-opacity gap-4"
+      >
+        <h3 className="text-lg md:text-xl font-bold">{question}</h3>
+        {isOpen ? <FaChevronUp className="text-lg flex-shrink-0" /> : <FaChevronDown className="text-lg flex-shrink-0" />}
+      </button>
+
+      {isOpen && (
+        <div className="mt-4 text-base md:text-lg text-gray-700 leading-relaxed">
+          {answer}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function HelpPage() {
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
+    <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
       <div className="space-y-12">
-        {/* Hero Section */}
-        <header className="text-center space-y-6">
-          <div className="flex justify-center">
-            <Image
-              src="/are-ya-winning.jpeg"
-              alt="Are ya winning, son?"
-              width={120}
-              height={120}
-              className="rounded-full border-4 border-black"
-            />
-          </div>
-          <h1 className="text-5xl font-bold">Help & Why This App is Actually Useful</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Look, I get it. Another productivity app? But hear me out - this one actually works because it&apos;s built by someone who hates productivity apps.
+
+        {/* Header */}
+        <header className="text-center space-y-4">
+          <h1 className="text-4xl md:text-5xl font-bold">How to Use WinningSon-inator</h1>
+          <p className="text-lg md:text-xl text-gray-600">
+            Everything you need to succeed with your personal progress tracking
           </p>
         </header>
 
-        {/* Why Track Progress Section */}
-        <section className="card p-8 space-y-6">
-          <h2 className="text-3xl font-bold flex items-center gap-3">
-            <FaRocket className="text-blue-500" />
-            Why Bother Tracking Your Progress?
-          </h2>
-          
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-gray-800">The Problem with &quot;Just Remembering&quot;</h3>
-              <p className="text-lg leading-relaxed">
-                Your brain is like a leaky bucket when it comes to progress. You think you&apos;re making progress, 
-                but you&apos;re probably just spinning your wheels. It&apos;s like debugging without console.log - 
-                you&apos;re flying blind, my friend.
-              </p>
-              <div className="bg-yellow-50 border-2 border-yellow-200 p-4 rounded-lg">
-                <p className="font-semibold text-yellow-800">
-                  💡 Pro Tip: If you can&apos;t measure it, you can&apos;t improve it. 
-                  This isn&apos;t just corporate BS - it&apos;s science.
-                </p>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-gray-800">The Self-Awareness Superpower</h3>
-              <p className="text-lg leading-relaxed">
-                Ever wonder why some developers seem to level up faster? They&apos;re not necessarily smarter - 
-                they&apos;re just more aware of their patterns. They know when they&apos;re productive, 
-                what drains their energy, and how to optimize their workflow.
-              </p>
-              <div className="bg-green-50 border-2 border-green-200 p-4 rounded-lg">
-                <p className="font-semibold text-green-800">
-                  🚀 Knowledge is power, but self-knowledge is a superpower.
-                </p>
-              </div>
-            </div>
+        {/* Quick Start Guide */}
+        <section className="card p-6 md:p-8 bg-gradient-to-br from-green-50 to-blue-50 space-y-6">
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-2 flex items-center justify-center gap-3">
+              <FaPlay className="text-green-600" />
+              Your First Week: A Simple Plan
+            </h2>
+            <p className="text-lg text-gray-600">Build the feedback loop in 7 days</p>
           </div>
-        </section>
 
-        {/* How the App Works */}
-        <section className="card p-8 space-y-6">
-          <h2 className="text-3xl font-bold flex items-center gap-3">
-            <FaMagic className="text-purple-500" />
-            How This App Actually Helps You Win
-          </h2>
-          
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-                <FaCalendarCheck className="text-2xl text-blue-600" />
+            <div className="bg-white p-6 rounded-lg border-2 border-black space-y-3">
+              <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto">
+                1
               </div>
-              <h3 className="text-xl font-bold">Daily Journaling</h3>
-              <p className="text-gray-600">
-                Quick daily check-ins that take 2 minutes but give you insights for years. 
-                Track what you worked on and how you felt about it.
+              <h3 className="text-xl font-bold text-center">Define Your Goals</h3>
+              <p className="text-base text-gray-700">
+                What do you actually want to achieve? Write 2-3 real goals (promotion, launch a project, learn a skill). Be specific.
               </p>
             </div>
-            
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                <FaChartLine className="text-2xl text-green-600" />
+
+            <div className="bg-white p-6 rounded-lg border-2 border-black space-y-3">
+              <div className="w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto">
+                2
               </div>
-              <h3 className="text-xl font-bold">Progress Visualization</h3>
-              <p className="text-gray-600">
-                See your progress over time with charts and stats. 
-                Because sometimes you need to see the data to believe you&apos;re actually improving.
+              <h3 className="text-xl font-bold text-center">Log Daily (60 sec)</h3>
+              <p className="text-base text-gray-700">
+                Every evening, log what you worked on and link it to your goals. Rate your satisfaction. That&apos;s it. Build the habit.
               </p>
             </div>
-            
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto">
-                <FaBrain className="text-2xl text-purple-600" />
+
+            <div className="bg-white p-6 rounded-lg border-2 border-black space-y-3">
+              <div className="w-12 h-12 bg-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto">
+                3
               </div>
-              <h3 className="text-xl font-bold">AI Analysis</h3>
-              <p className="text-gray-600">
-                Get personalized insights and actionable advice based on your actual data. 
-                No generic productivity tips here.
+              <h3 className="text-xl font-bold text-center">Review & Learn</h3>
+              <p className="text-base text-gray-700">
+                After 7 days, check your insights. What % of time went to each goal? What patterns emerge? Adjust and repeat.
               </p>
             </div>
           </div>
         </section>
 
-        {/* The Science Behind It */}
-        <section className="card p-8 space-y-6">
-          <h2 className="text-3xl font-bold flex items-center gap-3">
-            <FaLightbulb className="text-yellow-500" />
-            The Science Behind Why This Works
-          </h2>
-          
-          <div className="space-y-6">
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <h3 className="text-xl font-bold mb-3">🧠 The Zeigarnik Effect</h3>
-              <p className="text-lg">
-                Your brain remembers incomplete tasks better than completed ones. 
-                By tracking your progress, you&apos;re essentially telling your brain &quot;this is complete&quot; 
-                and freeing up mental bandwidth for the next challenge.
-              </p>
-            </div>
-            
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <h3 className="text-xl font-bold mb-3">📊 The Hawthorne Effect</h3>
-              <p className="text-lg">
-                Simply observing and measuring something changes behavior. 
-                When you track your progress, you naturally become more conscious of your actions 
-                and tend to make better choices.
-              </p>
-            </div>
-            
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <h3 className="text-xl font-bold mb-3">🎯 Goal Gradient Effect</h3>
-              <p className="text-lg">
-                People are more motivated as they get closer to their goals. 
-                Visual progress tracking creates this effect, making you more likely to push through 
-                when things get tough.
-              </p>
-            </div>
+        {/* FAQ Section */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-2 flex items-center justify-center gap-3">
+              <FaQuestion className="text-blue-600" />
+              Frequently Asked Questions
+            </h2>
+            <p className="text-lg text-gray-600">Everything you need to know</p>
+          </div>
+
+          <div className="space-y-4">
+            <FAQItem
+              question="I already use a to-do list. Why do I need this?"
+              answer="To-do lists tell you what to do. We tell you what you actually DID—and whether it mattered. There's a huge difference between being busy and making progress. We help you see which is which."
+              defaultOpen={true}
+            />
+
+            <FAQItem
+              question="Will I actually stick with this? (I've tried other apps...)"
+              answer={
+                <div>
+                  <p className="mb-2">Fair question. Here&apos;s why this is different:</p>
+                  <ul className="list-disc pl-6 space-y-1">
+                    <li><strong>60 seconds to log.</strong> Not 10 minutes of &quot;deep reflection.&quot;</li>
+                    <li><strong>You see results fast.</strong> After just 7 days, you&apos;ll discover patterns you never knew existed.</li>
+                    <li><strong>No guilt trips.</strong> We&apos;re not here to shame you. We&apos;re here to show you the truth so you can choose better.</li>
+                  </ul>
+                </div>
+              }
+            />
+
+            <FAQItem
+              question="How is the AI different from generic productivity advice?"
+              answer="Generic advice says 'wake up at 5am.' Our AI says 'on days you started work at 10am, you completed 3x more high-impact tasks.' It's YOUR data, YOUR patterns, YOUR insights. Not someone else's blueprint."
+            />
+
+            <FAQItem
+              question="What if the insights are obvious? Like 'you work more on weekdays'..."
+              answer="We're obsessed with avoiding 'so what' insights. Our AI digs deeper: WHICH activities correlate with your satisfaction? What time of day do you do your best work? Which goals are you avoiding and why? These are the insights that change behavior."
+            />
+
+            <FAQItem
+              question="I'm not a data person. Is this too complicated?"
+              answer="If you can rate a movie on a scale of 1-10, you can use this app. The logging is brain-dead simple. The AI does all the heavy lifting. You just read the insights and say 'huh, didn't realize that.'"
+            />
+
+            <FAQItem
+              question="Does this work for personal goals or just work stuff?"
+              answer="Both! Track fitness goals, creative projects, learning new skills, building relationships—anything you want to make progress on. The AI finds patterns across ALL of it."
+            />
+
+            <FAQItem
+              question="What about my privacy?"
+              answer="Your journal is private to your account. We use your data to generate YOUR insights, not to train models or sell to advertisers. Your struggles and wins stay yours."
+            />
+
+            <FAQItem
+              question="How do I know this will actually help me change?"
+              answer="You can't change what you can't see. We give you radical clarity about where your time and energy go. Once you see that only 10% of your week goes to your 'top priority,' change becomes obvious. Self-awareness is the first step to self-improvement."
+            />
           </div>
         </section>
 
-        {/* Real Benefits */}
-        <section className="card p-8 space-y-6">
-          <h2 className="text-3xl font-bold flex items-center gap-3">
-            <FaTrophy className="text-yellow-500" />
-            What You Actually Get Out of This
-          </h2>
-          
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-gray-800">Immediate Benefits</h3>
-              <ul className="space-y-2 text-lg">
-                <li>• A clear picture of your actual productivity patterns</li>
-                <li>• Identify your most productive times and conditions</li>
-                <li>• Spot when you&apos;re just busy vs. actually productive</li>
-                <li>• Celebrate small wins (they add up!)</li>
-                <li>• Reduce decision fatigue about what to work on</li>
-              </ul>
-            </div>
-            
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-gray-800">Long-Term Benefits</h3>
-              <ul className="space-y-2 text-lg">
-                <li>• Build sustainable habits that actually stick</li>
-                <li>• Make data-driven decisions about your career</li>
-                <li>• Develop better self-awareness and emotional intelligence</li>
-                <li>• Create a personal knowledge base of what works for you</li>
-                <li>• Level up faster than your peers</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* How to Use Effectively */}
-        <section className="card p-8 space-y-6">
-          <h2 className="text-3xl font-bold flex items-center gap-3">
-            <FaThLarge className="text-red-500" />
-            How to Use This App Like a Pro
-          </h2>
-          
-          <div className="space-y-6">
-            <div className="border-l-4 border-blue-500 pl-6">
-              <h3 className="text-xl font-bold mb-2">1. Start Small, Stay Consistent</h3>
-              <p className="text-lg">
-                Don&apos;t try to track everything at once. Start with daily journaling for 2 weeks. 
-                Once that&apos;s a habit, add goal setting. Consistency beats perfection every time.
-              </p>
-            </div>
-            
-            <div className="border-l-4 border-green-500 pl-6">
-              <h3 className="text-xl font-bold mb-2">2. Be Honest with Yourself</h3>
-              <p className="text-lg">
-                Rate your satisfaction honestly. A 3/10 day is valuable data - it tells you what to avoid. 
-                Don&apos;t sugarcoat it; the data is only useful if it&apos;s real.
-              </p>
-            </div>
-            
-            <div className="border-l-4 border-purple-500 pl-6">
-              <h3 className="text-xl font-bold mb-2">3. Use the Analyzer Regularly</h3>
-              <p className="text-lg">
-                Run the AI analyzer every 2-4 weeks. It&apos;s like having a personal coach who actually 
-                knows your patterns and can give you specific, actionable advice.
-              </p>
-            </div>
-            
-            <div className="border-l-4 border-yellow-500 pl-6">
-              <h3 className="text-xl font-bold mb-2">4. Review and Adjust</h3>
-              <p className="text-lg">
-                Look at your trends monthly. What patterns do you see? What&apos;s working? What&apos;s not? 
-                Use this data to optimize your approach.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Common Objections */}
-        <section className="card p-8 space-y-6">
-          <h2 className="text-3xl font-bold">Common Objections (And Why They&apos;re Wrong)</h2>
-          
-          <div className="space-y-6">
-            <div className="bg-red-50 border-2 border-red-200 p-6 rounded-lg">
-              <h3 className="text-xl font-bold text-red-800 mb-2">&quot;I don&apos;t have time to track my progress&quot;</h3>
-              <p className="text-lg text-red-700">
-                <strong>Reality:</strong> You&apos;re spending more time being unproductive than it takes to track. 
-                2 minutes a day could save you hours of wasted effort. It&apos;s like unit testing - 
-                the upfront cost saves you debugging time later.
-              </p>
-            </div>
-            
-            <div className="bg-orange-50 border-2 border-orange-200 p-6 rounded-lg">
-              <h3 className="text-xl font-bold text-orange-800 mb-2">&quot;I already know what I need to work on&quot;</h3>
-              <p className="text-lg text-orange-700">
-                <strong>Reality:</strong> Your brain is biased. You remember the wins and forget the struggles. 
-                Data doesn&apos;t lie. You might be surprised by what the numbers actually show.
-              </p>
-            </div>
-            
-            <div className="bg-blue-50 border-2 border-blue-200 p-6 rounded-lg">
-              <h3 className="text-xl font-bold text-blue-800 mb-2">&quot;This feels like micromanaging myself&quot;</h3>
-              <p className="text-lg text-blue-700">
-                <strong>Reality:</strong> This is about awareness, not control. You&apos;re not trying to optimize 
-                every minute - you&apos;re trying to understand your patterns so you can work smarter, not harder.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Call to Action */}
-        <section className="text-center space-y-6">
-          <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-8 rounded-lg">
-            <h2 className="text-3xl font-bold mb-4">Ready to Start Winning?</h2>
-            <p className="text-xl mb-6">
-              Stop guessing and start knowing. Your future self will thank you.
+        {/* Support & Feedback */}
+        <section className="grid md:grid-cols-2 gap-6">
+          {/* Dashboard */}
+          <div className="card p-6 md:p-8 bg-gradient-to-br from-blue-50 to-purple-50 text-center space-y-4">
+            <FaRocket className="text-5xl text-blue-600 mx-auto" />
+            <h2 className="text-2xl md:text-3xl font-bold">Ready to Start?</h2>
+            <p className="text-base md:text-lg text-gray-700">
+              Head to your dashboard and create your first entry!
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/dashboard" className="btn bg-white text-blue-600 hover:bg-gray-100">
-                Go to Dashboard
-              </Link>
-              <Link href="/journal" className="btn-secondary bg-transparent border-white text-white hover:bg-white hover:text-blue-600">
-                Start Journaling
-              </Link>
-            </div>
+            <Link
+              href="/dashboard"
+              className="card px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 transition-colors inline-block font-bold text-lg"
+            >
+              Go to Dashboard
+            </Link>
           </div>
-          
-          <p className="text-gray-600 text-lg">
-            Remember: The best time to start was yesterday. The second best time is now. 
-            And yes, that&apos;s a cliché, but clichés become clichés because they&apos;re true.
-          </p>
+
+          {/* Feedback */}
+          <div className="card p-6 md:p-8 bg-gradient-to-br from-green-50 to-teal-50 text-center space-y-4">
+            <FaComments className="text-5xl text-green-600 mx-auto" />
+            <h2 className="text-2xl md:text-3xl font-bold">Have Feedback?</h2>
+            <p className="text-base md:text-lg text-gray-700">
+              We&apos;d love to hear your thoughts and suggestions!
+            </p>
+            <a
+              href="https://winningsoninator.featurebase.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="card px-6 py-3 bg-green-600 text-white hover:bg-green-700 transition-colors inline-block font-bold text-lg"
+            >
+              Share Your Feedback
+            </a>
+          </div>
         </section>
+
+        {/* Footer */}
+        <div className="text-center text-gray-600 space-y-2">
+          <p className="text-lg font-semibold">
+            Still have questions?
+          </p>
+          <p className="text-base">
+            <Link href="/" className="underline hover:text-gray-900">
+              ← Back to Home
+            </Link>
+          </p>
+        </div>
+
       </div>
     </div>
   );
