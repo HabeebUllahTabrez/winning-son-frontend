@@ -7,7 +7,7 @@ import { useEffect, useState, useMemo } from "react";
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaArrowLeft } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
-import { getGuestId } from "@/lib/guest";
+import { getGuestId, clearGuestData } from "@/lib/guest";
 
 const WinningSonImage = () => (
   <div className="relative w-20 h-20 mx-auto rounded-full border-4 border-black overflow-hidden">
@@ -137,6 +137,9 @@ export default function LoginPage() {
         const errorMessage = typeof res.data === "string" ? res.data : res.data?.message || "An unexpected error occurred.";
         throw new Error(errorMessage);
       }
+
+      // Clear any guest data since user is now authenticated
+      clearGuestData();
 
       // No need to store token - it's in httpOnly cookie
       // Just redirect to dashboard

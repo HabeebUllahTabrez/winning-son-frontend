@@ -133,7 +133,6 @@ export default function Journal() {
     try {
       if (isGuest) {
         saveGuestEntry(entryData);
-        router.push(`/submissions?highlighted=${journalDate}`);
       } else {
         const res = await apiFetch("/api/journal", {
           method: "POST",
@@ -149,10 +148,10 @@ export default function Journal() {
         if (res.status < 200 || res.status >= 300)
           throw new Error(res.statusText);
       }
-      router.push(`/submissions?highlighted=${journalDate}`);
       setSuccessMsg(
         `Saved entry for ${formatDisplayDate(journalDate)} successfully!`
       );
+      router.push(`/submissions?highlighted=${journalDate}`);
     } catch (e: unknown) {
       setErrorMsg(
         e instanceof Error ? e.message : "An unknown error occurred."

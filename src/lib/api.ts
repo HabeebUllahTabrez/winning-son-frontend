@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import { isGuestUser } from '@/lib/guest';
+import { isGuestUser, clearGuestData } from '@/lib/guest';
 
 // Create API client that uses the Next.js proxy routes
 const apiClient = axios.create({
@@ -45,9 +45,7 @@ apiClient.interceptors.response.use(
                 fetch('/api/auth/logout', { method: 'POST' })
                     .catch(err => console.error('Logout error:', err))
                     .finally(() => {
-                        // Redirect to login page
-                        window.location.href = "/login";
-                    });
+                        window.location.href = "/login";                    });
             }
         }
         return Promise.reject(error);
@@ -81,12 +79,15 @@ export async function logout() {
 
 export function exitGuestMode() {
     if (typeof window !== 'undefined') {
-        localStorage.removeItem("guestId");
-        localStorage.removeItem("guestProfileData");
-        localStorage.removeItem("guestJournalEntries");
-        localStorage.removeItem("guestStats");
-        localStorage.removeItem("isGuest"); // Clear guest status
+        // Use the centralized clearGuestData function
+        clearGuestData();
+        localStorage.removeItem("isGuest"); // Clear any legacy guest status flag
         window.location.href = "/";
+
+        // Add a small delay to ensure localStorage changes are committed before redirect
+        // setTimeout(() => {
+        //     window.location.href = "/";
+        // }, 100);
     }
 }
 

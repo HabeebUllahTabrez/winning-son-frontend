@@ -5,6 +5,7 @@ import { format, subDays, getDay, getMonth, getYear, startOfDay } from 'date-fns
 export const GUEST_ID_KEY = 'guestId';
 export const JOURNAL_ENTRIES_KEY = 'guestJournalEntries';
 export const GUEST_STATS_KEY = 'guestStats';
+export const GUEST_PROFILE_KEY = 'guestProfileData';
 
 // --- UPDATED INTERFACES ---
 
@@ -197,10 +198,23 @@ export function getGuestId(): string {
 
 /**
  * Checks if the current user is a guest.
+ * DOES NOT auto-initialize - just checks if guest data exists.
  */
 export function isGuestUser(): boolean {
   if (typeof window === 'undefined') return false;
-  return !localStorage.getItem('token') && !!localStorage.getItem(GUEST_ID_KEY);
+
+  const hasToken = !!localStorage.getItem('token');
+  const hasGuestId = !!localStorage.getItem(GUEST_ID_KEY);
+
+
+  // If authenticated user, not a guest
+  if (hasToken) {
+    return false;
+  }
+
+  // User has guest ID and no token = guest user
+  const result = !hasToken && hasGuestId;
+  return result;
 }
 
 /**
@@ -253,11 +267,9 @@ export function saveGuestEntry(entry: { topics: string; alignment_rating: number
       savedEntry = updatedEntry;
     } else {
       // Add new entry
-      const newEntry: JournalEntry = { 
-        id: uuidv4(), 
-        ...entry, 
-        alignment_rating: 0, // Default value, adjust as needed
-        contentment_rating: 0 // Default value, adjust as needed
+      const newEntry: JournalEntry = {
+        id: uuidv4(),
+        ...entry,
       };
       entries.push(newEntry);
       savedEntry = newEntry;
@@ -302,6 +314,7 @@ export function clearGuestData(): void {
     localStorage.removeItem(GUEST_ID_KEY);
     localStorage.removeItem(JOURNAL_ENTRIES_KEY);
     localStorage.removeItem(GUEST_STATS_KEY);
+    localStorage.removeItem(GUEST_PROFILE_KEY);
   } catch (error) {
     console.error('Failed to clear guest data from localStorage', error);
   }

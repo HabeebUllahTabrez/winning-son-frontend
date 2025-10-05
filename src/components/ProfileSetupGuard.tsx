@@ -77,6 +77,7 @@ export function ProfileSetupGuard({ children, redirectTo = "/setup" }: ProfileSe
         const authCheck = await apiFetch("/api/auth/check");
 
         if (authCheck.status !== 200 || !authCheck.data?.authenticated) {
+          // Don't redirect if user just became a guest, redirect to home
           routerRef.current.push("/");
           return;
         }

@@ -43,8 +43,8 @@ export function CreateAccountForm({closeModal}: {closeModal?: () => void}) {
 
       const modifiedJournalEntries = guestJournalEntries.map((entry: GuestJournalEntry) => ({
         topics: entry.topics,
-        alignment_rating: entry.alignment_rating || entry.rating,
-        contentment_rating: entry.contentment_rating || entry.rating,
+        alignment_rating: entry.alignment_rating || entry.rating || 1,
+        contentment_rating: entry.contentment_rating || entry.rating || 1,
         local_date: entry.local_date || entry.createdAt.split('T')[0],
       }));
 
@@ -82,7 +82,8 @@ export function CreateAccountForm({closeModal}: {closeModal?: () => void}) {
 
       
 
-      // Clear guest data
+      // Clear guest data (including any leftover token)
+      localStorage.removeItem("token"); // Clear any old tokens
       localStorage.removeItem("guestId");
       localStorage.removeItem(GUEST_PROFILE_KEY);
       localStorage.removeItem(GUEST_JOURNAL_ENTRIES_KEY);

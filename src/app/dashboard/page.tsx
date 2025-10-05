@@ -60,7 +60,6 @@ export default function Dashboard() {
 
         // --- UPDATED GUEST USER LOGIC ---
         if (isGuest) {
-            console.log("Loading and transforming dashboard for guest user from localStorage.");
             // Simulate network delay
             setTimeout(() => {
                 const guestStatsJson = localStorage.getItem("guestStats");
@@ -301,7 +300,7 @@ export default function Dashboard() {
                     <section className="card p-6">
                         <h2 className="text-2xl font-bold text-gray-800 mb-4">Submission History</h2>
                         <p className="text-gray-600 mb-4">Track your journal entries over time (max 1 year)</p>
-                        <SubmissionHistoryChart />
+                        <SubmissionHistoryChart isGuest={false} />
                     </section>
                     
                     <section>
