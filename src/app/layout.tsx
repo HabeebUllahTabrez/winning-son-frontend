@@ -14,6 +14,7 @@ import { Analytics } from '@vercel/analytics/next';
 import { isGuestUser } from "@/lib/guest";
 import { Modal } from "@/components/Modal";
 import { CreateAccountForm } from "@/components/CreateAccountForm";
+import { migrateFromOldAuth } from "@/lib/auth-migration";
 
 const scribble = Patrick_Hand({
   weight: "400",
@@ -31,6 +32,9 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
 
   // Effect to check login status and close menu on page change
   useEffect(() => {
+    // Run migration to remove old localStorage tokens
+    migrateFromOldAuth();
+
     const checkAuthStatus = async () => {
       const guest = isGuestUser();
 

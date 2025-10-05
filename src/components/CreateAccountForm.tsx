@@ -60,14 +60,12 @@ export function CreateAccountForm({closeModal}: {closeModal?: () => void}) {
         data: { email, password },
       });
 
-      const { token } = signupRes.data;
-      localStorage.setItem("token", token);
+      // Auth cookie is automatically set by the signup API route
 
       if (!(signupRes.status >= 200 && signupRes.status < 300)) {
         throw new Error(signupRes.data.message || "Failed to create account. please try again.");
       } else{
-        // wait for 500ms to ensure the token is set before making the migrate call
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Migrate guest data to the new account
         const res = await apiFetch("/api/migrate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -82,8 +80,7 @@ export function CreateAccountForm({closeModal}: {closeModal?: () => void}) {
 
       
 
-      // Clear guest data (including any leftover token)
-      localStorage.removeItem("token"); // Clear any old tokens
+      // Clear guest data
       localStorage.removeItem("guestId");
       localStorage.removeItem(GUEST_PROFILE_KEY);
       localStorage.removeItem(GUEST_JOURNAL_ENTRIES_KEY);

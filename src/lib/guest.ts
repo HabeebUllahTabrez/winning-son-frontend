@@ -203,18 +203,10 @@ export function getGuestId(): string {
 export function isGuestUser(): boolean {
   if (typeof window === 'undefined') return false;
 
-  const hasToken = !!localStorage.getItem('token');
   const hasGuestId = !!localStorage.getItem(GUEST_ID_KEY);
 
-
-  // If authenticated user, not a guest
-  if (hasToken) {
-    return false;
-  }
-
-  // User has guest ID and no token = guest user
-  const result = !hasToken && hasGuestId;
-  return result;
+  // User has guest ID = guest user
+  return hasGuestId;
 }
 
 /**
