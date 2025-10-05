@@ -35,8 +35,20 @@ type GuestEntry = {
 };
 
 
-export default function SubmissionsClient({ initialWeekStart }: { initialWeekStart: string }) {
-  const [weekStartDate, setWeekStartDate] = useState(() => new Date(initialWeekStart));
+export default function SubmissionsClient() {
+  const searchParams = useSearchParams();
+  const highlightedDate = searchParams.get("highlighted");
+
+  // Calculate initial week start based on highlighted date or current week
+  const [weekStartDate, setWeekStartDate] = useState(() => {
+    if (highlightedDate) {
+      // If there's a highlighted date, show the week containing that date
+      return getStartOfWeek(new Date(highlightedDate + 'T00:00:00'));
+    }
+    // Otherwise, show the current week
+    return getStartOfWeek(new Date());
+  });
+
   const [data, setData] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,9 +58,6 @@ export default function SubmissionsClient({ initialWeekStart }: { initialWeekSta
 
   const router = useRouter();
   const isGuest = isGuestUser();
-  
-  const searchParams = useSearchParams();
-  const highlightedDate = searchParams.get("highlighted");
   const entryRefs = useRef(new Map<string, HTMLDivElement>());
 
   useEffect(() => {
