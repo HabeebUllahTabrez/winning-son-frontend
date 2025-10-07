@@ -142,13 +142,13 @@ export default function LoginPage() {
       // Clear any guest data since user is now authenticated
       clearGuestData();
 
-      // Track event and identify user
+      // Track event and identify user (anonymously via hashed email)
       if (mode === "login") {
         trackEvent("User Login", { method: "email" });
-        identifyUser(email, { email });
+        await identifyUser(email);
       } else {
         trackEvent("User Signup", { method: "email" });
-        identifyUser(email, { email });
+        await identifyUser(email);
       }
 
       // No need to store token - it's in httpOnly cookie
