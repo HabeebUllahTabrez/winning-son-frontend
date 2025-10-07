@@ -1,4 +1,7 @@
 // src/app/dashboard/_components/CallToAction.tsx
+"use client";
+
+import { trackEvent } from "@/lib/mixpanel";
 
 type CallToActionProps = {
     hasEntryToday: boolean;
@@ -18,7 +21,7 @@ export function CallToAction({ hasEntryToday }: CallToActionProps) {
                     </p>
                 </div>
                 {/* A powerful and funny button text */}
-                <a href="/submissions" className="btn-secondary whitespace-nowrap">
+                <a href="/submissions" className="btn-secondary whitespace-nowrap" onClick={() => trackEvent("Review Submission Clicked from Dashboard")}>
                     Review My Submission
                 </a>
             </div>
@@ -37,7 +40,7 @@ export function CallToAction({ hasEntryToday }: CallToActionProps) {
                 </p>
             </div>
             {/* A clear and exciting button text */}
-            <a href="/journal" className="btn whitespace-nowrap">
+            <a href="/journal" className="btn whitespace-nowrap" onClick={() => trackEvent("Log Wins Clicked from Dashboard")}>
                 Log My Wins
             </a>
         </div>

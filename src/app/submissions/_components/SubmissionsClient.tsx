@@ -193,7 +193,10 @@ export default function SubmissionsClient() {
                                                   <span className="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-full">Contentment: {entry.contentment_rating}/10</span>
                                               </div>
                                               <div className="flex items-center gap-2">
-                                                  <button className="p-2 rounded-full hover:bg-gray-200 transition-colors" onClick={() => router.push(`/journal?date=${entry.local_date}`)} aria-label="Edit"><PencilIcon /></button>
+                                                  <button className="p-2 rounded-full hover:bg-gray-200 transition-colors" onClick={() => {
+                                                    trackEvent("Edit Entry Clicked", { date: entry.local_date, isGuest });
+                                                    router.push(`/journal?date=${entry.local_date}`);
+                                                  }} aria-label="Edit"><PencilIcon /></button>
                                                   <button className="p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors" onClick={() => handleDeleteClick(entry.local_date)} aria-label="Delete"><TrashIcon /></button>
                                               </div>
                                           </div>
@@ -201,7 +204,9 @@ export default function SubmissionsClient() {
                                       </div>
                                   </div>
                               ) : (
-                                  <Link href={`/journal?date=${dateString}`} className="block">
+                                  <Link href={`/journal?date=${dateString}`} className="block" onClick={() => {
+                                    trackEvent("Add Entry Clicked", { date: dateString, isGuest });
+                                  }}>
                                       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500 hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer">
                                           <p className="font-semibold">No entry for this day</p>
                                           <p className="text-sm">Click to add an entry.</p>
