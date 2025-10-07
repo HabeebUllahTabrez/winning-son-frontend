@@ -70,6 +70,7 @@ export default function Journal() {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [existingEntryFound, setExistingEntryFound] = useState(false); // Track if editing
 
   const searchParams = useSearchParams();
   const isGuest = isGuestUser();
@@ -93,6 +94,7 @@ export default function Journal() {
       setContentmentRating(0);
       setSuccessMsg("");
       setErrorMsg("");
+      setExistingEntryFound(false); // Reset editing state
       try {
         let entry;
         if (isGuest) {
@@ -108,6 +110,7 @@ export default function Journal() {
           setTopics(entry.topics || "");
           setAlignmentRating(entry.alignment_rating ?? 0);
           setContentmentRating(entry.contentment_rating ?? 0);
+          setExistingEntryFound(true); // Mark as editing
           trackEvent("Existing Entry Loaded", { date: journalDate, isGuest });
         }
       } catch (e: unknown) {
@@ -126,8 +129,6 @@ export default function Journal() {
     setSuccessMsg("");
     setErrorMsg("");
     setLoading(true);
-
-    const isEditing = topics.length > 0; // Check if this is an edit
 
     const entryData = {
       topics,
@@ -156,7 +157,7 @@ export default function Journal() {
       }
 
       // Wait for tracking to complete before redirecting
-      await trackEvent(isEditing ? "Entry Updated" : "Entry Created", {
+      await trackEvent(existingEntryFound ? "Entry Updated" : "Entry Created", {
         date: journalDate,
         isGuest,
         alignment_rating: alignmentRating,
