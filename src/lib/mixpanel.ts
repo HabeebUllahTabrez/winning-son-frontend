@@ -36,19 +36,31 @@ export const initMixpanel = (): void => {
 };
 
 // Track events
-export const trackEvent = (eventName: string, properties?: Record<string, unknown>): void => {
-  if (!MIXPANEL_TOKEN) return;
-
-  if (typeof window !== 'undefined' && isInitialized) {
-    try {
-      console.log('[Mixpanel] Tracking event:', eventName, properties);
-      mixpanel.track(eventName, properties);
-    } catch (error) {
-      console.error('[Mixpanel] Track error:', error);
+export const trackEvent = (eventName: string, properties?: Record<string, unknown>): Promise<void> => {
+  return new Promise((resolve) => {
+    if (!MIXPANEL_TOKEN) {
+      resolve();
+      return;
     }
-  } else {
-    console.warn('[Mixpanel] Cannot track - not initialized:', { isInitialized, eventName });
-  }
+
+    if (typeof window !== 'undefined' && isInitialized) {
+      try {
+        console.log('[Mixpanel] Tracking event:', eventName, properties);
+        mixpanel.track(eventName, properties, {}, () => {
+          console.log('[Mixpanel] Event tracked successfully');
+          resolve();
+        });
+        // Also resolve after timeout as fallback
+        setTimeout(resolve, 1000);
+      } catch (error) {
+        console.error('[Mixpanel] Track error:', error);
+        resolve();
+      }
+    } else {
+      console.warn('[Mixpanel] Cannot track - not initialized:', { isInitialized, eventName });
+      resolve();
+    }
+  });
 };
 
 // Track page views
@@ -122,6 +134,16 @@ export const aliasUser = (newId: string): void => {
       console.error('[Mixpanel] Alias error:', error);
     }
   }
+};
+
+// Helper function to ensure events are tracked before navigation
+export const trackEventBeforeNavigation = async (
+  eventName: string,
+  properties?: Record<string, unknown>
+): Promise<void> => {
+  await trackEvent(eventName, properties);
+  // Small additional delay to ensure the request is sent
+  await new Promise(resolve => setTimeout(resolve, 100));
 };
 
 export default mixpanel;
