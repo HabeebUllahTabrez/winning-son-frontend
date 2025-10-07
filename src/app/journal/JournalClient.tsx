@@ -155,7 +155,8 @@ export default function Journal() {
           throw new Error(res.statusText);
       }
 
-      trackEvent(isEditing ? "Entry Updated" : "Entry Created", {
+      // Wait for tracking to complete before redirecting
+      await trackEvent(isEditing ? "Entry Updated" : "Entry Created", {
         date: journalDate,
         isGuest,
         alignment_rating: alignmentRating,

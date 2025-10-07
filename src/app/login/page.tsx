@@ -143,11 +143,12 @@ export default function LoginPage() {
       clearGuestData();
 
       // Track event and identify user (anonymously via hashed email)
+      // Wait for tracking to complete before redirecting
       if (mode === "login") {
-        trackEvent("User Login", { method: "email" });
+        await trackEvent("User Login", { method: "email" });
         await identifyUser(email);
       } else {
-        trackEvent("User Signup", { method: "email" });
+        await trackEvent("User Signup", { method: "email" });
         await identifyUser(email);
       }
 
