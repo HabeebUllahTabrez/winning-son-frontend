@@ -3,7 +3,6 @@ import mixpanel from 'mixpanel-browser';
 
 // Initialize Mixpanel
 const MIXPANEL_TOKEN = process.env.NEXT_PUBLIC_MIXPANEL_TOKEN || "";
-const isDevelopment = process.env.NODE_ENV === 'development';
 
 let isInitialized = false;
 
@@ -18,67 +17,110 @@ const generateAnonymousId = async (email: string): Promise<string> => {
 };
 
 export const initMixpanel = (): void => {
-  if (typeof window !== 'undefined' && !isInitialized && !isDevelopment) {
-    mixpanel.init(MIXPANEL_TOKEN, {
-      debug: false,
-      track_pageview: true,
-      persistence: 'localStorage',
-    });
-    isInitialized = true;
+  if (typeof window !== 'undefined' && !isInitialized && MIXPANEL_TOKEN) {
+    try {
+      console.log('[Mixpanel] Initializing...');
+      mixpanel.init(MIXPANEL_TOKEN, {
+        debug: true,
+        track_pageview: false,
+        persistence: 'localStorage',
+      });
+      isInitialized = true;
+      console.log('[Mixpanel] Initialized successfully');
+    } catch (error) {
+      console.error('[Mixpanel] Failed to initialize:', error);
+    }
+  } else if (!MIXPANEL_TOKEN) {
+    console.log('[Mixpanel] No token - skipping initialization');
   }
 };
 
 // Track events
 export const trackEvent = (eventName: string, properties?: Record<string, unknown>): void => {
-  if (isDevelopment) return;
+  if (!MIXPANEL_TOKEN) return;
+
   if (typeof window !== 'undefined' && isInitialized) {
-    mixpanel.track(eventName, properties);
+    try {
+      console.log('[Mixpanel] Tracking event:', eventName, properties);
+      mixpanel.track(eventName, properties);
+    } catch (error) {
+      console.error('[Mixpanel] Track error:', error);
+    }
+  } else {
+    console.warn('[Mixpanel] Cannot track - not initialized:', { isInitialized, eventName });
   }
 };
 
 // Track page views
 export const trackPageView = (pageName: string, properties?: Record<string, unknown>): void => {
-  if (isDevelopment) return;
+  if (!MIXPANEL_TOKEN) return;
+
   if (typeof window !== 'undefined' && isInitialized) {
-    mixpanel.track_pageview({ page: pageName, ...properties });
+    try {
+      console.log('[Mixpanel] Tracking page view:', pageName);
+      mixpanel.track('Page Viewed', { page: pageName, ...properties });
+    } catch (error) {
+      console.error('[Mixpanel] Track page view error:', error);
+    }
   }
 };
 
 // Identify user with anonymous ID
 export const identifyUser = async (email: string): Promise<void> => {
-  if (isDevelopment) return;
+  if (!MIXPANEL_TOKEN) return;
+
   if (typeof window !== 'undefined' && isInitialized) {
-    const anonymousId = await generateAnonymousId(email);
-    mixpanel.identify(anonymousId);
-    // No email or PII stored, just mark as registered user
-    mixpanel.people.set({
-      user_type: 'registered',
-      account_created: new Date().toISOString()
-    });
+    try {
+      const anonymousId = await generateAnonymousId(email);
+      console.log('[Mixpanel] Identifying user:', anonymousId);
+      mixpanel.identify(anonymousId);
+      mixpanel.people.set({
+        user_type: 'registered',
+        account_created: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('[Mixpanel] Identify error:', error);
+    }
   }
 };
 
 // Set user properties
 export const setUserProperties = (properties: Record<string, unknown>): void => {
-  if (isDevelopment) return;
+  if (!MIXPANEL_TOKEN) return;
+
   if (typeof window !== 'undefined' && isInitialized) {
-    mixpanel.people.set(properties);
+    try {
+      mixpanel.people.set(properties);
+    } catch (error) {
+      console.error('[Mixpanel] Set properties error:', error);
+    }
   }
 };
 
 // Reset user (on logout)
 export const resetMixpanel = (): void => {
-  if (isDevelopment) return;
+  if (!MIXPANEL_TOKEN) return;
+
   if (typeof window !== 'undefined' && isInitialized) {
-    mixpanel.reset();
+    try {
+      console.log('[Mixpanel] Resetting user');
+      mixpanel.reset();
+    } catch (error) {
+      console.error('[Mixpanel] Reset error:', error);
+    }
   }
 };
 
 // Alias user (for transitioning anonymous to identified)
 export const aliasUser = (newId: string): void => {
-  if (isDevelopment) return;
+  if (!MIXPANEL_TOKEN) return;
+
   if (typeof window !== 'undefined' && isInitialized) {
-    mixpanel.alias(newId);
+    try {
+      mixpanel.alias(newId);
+    } catch (error) {
+      console.error('[Mixpanel] Alias error:', error);
+    }
   }
 };
 
