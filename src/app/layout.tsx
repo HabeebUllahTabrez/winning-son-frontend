@@ -12,6 +12,8 @@ import { exitGuestMode, logout } from "@/lib/api";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { Analytics } from '@vercel/analytics/next';
 import { isGuestUser } from "@/lib/guest";
+import MixpanelProvider from "@/components/MixpanelProvider";
+import { trackEvent, resetMixpanel } from "@/lib/mixpanel";
 import { Modal } from "@/components/Modal";
 import { CreateAccountForm } from "@/components/CreateAccountForm";
 import { migrateFromOldAuth } from "@/lib/auth-migration";
@@ -61,6 +63,8 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
   }, [pathname]);
 
   const handleLogout = () => {
+    trackEvent("User Logout");
+    resetMixpanel();
     logout();
   };
 
@@ -102,6 +106,8 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
   );
 
   const handleExitGuestMode = () => {
+    trackEvent("Guest Mode Exited");
+    resetMixpanel();
     exitGuestMode();
     setAuthStatus("loggedOut");
   };
@@ -245,6 +251,7 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-scribble), sans-serif" }}
       >
         <div className="flex flex-col min-h-screen">
+          <MixpanelProvider />
           <Nav setIsCreateAccountModalOpen={setIsCreateAccountModalOpen} />
           <main className="flex-grow w-full">{children}</main>
           <Toaster

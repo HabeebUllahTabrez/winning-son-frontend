@@ -13,6 +13,7 @@ import { ProfileSetupGuard } from "@/components/ProfileSetupGuard";
 import { FaCalendarCheck, FaChartLine, FaFire, FaFlagCheckered, FaLock, FaStar } from "react-icons/fa";
 import { formatDateForAPI } from "@/lib/dateUtils";
 import { isGuestUser } from "@/lib/guest";
+import { trackEvent } from "@/lib/mixpanel";
 
 // Define nested User type
 type User = {
@@ -110,7 +111,8 @@ export default function Dashboard() {
 
     useEffect(() => {
         loadDashboard();
-    }, [loadDashboard]);
+        trackEvent("Dashboard Viewed", { isGuest });
+    }, [loadDashboard, isGuest]);
 
     const goalProgress = useMemo(() => {
         if (!dashboardData?.user.start_date || !dashboardData?.user.end_date) {

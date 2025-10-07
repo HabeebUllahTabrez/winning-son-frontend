@@ -8,6 +8,7 @@ import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaArrowLeft } from "react-icons/
 import Image from "next/image";
 import Link from "next/link";
 import { getGuestId, clearGuestData } from "@/lib/guest";
+import { identifyUser, trackEvent } from "@/lib/mixpanel";
 
 const WinningSonImage = () => (
   <div className="relative w-20 h-20 mx-auto rounded-full border-4 border-black overflow-hidden">
@@ -141,6 +142,15 @@ export default function LoginPage() {
       // Clear any guest data since user is now authenticated
       clearGuestData();
 
+      // Track event and identify user
+      if (mode === "login") {
+        trackEvent("User Login", { method: "email" });
+        identifyUser(email, { email });
+      } else {
+        trackEvent("User Signup", { method: "email" });
+        identifyUser(email, { email });
+      }
+
       // No need to store token - it's in httpOnly cookie
       // Just redirect to dashboard
       router.push("/dashboard");
@@ -167,7 +177,8 @@ export default function LoginPage() {
   };
 
   const handleGuestLogin = async () => {
-    getGuestId();
+    const guestId = getGuestId();
+    trackEvent("Guest Mode Started", { guestId });
     router.push("/dashboard");
   }
 
