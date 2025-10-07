@@ -6,6 +6,7 @@ import { apiFetch } from "@/lib/api";
 import toast from "react-hot-toast";
 import { FaCopy, FaFlask, FaMagic, FaUndo, } from "react-icons/fa";
 import { isGuestUser, getGuestEntries } from "@/lib/guest";
+import { trackEvent } from "@/lib/mixpanel";
 
 // --- Type Definitions (Updated) ---
 type UserProfile = {
@@ -87,6 +88,7 @@ export default function AnalyzerPage() {
       }
     };
     fetchUser();
+    trackEvent("Analyzer Page Viewed", { isGuest });
   }, [authHeader, isGuest]);
 
   // --- Event Handlers (Unchanged) ---
@@ -158,6 +160,12 @@ ${returnItems}
 Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
 
       setFinalPrompt(generatedPrompt);
+      trackEvent("Prompt Generated", {
+        isGuest,
+        entryCount: entries.length,
+        selectedOptionsCount: activeOptions.length,
+        dateRange: `${startDate} to ${endDate}`
+      });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "An unknown error occurred.";
       setError(msg);
@@ -176,6 +184,7 @@ Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
+    trackEvent("Prompt Copied", { isGuest });
     toast.success("And just like that… the text is yours! ✨");
   };
 

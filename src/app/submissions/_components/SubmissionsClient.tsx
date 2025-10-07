@@ -9,6 +9,7 @@ import { toast } from "react-hot-toast";
 import { getStartOfWeek, formatDateForAPI, formatDateRangeForDisplay } from "@/lib/dateUtils";
 import { isGuestUser, getGuestEntries, deleteGuestEntry } from "@/lib/guest";
 import clsx from "clsx";
+import { trackEvent } from "@/lib/mixpanel";
 
 // --- (SVG Icons remain the same) ---
 const PencilIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>;
@@ -90,6 +91,7 @@ export default function SubmissionsClient() {
           entries = res.data;
         }
         setData(entries);
+        trackEvent("Submissions Page Viewed", { isGuest, weekStart: startDateStr, entryCount: entries.length });
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Failed to load submissions.");
         setData([]);
@@ -142,6 +144,7 @@ export default function SubmissionsClient() {
         });
       }
       setData(prev => prev.filter(e => e.local_date !== entryToDelete));
+      trackEvent("Entry Deleted", { isGuest, date: entryToDelete });
       toast.success("Entry deleted successfully.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to delete entry.");
@@ -190,7 +193,10 @@ export default function SubmissionsClient() {
                                                   <span className="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-full">Contentment: {entry.contentment_rating}/10</span>
                                               </div>
                                               <div className="flex items-center gap-2">
-                                                  <button className="p-2 rounded-full hover:bg-gray-200 transition-colors" onClick={() => router.push(`/journal?date=${entry.local_date}`)} aria-label="Edit"><PencilIcon /></button>
+                                                  <button className="p-2 rounded-full hover:bg-gray-200 transition-colors" onClick={() => {
+                                                    trackEvent("Edit Entry Clicked", { date: entry.local_date, isGuest });
+                                                    router.push(`/journal?date=${entry.local_date}`);
+                                                  }} aria-label="Edit"><PencilIcon /></button>
                                                   <button className="p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors" onClick={() => handleDeleteClick(entry.local_date)} aria-label="Delete"><TrashIcon /></button>
                                               </div>
                                           </div>
@@ -198,7 +204,9 @@ export default function SubmissionsClient() {
                                       </div>
                                   </div>
                               ) : (
-                                  <Link href={`/journal?date=${dateString}`} className="block">
+                                  <Link href={`/journal?date=${dateString}`} className="block" onClick={() => {
+                                    trackEvent("Add Entry Clicked", { date: dateString, isGuest });
+                                  }}>
                                       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500 hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer">
                                           <p className="font-semibold">No entry for this day</p>
                                           <p className="text-sm">Click to add an entry.</p>

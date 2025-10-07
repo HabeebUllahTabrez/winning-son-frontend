@@ -10,6 +10,7 @@ import { getGuestEntries, isGuestUser, saveGuestEntry } from "@/lib/guest";
 import clsx from "clsx";
 import { FaInfoCircle } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { trackEvent } from "@/lib/mixpanel";
 
 // --- NEW, THEMATICALLY ALIGNED RATING COMPONENT ---
 const ThemedRatingScale = ({
@@ -79,7 +80,8 @@ export default function Journal() {
     const dateParam = searchParams.get("date");
     const targetDate = dateParam || formatDateForAPI(new Date());
     setJournalDate(targetDate);
-  }, [searchParams]);
+    trackEvent("Journal Page Viewed", { date: targetDate, isGuest });
+  }, [searchParams, isGuest]);
 
   // (Fetch logic remains the same, adjusted for 0 default)
   useEffect(() => {
@@ -106,6 +108,7 @@ export default function Journal() {
           setTopics(entry.topics || "");
           setAlignmentRating(entry.alignment_rating ?? 0);
           setContentmentRating(entry.contentment_rating ?? 0);
+          trackEvent("Existing Entry Loaded", { date: journalDate, isGuest });
         }
       } catch (e: unknown) {
         setErrorMsg(
@@ -123,6 +126,9 @@ export default function Journal() {
     setSuccessMsg("");
     setErrorMsg("");
     setLoading(true);
+
+    const isEditing = topics.length > 0; // Check if this is an edit
+
     const entryData = {
       topics,
       alignment_rating: alignmentRating,
@@ -148,6 +154,15 @@ export default function Journal() {
         if (res.status < 200 || res.status >= 300)
           throw new Error(res.statusText);
       }
+
+      trackEvent(isEditing ? "Entry Updated" : "Entry Created", {
+        date: journalDate,
+        isGuest,
+        alignment_rating: alignmentRating,
+        contentment_rating: contentmentRating,
+        topicsLength: topics.length
+      });
+
       setSuccessMsg(
         `Saved entry for ${formatDisplayDate(journalDate)} successfully!`
       );

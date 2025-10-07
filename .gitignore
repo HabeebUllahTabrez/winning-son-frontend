@@ -42,3 +42,4 @@ next-env.d.ts
 
 # dont use knowledgebase md
 knowledgebase.md
+MIXPANEL_PRIVACY.md

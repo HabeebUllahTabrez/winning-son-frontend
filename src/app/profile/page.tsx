@@ -13,6 +13,7 @@ import { CreateAccountForm } from "../../components/CreateAccountForm";
 import { Modal } from "../../components/Modal";
 import { format, parseISO } from "date-fns";
 import { AvatarPicker } from "./_components/AvatarPicker";
+import { trackEvent } from "@/lib/mixpanel";
 
 // --- (No changes to types or helper components) ---
 const GUEST_PROFILE_KEY = "guestProfileData";
@@ -83,7 +84,10 @@ export default function ProfilePage() {
     finally { setIsLoading(false); }
   }, []);
 
-  useEffect(() => { loadUserData(); }, [loadUserData]);
+  useEffect(() => {
+    loadUserData();
+    trackEvent("Profile Page Viewed");
+  }, [loadUserData]);
 
   const openEditModal = () => {
     setEditData(profile);
@@ -110,9 +114,10 @@ export default function ProfilePage() {
         if (res.status !== 204) throw new Error(res.data?.detail || "Failed to save profile.");
         toast.success("Profile updated successfully!");
       }
+      trackEvent("Profile Updated", { isGuest, hasGoal: !!editData.goal });
       setProfile(editData);
       setIsEditModalOpen(false);
-    } catch (error) { toast.error(error instanceof Error ? error.message : "An error occurred."); } 
+    } catch (error) { toast.error(error instanceof Error ? error.message : "An error occurred."); }
     finally { setIsSaving(false); }
   };
   
