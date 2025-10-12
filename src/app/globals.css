@@ -83,6 +83,15 @@
   /* Points to our new, more dramatic animation */
   animation: spotlight 3.5s ease-in-out;
 }
+
+  /* Hide scrollbar for mobile tabs */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
 }
 
 /* Your animations can remain as they are */
