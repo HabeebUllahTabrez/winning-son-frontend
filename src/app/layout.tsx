@@ -17,6 +17,7 @@ import { resetMixpanel, trackEvent } from "@/lib/mixpanel";
 import { Modal } from "@/components/Modal";
 import { CreateAccountForm } from "@/components/CreateAccountForm";
 import { migrateFromOldAuth } from "@/lib/auth-migration";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 const scribble = Patrick_Hand({
   weight: "400",
@@ -156,7 +157,10 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b-2 border-black">
+    <header className="sticky top-0 z-50 w-full backdrop-blur-md border-b-2" style={{
+      backgroundColor: 'color-mix(in srgb, var(--theme-bgSecondary) 80%, transparent)',
+      borderColor: 'var(--theme-border)'
+    }}>
       {/* banner for guest user showing changes are only on this device and create account to save data and use on multiple devices */}
       {authStatus === "guest" && (
         <div className="bg-yellow-100 border-b-2 border-yellow-400 text-yellow-800 text-center text-sm p-2">
@@ -205,9 +209,13 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
       {/* 4. Redesigned Mobile Menu Dropdown with Animation */}
       <div
         className={clsx(
-          "md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b-2 border-black overflow-hidden transition-all duration-300 ease-in-out",
-          isMenuOpen ? "max-h-96" : "max-h-0"
+          "md:hidden absolute top-full left-0 w-full backdrop-blur-md border-b-2 overflow-hidden transition-all duration-300 ease-in-out"
         )}
+        style={{
+          backgroundColor: 'color-mix(in srgb, var(--theme-bgSecondary) 95%, transparent)',
+          borderColor: 'var(--theme-border)',
+          maxHeight: isMenuOpen ? '24rem' : '0'
+        }}
       >
         <nav className="flex flex-col items-start gap-2 p-4 text-lg">
           <NavLink {...helpLink} />
@@ -249,34 +257,36 @@ export default function RootLayout({
         <GoogleAnalytics />
       </head>
       <body
-        className={`${scribble.variable} min-h-screen bg-gray-50 text-black`}
+        className={`${scribble.variable} min-h-screen`}
         style={{ fontFamily: "var(--font-scribble), sans-serif" }}
       >
-        <div className="flex flex-col min-h-screen">
-          <MixpanelProvider />
-          <Nav setIsCreateAccountModalOpen={setIsCreateAccountModalOpen} />
-          <main className="flex-grow w-full">{children}</main>
-          <Toaster
-            position="top-center"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#fff',
-                color: '#000',
-                border: '2px solid #000',
-                boxShadow: '4px 4px 0 0 #000',
-                borderRadius: '6px 4px 5px 4px',
-                fontFamily: 'var(--font-scribble), sans-serif',
-                fontSize: '1.1rem',
-                padding: '1rem',
-              },
-            }}
-          />
-        </div>
-        <Analytics />
-        <Modal isOpen={isCreateAccountModalOpen} onClose={() => setIsCreateAccountModalOpen(false)} title="Create a Free Account" backdropClassName="backdrop-blur-sm">
-          <CreateAccountForm closeModal={() => setIsCreateAccountModalOpen(false)} />
-        </Modal>
+        <ThemeProvider>
+          <div className="flex flex-col min-h-screen">
+            <MixpanelProvider />
+            <Nav setIsCreateAccountModalOpen={setIsCreateAccountModalOpen} />
+            <main className="flex-grow w-full">{children}</main>
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#fff',
+                  color: '#000',
+                  border: '2px solid #000',
+                  boxShadow: '4px 4px 0 0 #000',
+                  borderRadius: '6px 4px 5px 4px',
+                  fontFamily: 'var(--font-scribble), sans-serif',
+                  fontSize: '1.1rem',
+                  padding: '1rem',
+                },
+              }}
+            />
+          </div>
+          <Analytics />
+          <Modal isOpen={isCreateAccountModalOpen} onClose={() => setIsCreateAccountModalOpen(false)} title="Create a Free Account" backdropClassName="backdrop-blur-sm">
+            <CreateAccountForm closeModal={() => setIsCreateAccountModalOpen(false)} />
+          </Modal>
+        </ThemeProvider>
       </body>
     </html>
   );

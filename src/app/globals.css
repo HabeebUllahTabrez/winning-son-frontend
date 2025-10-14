@@ -10,7 +10,9 @@
 /* Base styles */
 @layer base {
   body {
-    @apply bg-white text-black;
+    background-color: var(--theme-bgPrimary, #f9fafb);
+    color: var(--theme-textPrimary, #000);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
@@ -18,20 +20,31 @@
 @layer components {
   /* Card */
   .card {
-    @apply bg-white border-2 border-black p-6;
-    box-shadow: 8px 8px 0px var(--color-card-shadow);
+    background-color: var(--theme-bgCard, #fff);
+    color: var(--theme-textPrimary, #000);
+    border: 2px solid var(--theme-border, #000);
+    padding: 1.5rem;
+    box-shadow: 8px 8px 0px var(--theme-shadow, #000);
     border-radius: 4px 5px 3px 6px; /* Imperfect radius */
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }
 
   /* Button */
   .btn {
-    @apply bg-black text-white font-bold border-2 border-black px-5 py-2 transition-all cursor-pointer;
+    background-color: var(--theme-btnPrimaryBg, #000);
+    color: var(--theme-btnPrimaryText, #fff);
+    font-weight: bold;
+    border: 2px solid var(--theme-border, #000);
+    padding: 0.5rem 1.25rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
     border-radius: 5px 4px 6px 3px; /* Imperfect radius */
   }
   .btn:hover {
-    @apply bg-white text-black;
+    background-color: var(--theme-btnPrimaryHoverBg, #fff);
+    color: var(--theme-btnPrimaryHoverText, #000);
     transform: translate(-2px, -2px);
-    box-shadow: 4px 4px 0px var(--color-card-shadow);
+    box-shadow: 4px 4px 0px var(--theme-shadow, #000);
   }
   .btn:disabled {
     @apply bg-gray-300 border-gray-300 text-gray-500 cursor-not-allowed;
@@ -41,13 +54,19 @@
 
   /* Secondary Button */
   .btn-secondary {
-    @apply bg-white text-black font-bold border-2 border-black px-5 py-2 transition-all cursor-pointer;
+    background-color: var(--theme-btnSecondaryBg, #fff);
+    color: var(--theme-btnSecondaryText, #000);
+    font-weight: bold;
+    border: 2px solid var(--theme-border, #000);
+    padding: 0.5rem 1.25rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
     border-radius: 5px 4px 6px 3px; /* Imperfect radius */
   }
   .btn-secondary:hover {
-    @apply bg-gray-100;
+    background-color: var(--theme-btnSecondaryHoverBg, #f3f4f6);
     transform: translate(-2px, -2px);
-    box-shadow: 4px 4px 0px var(--color-card-shadow);
+    box-shadow: 4px 4px 0px var(--theme-shadow, #000);
   }
   .btn-secondary:disabled {
     @apply bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed;
@@ -57,32 +76,37 @@
 
   /* Input */
   .input {
-    @apply bg-white w-full border-2 border-black p-2 transition-all;
+    background-color: var(--theme-inputBg, #fff);
+    color: var(--theme-textPrimary, #000);
+    width: 100%;
+    border: 2px solid var(--theme-inputBorder, #000);
+    padding: 0.5rem;
+    transition: all 0.2s ease;
     border-radius: 3px 5px 4px 4px; /* Imperfect radius */
   }
   .input:focus {
     outline: none;
     transform: translate(-1px, -1px);
-    box-shadow: 2px 2px 0px var(--color-card-shadow);
+    box-shadow: 2px 2px 0px var(--theme-inputFocusShadow, #000);
   }
 
   /* NEW: Error state for inputs, matching your theme */
   .input-error {
-    @apply border-red-500; /* Uses the --color-error variable implicitly */
+    border-color: var(--theme-error, #ef4444);
   }
   .input-error:focus {
     /* The focus shadow now becomes red to indicate the error */
-    box-shadow: 2px 2px 0px var(--color-error);
+    box-shadow: 2px 2px 0px var(--theme-error, #ef4444);
   }
 
   /* Highlight */
   .highlight {
-  /* Lifts the card above other content */
-  position: relative;
-  z-index: 10;
-  /* Points to our new, more dramatic animation */
-  animation: spotlight 3.5s ease-in-out;
-}
+    /* Lifts the card above other content */
+    position: relative;
+    z-index: 10;
+    /* Points to our new, more dramatic animation */
+    animation: spotlight 3.5s ease-in-out;
+  }
 
   /* Hide scrollbar for mobile tabs */
   .scrollbar-hide {
@@ -103,15 +127,15 @@
 @keyframes spotlight {
   /* Start with just the card's normal shadow */
   0% {
-    box-shadow: 8px 8px 0px var(--color-card-shadow), 0 0 0 0 rgba(0, 0, 0, 0);
+    box-shadow: 8px 8px 0px var(--theme-shadow, #000), 0 0 0 0 rgba(0, 0, 0, 0);
   }
   /* At 20%, fade in the dark overlay. It stays until 80% */
   20%, 80% {
-    box-shadow: 8px 8px 0px var(--color-card-shadow), 0 0 0 200vmax rgba(0, 0, 0, 0.6);
+    box-shadow: 8px 8px 0px var(--theme-shadow, #000), 0 0 0 200vmax rgba(0, 0, 0, 0.6);
   }
   /* At 100%, fade the overlay out, returning to normal */
   100% {
-    box-shadow: 8px 8px 0px var(--color-card-shadow), 0 0 0 0 rgba(0, 0, 0, 0);
+    box-shadow: 8px 8px 0px var(--theme-shadow, #000), 0 0 0 0 rgba(0, 0, 0, 0);
   }
 }
 

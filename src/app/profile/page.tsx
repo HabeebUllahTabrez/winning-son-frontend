@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch, logout } from "@/lib/api";
 import toast from "react-hot-toast";
-import { FaBullseye, FaEdit, FaCloudUploadAlt, FaShieldAlt, FaCalendarCheck, FaCalendarPlus, FaCog, FaSignOutAlt, FaCamera } from "react-icons/fa";
+import { FaBullseye, FaEdit, FaCloudUploadAlt, FaShieldAlt, FaCalendarCheck, FaCalendarPlus, FaCog, FaSignOutAlt, FaCamera, FaPalette } from "react-icons/fa";
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 import { AVATAR_MAP, getAvatarFile } from "@/lib/avatars";
 import { isGuestUser } from "@/lib/guest";
@@ -12,6 +12,8 @@ import { CreateAccountForm } from "../../components/CreateAccountForm";
 import { Modal } from "../../components/Modal";
 import { format, parseISO } from "date-fns";
 import { trackEvent } from "@/lib/mixpanel";
+import { useTheme } from "@/contexts/ThemeContext";
+import { themes, ThemeName } from "@/lib/themes";
 
 const GUEST_PROFILE_KEY = "guestProfileData";
 
@@ -24,6 +26,7 @@ type UserProfile = {
   start_date: string | null;
   end_date: string | null;
   is_admin: boolean;
+  theme?: ThemeName;
 };
 
 type FormInputProps = {
@@ -62,6 +65,7 @@ export default function ProfilePage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<Section>("goal");
+  const { currentTheme, setTheme } = useTheme();
 
   const loadUserData = useCallback(async () => {
     setIsLoading(true);
@@ -77,13 +81,22 @@ export default function ProfilePage() {
         if (!(res.status >= 200 && res.status < 300)) throw new Error("Failed to load profile.");
         data = res.data;
       }
+
+      // Apply theme if it exists in profile data
+      if (data.theme && ['default', 'dark', 'vintage', 'baby-pink'].includes(data.theme)) {
+        setTheme(data.theme);
+      } else if (!data.theme) {
+        // If no theme in profile, use current theme (from localStorage)
+        data.theme = currentTheme;
+      }
+
       setProfile(data);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not load your profile.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [currentTheme, setTheme]);
 
   useEffect(() => {
     loadUserData();
@@ -106,6 +119,7 @@ export default function ProfilePage() {
         goal: editData.goal,
         start_date: editData.start_date,
         end_date: editData.end_date,
+        theme: editData.theme,
       };
       if (isGuest) {
         localStorage.setItem(GUEST_PROFILE_KEY, JSON.stringify(payload));
@@ -123,6 +137,29 @@ export default function ProfilePage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleThemeChange = (newTheme: ThemeName) => {
+    setTheme(newTheme);
+
+    // Update profile immediately
+    const updatedProfile = { ...profile!, theme: newTheme };
+    setProfile(updatedProfile);
+
+    // Save to backend/localStorage
+    if (isGuest) {
+      const currentData = JSON.parse(localStorage.getItem(GUEST_PROFILE_KEY) || "{}");
+      localStorage.setItem(GUEST_PROFILE_KEY, JSON.stringify({ ...currentData, theme: newTheme }));
+    } else {
+      // Send to API (even though it might ignore it)
+      apiFetch("/api/me", {
+        method: "PUT",
+        data: { theme: newTheme }
+      }).catch(err => console.error("Failed to save theme:", err));
+    }
+
+    trackEvent("Theme Changed", { theme: newTheme, isGuest });
+    toast.success(`Theme changed to ${themes[newTheme].displayName}!`);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -375,7 +412,8 @@ export default function ProfilePage() {
               {/* Account Settings Section */}
               {activeSection === "settings" && (
                 <div className="animate-fade-in">
-                  <div className="space-y-4">
+                  <div className="space-y-6">
+                    {/* Account Info */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="font-bold text-gray-500 uppercase tracking-wide text-xs">First Name</span>
@@ -388,6 +426,70 @@ export default function ProfilePage() {
                       <div className="sm:col-span-2">
                         <span className="font-bold text-gray-500 uppercase tracking-wide text-xs">Email</span>
                         <p className="text-gray-800 mt-1 break-all text-base">{profile.email}</p>
+                      </div>
+                    </div>
+
+                    {/* Theme Selector */}
+                    <div className="pt-6 border-t-2 border-dashed">
+                      <div className="flex items-center gap-2 mb-4">
+                        <FaPalette className="text-lg" style={{ color: 'var(--theme-accent)' }} />
+                        <span className="font-bold text-gray-500 uppercase tracking-wide text-xs">Theme</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {Object.values(themes).map((theme) => (
+                          <button
+                            key={theme.name}
+                            onClick={() => handleThemeChange(theme.name)}
+                            className={`relative p-4 rounded border-2 transition-all text-left ${
+                              currentTheme === theme.name
+                                ? 'border-4 scale-105'
+                                : 'hover:scale-102 hover:shadow-md'
+                            }`}
+                            style={{
+                              backgroundColor: theme.colors.bgCard,
+                              borderColor: theme.colors.border,
+                              color: theme.colors.textPrimary
+                            }}
+                          >
+                            {/* Theme preview colors */}
+                            <div className="flex gap-2 mb-2">
+                              <div
+                                className="w-6 h-6 rounded-full border-2"
+                                style={{
+                                  backgroundColor: theme.colors.btnPrimaryBg,
+                                  borderColor: theme.colors.border
+                                }}
+                              />
+                              <div
+                                className="w-6 h-6 rounded-full border-2"
+                                style={{
+                                  backgroundColor: theme.colors.accent,
+                                  borderColor: theme.colors.border
+                                }}
+                              />
+                              <div
+                                className="w-6 h-6 rounded-full border-2"
+                                style={{
+                                  backgroundColor: theme.colors.bgPrimary,
+                                  borderColor: theme.colors.border
+                                }}
+                              />
+                            </div>
+                            <p className="font-bold text-base mb-1">{theme.displayName}</p>
+                            <p className="text-xs opacity-75">{theme.description}</p>
+                            {currentTheme === theme.name && (
+                              <div
+                                className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold"
+                                style={{
+                                  backgroundColor: theme.colors.btnPrimaryBg,
+                                  color: theme.colors.btnPrimaryText
+                                }}
+                              >
+                                ✓
+                              </div>
+                            )}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   </div>
