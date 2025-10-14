@@ -284,11 +284,13 @@ export default function ProfilePage() {
                 <img
                   src={`/avatars/${getAvatarFile(profile.avatar_id)}`}
                   alt="User Avatar"
-                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-black shadow-lg bg-white"
+                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-black shadow-lg transition-all group-hover:blur-sm group-hover:grayscale"
                 />
                 {/* Camera icon overlay */}
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-50 rounded-full transition-all pointer-events-none">
-                  <FaCamera className="text-white text-xl sm:text-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  <div className="bg-white border-4 border-black rounded-full p-3 sm:p-4">
+                    <FaCamera className="text-black text-xl sm:text-2xl" />
+                  </div>
                 </div>
               </div>
             </div>
