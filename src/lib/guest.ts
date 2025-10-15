@@ -307,6 +307,8 @@ export function clearGuestData(): void {
     localStorage.removeItem(JOURNAL_ENTRIES_KEY);
     localStorage.removeItem(GUEST_STATS_KEY);
     localStorage.removeItem(GUEST_PROFILE_KEY);
+    // Also clear onboarding status when clearing guest data
+    localStorage.removeItem('onboardingStatus');
   } catch (error) {
     console.error('Failed to clear guest data from localStorage', error);
   }

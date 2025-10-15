@@ -70,8 +70,9 @@ export async function logout() {
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
-            // Also clear guest status on manual logout
+            // Clear all user-related localStorage data
             localStorage.removeItem("isGuest");
+            localStorage.removeItem("onboardingStatus");
             window.location.href = "/";
         }
     }
@@ -101,6 +102,32 @@ export async function fetchSubmissionHistory(startDate: string, endDate: string)
     } catch (error) {
         console.error("Error fetching submission history:", error);
         return { history: [] }; // Return empty history on error
+    }
+}
+
+/**
+ * Fetches the user's feature status for onboarding flows
+ */
+export async function fetchFeatureStatus() {
+    try {
+        const res = await apiFetch('/api/me/feature-status');
+        return res.data;
+    } catch (error) {
+        console.error("Error fetching feature status:", error);
+        return null;
+    }
+}
+
+/**
+ * Marks that the user has used the analyzer feature
+ */
+export async function markAnalyzerUsed() {
+    try {
+        const res = await apiFetch('/api/analyzer/mark-used', { method: 'POST' });
+        return res.data;
+    } catch (error) {
+        console.error("Error marking analyzer as used:", error);
+        return null;
     }
 }
 
