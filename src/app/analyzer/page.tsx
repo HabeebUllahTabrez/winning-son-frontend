@@ -2,11 +2,12 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, markAnalyzerUsed as apiMarkAnalyzerUsed } from "@/lib/api";
 import toast from "react-hot-toast";
 import { FaCopy, FaFlask, FaMagic, FaUndo, } from "react-icons/fa";
 import { isGuestUser, getGuestEntries } from "@/lib/guest";
 import { trackEvent } from "@/lib/mixpanel";
+import { markAnalyzerUsed, shouldShowAnalyzerCue } from "@/lib/onboarding";
 
 // --- Type Definitions (Updated) ---
 type UserProfile = {
@@ -160,11 +161,37 @@ ${returnItems}
 Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
 
       setFinalPrompt(generatedPrompt);
+
+      // Track analyzer usage
+      const isFirstAnalyzerUse = shouldShowAnalyzerCue();
+      if (isFirstAnalyzerUse) {
+        markAnalyzerUsed();
+
+        // Also call API to mark analyzer as used (for authenticated users)
+        if (!isGuest) {
+          apiMarkAnalyzerUsed().catch(err =>
+            console.error("Failed to mark analyzer as used on server:", err)
+          );
+        }
+
+        // Show special celebration for first analyzer use
+        toast.success("✨ You've unlocked the power of the analyzer! Welcome to enlightenment!", {
+          duration: 4000,
+          style: {
+            background: '#f3e8ff',
+            color: '#581c87',
+            border: '2px solid #a855f7',
+            fontWeight: 'bold',
+          },
+        });
+      }
+
       trackEvent("Prompt Generated", {
         isGuest,
         entryCount: entries.length,
         selectedOptionsCount: activeOptions.length,
-        dateRange: `${startDate} to ${endDate}`
+        dateRange: `${startDate} to ${endDate}`,
+        isFirstUse: isFirstAnalyzerUse,
       });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "An unknown error occurred.";

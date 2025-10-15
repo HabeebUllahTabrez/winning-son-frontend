@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { formatDateForAPI } from "@/lib/dateUtils";
 import { getGuestEntries, isGuestUser, saveGuestEntry } from "@/lib/guest";
+import { markFirstLogCreated, shouldShowFirstLogCue } from "@/lib/onboarding";
 import clsx from "clsx";
 import { FaInfoCircle } from "react-icons/fa";
 import toast from "react-hot-toast";
@@ -138,6 +139,9 @@ export default function Journal() {
       localDate: journalDate, // Use localDate instead of local_date
     };
     try {
+      // Check if this is their first log before saving
+      const isFirstLog = shouldShowFirstLogCue();
+
       if (isGuest) {
         saveGuestEntry(entryData);
       } else {
@@ -156,13 +160,30 @@ export default function Journal() {
           throw new Error(res.statusText);
       }
 
+      // Mark first log as created if this is their first entry
+      if (isFirstLog && !existingEntryFound) {
+        markFirstLogCreated();
+
+        // Show special celebration for first log
+        toast.success("🎉 Your first log is complete! The journey has begun!", {
+          duration: 4000,
+          style: {
+            background: '#fef3c7',
+            color: '#92400e',
+            border: '2px solid #f59e0b',
+            fontWeight: 'bold',
+          },
+        });
+      }
+
       // Wait for tracking to complete before redirecting
       await trackEvent(existingEntryFound ? "Entry Updated" : "Entry Created", {
         date: journalDate,
         isGuest,
         alignment_rating: alignmentRating,
         contentment_rating: contentmentRating,
-        topicsLength: topics.length
+        topicsLength: topics.length,
+        isFirstLog: isFirstLog && !existingEntryFound,
       });
 
       setSuccessMsg(
