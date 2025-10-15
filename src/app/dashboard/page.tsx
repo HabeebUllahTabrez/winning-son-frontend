@@ -203,7 +203,7 @@ export default function Dashboard() {
                                 Welcome, {dashboardData?.user.first_name || 'friend'}!
                             </h1>
                             <p className="text-lg text-gray-600 mt-1">
-                                Here's your progress at a glance. Keep it up! ✨
+                                Here&apos;s your progress at a glance. Keep it up! ✨
                             </p>
                         </div>
                     </header>
@@ -308,7 +308,7 @@ export default function Dashboard() {
                                 Welcome, {user.first_name || 'friend'}!
                             </h1>
                             <p className="text-lg text-gray-600 mt-1">
-                                Here's your progress at a glance. Keep it up! ✨
+                                Here&apos;s your progress at a glance. Keep it up! ✨
                             </p>
                         </div>
                     </header>
