@@ -12,6 +12,7 @@ import { CreateAccountForm } from "../../components/CreateAccountForm";
 import { Modal } from "../../components/Modal";
 import { format, parseISO } from "date-fns";
 import { trackEvent } from "@/lib/mixpanel";
+import Image from "next/image";
 
 const GUEST_PROFILE_KEY = "guestProfileData";
 
@@ -50,8 +51,6 @@ const FormInput = ({ label, name, value, onChange, type = "text", placeholder = 
   </div>
 );
 
-type Section = "goal" | "settings";
-
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [editData, setEditData] = useState<UserProfile | null>(null);
@@ -61,7 +60,6 @@ export default function ProfilePage() {
   const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<Section>("goal");
 
   const loadUserData = useCallback(async () => {
     setIsLoading(true);
@@ -146,11 +144,6 @@ export default function ProfilePage() {
 
   const fullName = `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "New User";
 
-  const tabItems = [
-    { id: "goal" as Section, label: "Goal", icon: FaBullseye },
-    { id: "settings" as Section, label: "Account Settings", icon: FaCog },
-  ];
-
   const handleAvatarSave = async () => {
     if (!editData) return;
     setIsSaving(true);
@@ -218,7 +211,13 @@ export default function ProfilePage() {
               {/* Currently Selected Avatar */}
               <div className="flex flex-col items-center gap-2">
                 <p className="text-sm font-medium text-gray-600">Currently Selected:</p>
-                <img src={`/avatars/${getAvatarFile(editData.avatar_id)}`} alt="Selected Avatar" className="w-20 h-20 rounded-full border-4 border-black shadow-lg" />
+                <Image 
+                  src={`/avatars/${getAvatarFile(editData.avatar_id)}`} 
+                  alt="Selected Avatar" 
+                  width={80} 
+                  height={80} 
+                  className="w-20 h-20 rounded-full border-4 border-black shadow-lg" 
+                />
               </div>
 
               <hr />
@@ -237,9 +236,11 @@ export default function ProfilePage() {
                           : "hover:ring-2 hover:ring-gray-400 hover:scale-105"
                       }`}
                     >
-                      <img
+                      <Image
                         src={`/avatars/${avatar.file}`}
                         alt={`Avatar ${avatar.id}`}
+                        width={80}
+                        height={80}
                         className="w-full h-full rounded-full border-2 border-black"
                       />
                       {editData.avatar_id === avatar.id && (
@@ -261,8 +262,8 @@ export default function ProfilePage() {
       </Modal>
 
       {/* MAIN PAGE LAYOUT */}
-      <div className="min-h-[calc(100vh-150px)] p-4 md:p-8 pt-20 md:pt-24">
-        <div className="max-w-3xl mx-auto">
+      <div className="min-h-[calc(100vh-150px)] p-4 md:p-6 pt-16 md:pt-20">
+        <div className="max-w-2xl mx-auto">
           {/* Guest Mode Banner */}
           {isGuest && (
             <div className="mb-6 p-4 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left bg-yellow-50 border-2 border-black rounded-lg shadow-[4px_4px_0_0_#000]">
@@ -277,106 +278,47 @@ export default function ProfilePage() {
           )}
 
           {/* Single Profile Card */}
-          <div className="card p-6 sm:p-8">
+          <div className="card p-6">
             {/* Avatar - Centered at top */}
-            <div className="flex justify-center -mt-16 sm:-mt-20 mb-6">
+            <div className="flex justify-center -mt-16 mb-4">
               <div className="relative group cursor-pointer" onClick={() => { setEditData(profile); setIsAvatarModalOpen(true); }}>
-                <img
+                <Image
                   src={`/avatars/${getAvatarFile(profile.avatar_id)}`}
                   alt="User Avatar"
-                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-black shadow-lg transition-all group-hover:blur-sm group-hover:grayscale"
+                  width={112}
+                  height={112}
+                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-black shadow-lg transition-all group-hover:blur-sm group-hover:grayscale"
                 />
                 {/* Camera icon overlay */}
                 <div className="absolute inset-0 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                  <div className="bg-white border-4 border-black rounded-full p-3 sm:p-4">
-                    <FaCamera className="text-black text-xl sm:text-2xl" />
+                  <div className="bg-white border-4 border-black rounded-full p-3">
+                    <FaCamera className="text-black text-xl" />
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Name and Email */}
-            <div className="text-center mb-6">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 break-words">{fullName}</h1>
-              <p className="text-sm sm:text-base text-gray-500 mt-1 break-all">{profile.email}</p>
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold text-gray-900 break-words">{fullName}</h1>
+              {/* <p className="text-base text-gray-500 mt-1 break-all">{profile.email}</p> */}
               {profile.is_admin && (
-                <p className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs sm:text-sm font-semibold border-2 border-yellow-400">
+                <p className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold border-2 border-yellow-400">
                   <FaShieldAlt /> <span>Administrator</span>
                 </p>
               )}
             </div>
 
-            {/* Edit Profile Button */}
-            {/* <div className="flex justify-center mb-6">
-              <button onClick={openEditModal} className="btn flex items-center gap-2">
-                <FaEdit /> <span>Edit Profile</span>
-              </button>
-            </div> */}
-
-            {/* Tabs */}
-            <div className="flex justify-center gap-2 mb-6 border-b-2 border-gray-200 pb-2">
-              {tabItems.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeSection === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveSection(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-t transition-all ${
-                      isActive
-                        ? "bg-black text-white font-bold"
-                        : "text-gray-600 hover:text-black hover:bg-gray-100"
-                    }`}
-                  >
-                    <Icon className="text-base" />
-                    <span className="text-sm sm:text-base">{tab.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Tab Content */}
-            <div className="min-h-[200px]">
-              {/* Goal Section */}
-              {activeSection === "goal" && (
-                <div className="animate-fade-in">
-                  <dl className="space-y-6">
-                    <div>
-                      <dt className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-2">
-                        <FaBullseye /> Active Goal
-                      </dt>
-                      <dd className="text-gray-800 text-base sm:text-lg">
-                        {profile.goal || <span className="text-gray-400 italic">Not set</span>}
-                      </dd>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t-2 border-dashed">
-                      <div>
-                        <dt className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-2">
-                          <FaCalendarPlus /> Start Date
-                        </dt>
-                        <dd className="text-gray-800 text-base sm:text-lg">
-                          {formatDate(profile.start_date) || <span className="text-gray-400 italic">Not set</span>}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-2">
-                          <FaCalendarCheck /> Target Date
-                        </dt>
-                        <dd className="text-gray-800 text-base sm:text-lg">
-                          {formatDate(profile.end_date) || <span className="text-gray-400 italic">Not set</span>}
-                        </dd>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-              )}
-
-              {/* Account Settings Section */}
-              {activeSection === "settings" && (
-                <div className="animate-fade-in">
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            {/* UNIFIED CONTENT */}
+            <div className="space-y-6">
+              {/* Profile Details Section */}
+              <div className="animate-fade-in">
+                <div className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50/50 shadow-[2px_2px_0_0_#e5e7eb]">
+                  <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3">
+                    <FaCog /> Profile Details
+                  </h2>
+                  <div className="space-y-3 pl-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                       <div>
                         <span className="font-bold text-gray-500 uppercase tracking-wide text-xs">First Name</span>
                         <p className="text-gray-800 mt-1 text-base">{profile.first_name || <span className="text-gray-400 italic">Not set</span>}</p>
@@ -392,11 +334,37 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
+
+              {/* Goal Section */}
+              <div className="animate-fade-in">
+                <div className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50/50 shadow-[2px_2px_0_0_#e5e7eb]">
+                  <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3">
+                    <FaBullseye /> Your Goal
+                  </h2>
+                  <p className="text-gray-800 text-base mb-4 pl-1">
+                    {profile.goal || <span className="text-gray-400 italic">No goal set. Click &apos;Edit Profile&apos; to add one.</span>}
+                  </p>
+                  {(profile.start_date || profile.end_date) && (
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 text-sm text-gray-600 pt-3 border-t border-dashed">
+                      <div className="flex items-center gap-2">
+                        <FaCalendarPlus className="text-gray-400" />
+                        <strong>Start:</strong>
+                        <span>{formatDate(profile.start_date) || <span className="italic">Not set</span>}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                        <FaCalendarCheck className="text-gray-400" />
+                        <strong>Target:</strong>
+                        <span>{formatDate(profile.end_date) || <span className="italic">Not set</span>}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Action Buttons at bottom of card */}
-            <div className="mt-8 pt-6 border-t-2 border-gray-200 flex flex-col sm:flex-row gap-4 w-full">
+            <div className="mt-8 pt-6 border-t-2 border-gray-200 flex flex-col sm:flex-row gap-3 w-full">
               <button onClick={openEditModal} className="btn flex items-center justify-center gap-2 flex-1">
                 <FaEdit /> <span>Edit Profile</span>
               </button>
