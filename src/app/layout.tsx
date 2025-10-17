@@ -132,11 +132,11 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
     if (authStatus === "loggedIn" || authStatus === "guest") {
       return (
         <>
+          {/* {isAdmin && <NavLink href="/admin" label="Admin" />} */}
           {navLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
           {/* Admin link - only show for admin users */}
-          {isAdmin && <NavLink href="/admin" label="Admin" />}
           {
             authStatus === "guest" && (
               <button
@@ -182,7 +182,7 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-4 text-lg">
-            <NavLink {...helpLink} />
+            {/* <NavLink {...helpLink} /> */}
             {renderNavContent()}
           </nav>
 
