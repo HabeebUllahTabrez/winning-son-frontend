@@ -11,7 +11,7 @@ import { DashboardSkeleton } from "./_components/DashboardSkeleton";
 import { SubmissionHistoryChart } from "./_components/SubmissionHistoryChart";
 import { ProfileSetupGuard } from "@/components/ProfileSetupGuard";
 import OnboardingBanner from "@/components/OnboardingBanner";
-import { FaCalendarCheck, FaChartLine, FaFire, FaFlagCheckered, FaLock, FaStar } from "react-icons/fa";
+import { FaCalendarCheck, FaChartLine, FaFire, FaFlagCheckered, FaLock, FaStar, FaWhatsapp, FaQuestionCircle, FaCommentDots } from "react-icons/fa";
 import { formatDateForAPI } from "@/lib/dateUtils";
 import { isGuestUser } from "@/lib/guest";
 import { trackEvent } from "@/lib/mixpanel";
@@ -243,6 +243,38 @@ export default function Dashboard() {
                         />
                     </section>
                     
+                    {/* Quick Links for Guest */}
+                    <section className="card p-6">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Quick Links & Support</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <a href="/submissions" className="btn-secondary text-lg flex items-center justify-center gap-2">
+                                <FaCalendarCheck /> View All Entries
+                            </a>
+                            <a
+                                href="/help"
+                                className="btn-secondary text-lg flex items-center justify-center gap-2"
+                            >
+                                <FaQuestionCircle /> Help & Guide
+                            </a>
+                            <a
+                                href="https://chat.whatsapp.com/your-community-link"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-secondary text-lg flex items-center justify-center gap-2 hover:bg-green-50"
+                            >
+                                <FaWhatsapp /> WhatsApp Community
+                            </a>
+                            <a
+                                href="https://forms.gle/your-google-form-link"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-secondary text-lg flex items-center justify-center gap-2 hover:bg-purple-50 sm:col-span-2"
+                            >
+                                <FaCommentDots /> Have a Query? Contact Us
+                            </a>
+                        </div>
+                    </section>
+
                     {/* Locked Stats for Guest */}
                     <div className="relative pt-6">
                         <div className="absolute -inset-x-4 -inset-y-6 z-10 bg-white/30 backdrop-blur-sm rounded-lg"></div>
@@ -385,9 +417,35 @@ export default function Dashboard() {
 
                     <section className="card p-6">
                         <h2 className="text-2xl font-bold text-gray-800 mb-4">Quick Links</h2>
-                        <div className="flex flex-wrap items-center gap-4">
-                            <a href="/submissions" className="btn-secondary text-lg">View All Entries</a>
-                            <a href="/analyzer" className="btn-secondary text-lg">Open Analyzer</a>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <a href="/submissions" className="btn-secondary text-lg flex items-center justify-center gap-2">
+                                <FaCalendarCheck /> View All Entries
+                            </a>
+                            <a href="/analyzer" className="btn-secondary text-lg flex items-center justify-center gap-2">
+                                <FaChartLine /> Open Analyzer
+                            </a>
+                            <a
+                                href="/help"
+                                className="btn-secondary text-lg flex items-center justify-center gap-2"
+                            >
+                                <FaQuestionCircle /> Help & Guide
+                            </a>
+                            <a
+                                href="https://chat.whatsapp.com/KJQdLKOXZYh3M6aRzLnMQD"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-secondary text-lg flex items-center justify-center gap-2 hover:bg-green-50"
+                            >
+                                <FaWhatsapp /> WhatsApp Community
+                            </a>
+                            <a
+                                href="https://docs.google.com/forms/d/e/1FAIpQLSdYfPojaZjr_j3SDM8ODkVTzX34Cch6xivOpmfq-_ZIJnEUEw/viewform"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-secondary text-lg flex items-center justify-center gap-2 hover:bg-purple-50 sm:col-span-2"
+                            >
+                                <FaCommentDots /> Facing an Issue? Contact Us
+                            </a>
                         </div>
                     </section>
                 </div>

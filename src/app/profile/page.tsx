@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch, logout } from "@/lib/api";
 import toast from "react-hot-toast";
-import { FaBullseye, FaEdit, FaCloudUploadAlt, FaShieldAlt, FaCalendarCheck, FaCalendarPlus, FaCog, FaSignOutAlt, FaCamera } from "react-icons/fa";
+import { FaBullseye, FaEdit, FaCloudUploadAlt, FaShieldAlt, FaCalendarCheck, FaCalendarPlus, FaCog, FaSignOutAlt, FaCamera, FaWhatsapp, FaQuestionCircle, FaCommentDots } from "react-icons/fa";
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 import { AVATAR_MAP, getAvatarFile } from "@/lib/avatars";
 import { isGuestUser } from "@/lib/guest";
@@ -359,6 +359,53 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
+
+            {/* Support & Resources Section */}
+            <div className="mt-8 animate-fade-in">
+              <div className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50/50 shadow-[2px_2px_0_0_#e5e7eb]">
+                <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3">
+                  <FaQuestionCircle /> Support & Resources
+                </h2>
+                <div className="space-y-3">
+                  <a
+                    href="/help"
+                    className="flex items-center gap-3 p-3 bg-white border-2 border-black rounded-lg hover:bg-gray-50 transition-colors shadow-[2px_2px_0_0_#000] hover:shadow-[4px_4px_0_0_#000] hover:translate-x-[-2px] hover:translate-y-[-2px]"
+                  >
+                    <FaQuestionCircle className="text-blue-600 text-xl flex-shrink-0" />
+                    <div className="text-left">
+                      <p className="font-bold text-gray-900">Help & Guide</p>
+                      <p className="text-sm text-gray-600">Learn the basics and get comfortable using the app.</p>
+                    </div>
+                  </a>
+
+                  <a
+                    href="https://chat.whatsapp.com/KJQdLKOXZYh3M6aRzLnMQD"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 bg-white border-2 border-black rounded-lg hover:bg-green-50 transition-colors shadow-[2px_2px_0_0_#000] hover:shadow-[4px_4px_0_0_#000] hover:translate-x-[-2px] hover:translate-y-[-2px]"
+                  >
+                    <FaWhatsapp className="text-green-600 text-xl flex-shrink-0" />
+                    <div className="text-left">
+                      <p className="font-bold text-gray-900">WhatsApp Community</p>
+                      <p className="text-sm text-gray-600">Join for updates, tips, and what&apos;s coming next.</p>
+                    </div>
+                  </a>
+
+                  <a
+                    href="https://docs.google.com/forms/d/e/1FAIpQLSdYfPojaZjr_j3SDM8ODkVTzX34Cch6xivOpmfq-_ZIJnEUEw/viewform"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 bg-white border-2 border-black rounded-lg hover:bg-purple-50 transition-colors shadow-[2px_2px_0_0_#000] hover:shadow-[4px_4px_0_0_#000] hover:translate-x-[-2px] hover:translate-y-[-2px]"
+                  >
+                    <FaCommentDots className="text-purple-600 text-xl flex-shrink-0" />
+                    <div className="text-left">
+                      <p className="font-bold text-gray-900">Facing an Issue?</p>
+                      <p className="text-sm text-gray-600">Fill out the form — we&apos;ll get back to you ASAP!</p>
+                    </div>
+                  </a>
                 </div>
               </div>
             </div>
