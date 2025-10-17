@@ -307,11 +307,11 @@ export default function ProfilePage() {
             </div>
 
             {/* Edit Profile Button */}
-            <div className="flex justify-center mb-6">
+            {/* <div className="flex justify-center mb-6">
               <button onClick={openEditModal} className="btn flex items-center gap-2">
                 <FaEdit /> <span>Edit Profile</span>
               </button>
-            </div>
+            </div> */}
 
             {/* Tabs */}
             <div className="flex justify-center gap-2 mb-6 border-b-2 border-gray-200 pb-2">
@@ -395,13 +395,16 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* Logout Button at bottom of card */}
-            <div className="mt-8 pt-6 border-t-2 border-gray-200">
+            {/* Action Buttons at bottom of card */}
+            <div className="mt-8 pt-6 border-t-2 border-gray-200 flex flex-col sm:flex-row gap-4 w-full">
+              <button onClick={openEditModal} className="btn flex items-center justify-center gap-2 flex-1">
+                <FaEdit /> <span>Edit Profile</span>
+              </button>
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-3 px-6 py-3 rounded bg-red-50 hover:bg-red-100 border-2 border-red-300 hover:border-red-500 text-red-700 font-bold transition-all"
+                className="flex items-center justify-center gap-2 flex-1 px-6 py-3 rounded-lg bg-red-50 hover:bg-red-100 border-2 border-black text-red-700 font-bold shadow-[4px_4px_0_0_#000] cursor-pointer transition-colors"
               >
-                <FaSignOutAlt className="text-lg" />
+                <FaSignOutAlt />
                 <span>Logout</span>
               </button>
             </div>
