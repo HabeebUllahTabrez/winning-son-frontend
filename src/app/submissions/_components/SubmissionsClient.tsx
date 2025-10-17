@@ -116,9 +116,37 @@ export default function SubmissionsClient() {
   const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => { const day = new Date(weekStartDate); day.setDate(weekStartDate.getDate() + i); return day; }), [weekStartDate]);
   const entriesByDate = useMemo(() => (data && Array.isArray(data)) ? new Map(data.map(e => [e.local_date, e])) : new Map(), [data]);
   const isNextWeekInFuture = useMemo(() => { const nextWeekStart = new Date(weekStartDate); nextWeekStart.setDate(weekStartDate.getDate() + 7); return nextWeekStart > new Date(); }, [weekStartDate]);
-  const handlePreviousWeek = () => { const newDate = new Date(weekStartDate); newDate.setDate(weekStartDate.getDate() - 7); setWeekStartDate(newDate); };
-  const handleNextWeek = () => { const newDate = new Date(weekStartDate); newDate.setDate(weekStartDate.getDate() + 7); setWeekStartDate(newDate); };
-  const handleGoToToday = () => { setWeekStartDate(getStartOfWeek(new Date())); };
+  const handlePreviousWeek = () => {
+    const newDate = new Date(weekStartDate);
+    newDate.setDate(weekStartDate.getDate() - 7);
+    setWeekStartDate(newDate);
+    // Clear highlight when navigating
+    if (highlightedDate) {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('highlighted');
+      router.replace(newUrl.pathname + newUrl.search);
+    }
+  };
+  const handleNextWeek = () => {
+    const newDate = new Date(weekStartDate);
+    newDate.setDate(weekStartDate.getDate() + 7);
+    setWeekStartDate(newDate);
+    // Clear highlight when navigating
+    if (highlightedDate) {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('highlighted');
+      router.replace(newUrl.pathname + newUrl.search);
+    }
+  };
+  const handleGoToToday = () => {
+    setWeekStartDate(getStartOfWeek(new Date()));
+    // Clear highlight when navigating
+    if (highlightedDate) {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('highlighted');
+      router.replace(newUrl.pathname + newUrl.search);
+    }
+  };
   const handleDeleteClick = (date: string) => {
     setEntryToDelete(date);
     setIsConfirmOpen(true);
