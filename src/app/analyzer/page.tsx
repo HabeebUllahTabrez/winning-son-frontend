@@ -8,6 +8,7 @@ import { FaCopy, FaFlask, FaMagic, FaUndo, } from "react-icons/fa";
 import { isGuestUser, getGuestEntries } from "@/lib/guest";
 import { trackEvent } from "@/lib/mixpanel";
 import { markAnalyzerUsed, shouldShowAnalyzerCue } from "@/lib/onboarding";
+import { AnalyzerSkeleton } from "./_components/AnalyzerSkeleton";
 
 // --- Type Definitions (Updated) ---
 type UserProfile = {
@@ -59,6 +60,7 @@ export default function AnalyzerPage() {
   const [loadingState, setLoadingState] = useState<LoadingState>("idle");
   const [error, setError] = useState<string>("");
   const [noEntriesMessage, setNoEntriesMessage] = useState<string>("");
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const isGuest = isGuestUser();
 
@@ -70,11 +72,13 @@ export default function AnalyzerPage() {
   // --- Data Fetching (Unchanged) ---
   useEffect(() => {
     const fetchUser = async () => {
+      setIsInitialLoading(true);
       if (isGuest) {
         const guestProfile = JSON.parse(localStorage.getItem("guestProfileData") || "{}");
         setGoal(guestProfile.goal || "Achieve my personal best");
         setStartDate(formatDateForInput(guestProfile.start_date));
         setEndDate(formatDateForInput(guestProfile.end_date));
+        setIsInitialLoading(false);
         return;
       }
       try {
@@ -86,6 +90,8 @@ export default function AnalyzerPage() {
         setEndDate(formatDateForInput(user.end_date));
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Could not load user data.");
+      } finally {
+        setIsInitialLoading(false);
       }
     };
     fetchUser();
@@ -214,6 +220,8 @@ Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
     trackEvent("Prompt Copied", { isGuest });
     toast.success("And just like that… the text is yours! ✨");
   };
+
+  if (isInitialLoading) return <AnalyzerSkeleton />;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
