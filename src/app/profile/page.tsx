@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { FaBullseye, FaEdit, FaCloudUploadAlt, FaShieldAlt, FaCalendarCheck, FaCalendarPlus, FaCog, FaSignOutAlt, FaCamera, FaWhatsapp, FaQuestionCircle, FaCommentDots } from "react-icons/fa";
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 import { AVATAR_MAP, getAvatarFile } from "@/lib/avatars";
-import { isGuestUser } from "@/lib/guest";
+import { isGuestUser, clearGuestData } from "@/lib/guest";
 import { CreateAccountForm } from "../../components/CreateAccountForm";
 import { Modal } from "../../components/Modal";
 import { format, parseISO } from "date-fns";
@@ -135,6 +135,12 @@ export default function ProfilePage() {
   const handleLogout = () => {
     trackEvent("User Logout from Profile");
     logout();
+  };
+
+  const handleExitGuestMode = () => {
+    trackEvent("Exit Guest Mode from Profile");
+    clearGuestData();
+    window.location.href = "/";
   };
 
   const formatDate = (dateString: string | null) => dateString ? format(parseISO(dateString), 'MMM d, yyyy') : null;
@@ -415,13 +421,23 @@ export default function ProfilePage() {
               <button onClick={openEditModal} className="btn flex items-center justify-center gap-2 flex-1">
                 <FaEdit /> <span>Edit Profile</span>
               </button>
-              <button
-                onClick={handleLogout}
-                className="flex items-center justify-center gap-2 flex-1 px-6 py-3 rounded-lg bg-red-50 hover:bg-red-100 border-2 border-black text-red-700 font-bold shadow-[4px_4px_0_0_#000] cursor-pointer transition-colors"
-              >
-                <FaSignOutAlt />
-                <span>Logout</span>
-              </button>
+              {isGuest ? (
+                <button
+                  onClick={handleExitGuestMode}
+                  className="flex items-center justify-center gap-2 flex-1 px-6 py-3 rounded-lg bg-red-50 hover:bg-red-100 border-2 border-black text-red-700 font-bold shadow-[4px_4px_0_0_#000] cursor-pointer transition-colors"
+                >
+                  <FaSignOutAlt />
+                  <span>Exit Guest Mode</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center justify-center gap-2 flex-1 px-6 py-3 rounded-lg bg-red-50 hover:bg-red-100 border-2 border-black text-red-700 font-bold shadow-[4px_4px_0_0_#000] cursor-pointer transition-colors"
+                >
+                  <FaSignOutAlt />
+                  <span>Logout</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
