@@ -9,7 +9,9 @@ import {
   FaComments,
   FaChevronDown,
   FaChevronUp,
-  FaRocket
+  FaRocket,
+  FaWhatsapp,
+  FaQuestionCircle
 } from "react-icons/fa";
 
 // FAQ Item Component
@@ -162,7 +164,7 @@ export default function HelpPage() {
           </div>
         </section>
 
-        {/* Support & Feedback */}
+        {/* Support & Resources */}
         <section className="grid md:grid-cols-2 gap-6">
           {/* Dashboard */}
           <div className="card p-6 md:p-8 bg-gradient-to-br from-blue-50 to-purple-50 text-center space-y-4">
@@ -193,6 +195,43 @@ export default function HelpPage() {
               className="card px-6 py-3 bg-green-600 text-white hover:bg-green-700 transition-colors inline-block font-bold text-lg"
             >
               Share Your Feedback
+            </a>
+          </div>
+        </section>
+
+        {/* Get Support & Stay Updated */}
+        <section className="grid md:grid-cols-2 gap-6">
+          {/* WhatsApp Community */}
+          <div className="card p-6 md:p-8 bg-gradient-to-br from-green-50 to-emerald-50 text-center space-y-4">
+            <FaWhatsapp className="text-5xl text-green-600 mx-auto" />
+            <h2 className="text-2xl md:text-3xl font-bold">Join Our Community</h2>
+            <p className="text-base md:text-lg text-gray-700">
+              Get updates on what&apos;s coming next and connect with other users!
+            </p>
+            <a
+              href="https://chat.whatsapp.com/KJQdLKOXZYh3M6aRzLnMQD"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="card px-6 py-3 bg-green-600 text-white hover:bg-green-700 transition-colors inline-block font-bold text-lg"
+            >
+              Join WhatsApp Community
+            </a>
+          </div>
+
+          {/* Contact Form */}
+          <div className="card p-6 md:p-8 bg-gradient-to-br from-purple-50 to-pink-50 text-center space-y-4">
+            <FaQuestionCircle className="text-5xl text-purple-600 mx-auto" />
+            <h2 className="text-2xl md:text-3xl font-bold">Facing an Issue?</h2>
+            <p className="text-base md:text-lg text-gray-700">
+              Fill out the form — our team will reach out ASAP to help you!
+            </p>
+            <a
+              href="https://docs.google.com/forms/d/e/1FAIpQLSdYfPojaZjr_j3SDM8ODkVTzX34Cch6xivOpmfq-_ZIJnEUEw/viewform"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="card px-6 py-3 bg-purple-600 text-white hover:bg-purple-700 transition-colors inline-block font-bold text-lg"
+            >
+              Contact Us
             </a>
           </div>
         </section>

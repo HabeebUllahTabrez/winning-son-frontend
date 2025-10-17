@@ -2,11 +2,13 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, markAnalyzerUsed as apiMarkAnalyzerUsed } from "@/lib/api";
 import toast from "react-hot-toast";
 import { FaCopy, FaFlask, FaMagic, FaUndo, } from "react-icons/fa";
 import { isGuestUser, getGuestEntries } from "@/lib/guest";
 import { trackEvent } from "@/lib/mixpanel";
+import { markAnalyzerUsed, shouldShowAnalyzerCue } from "@/lib/onboarding";
+import { AnalyzerSkeleton } from "./_components/AnalyzerSkeleton";
 
 // --- Type Definitions (Updated) ---
 type UserProfile = {
@@ -58,6 +60,7 @@ export default function AnalyzerPage() {
   const [loadingState, setLoadingState] = useState<LoadingState>("idle");
   const [error, setError] = useState<string>("");
   const [noEntriesMessage, setNoEntriesMessage] = useState<string>("");
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const isGuest = isGuestUser();
 
@@ -69,11 +72,13 @@ export default function AnalyzerPage() {
   // --- Data Fetching (Unchanged) ---
   useEffect(() => {
     const fetchUser = async () => {
+      setIsInitialLoading(true);
       if (isGuest) {
         const guestProfile = JSON.parse(localStorage.getItem("guestProfileData") || "{}");
         setGoal(guestProfile.goal || "Achieve my personal best");
         setStartDate(formatDateForInput(guestProfile.start_date));
         setEndDate(formatDateForInput(guestProfile.end_date));
+        setIsInitialLoading(false);
         return;
       }
       try {
@@ -85,6 +90,8 @@ export default function AnalyzerPage() {
         setEndDate(formatDateForInput(user.end_date));
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Could not load user data.");
+      } finally {
+        setIsInitialLoading(false);
       }
     };
     fetchUser();
@@ -160,11 +167,37 @@ ${returnItems}
 Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
 
       setFinalPrompt(generatedPrompt);
+
+      // Track analyzer usage
+      const isFirstAnalyzerUse = shouldShowAnalyzerCue();
+      if (isFirstAnalyzerUse) {
+        markAnalyzerUsed();
+
+        // Also call API to mark analyzer as used (for authenticated users)
+        if (!isGuest) {
+          apiMarkAnalyzerUsed().catch(err =>
+            console.error("Failed to mark analyzer as used on server:", err)
+          );
+        }
+
+        // Show special celebration for first analyzer use
+        toast.success("✨ You've unlocked the power of the analyzer! Welcome to enlightenment!", {
+          duration: 4000,
+          style: {
+            background: '#f3e8ff',
+            color: '#581c87',
+            border: '2px solid #a855f7',
+            fontWeight: 'bold',
+          },
+        });
+      }
+
       trackEvent("Prompt Generated", {
         isGuest,
         entryCount: entries.length,
         selectedOptionsCount: activeOptions.length,
-        dateRange: `${startDate} to ${endDate}`
+        dateRange: `${startDate} to ${endDate}`,
+        isFirstUse: isFirstAnalyzerUse,
       });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "An unknown error occurred.";
@@ -187,6 +220,8 @@ Tone: Practical, motivating, and brutally honest. Avoid generic fluff.`;
     trackEvent("Prompt Copied", { isGuest });
     toast.success("And just like that… the text is yours! ✨");
   };
+
+  if (isInitialLoading) return <AnalyzerSkeleton />;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">

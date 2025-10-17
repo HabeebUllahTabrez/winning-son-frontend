@@ -2,7 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, fetchFeatureStatus } from "@/lib/api";
 import { getAvatarFile } from "@/lib/avatars";
 import { StatCard } from "./_components/StatCard";
 import { TrendChart } from "./_components/TrendChart";
@@ -10,10 +10,18 @@ import { CallToAction } from "./_components/CallToAction";
 import { DashboardSkeleton } from "./_components/DashboardSkeleton";
 import { SubmissionHistoryChart } from "./_components/SubmissionHistoryChart";
 import { ProfileSetupGuard } from "@/components/ProfileSetupGuard";
-import { FaCalendarCheck, FaChartLine, FaFire, FaFlagCheckered, FaLock, FaStar } from "react-icons/fa";
+import OnboardingBanner from "@/components/OnboardingBanner";
+import { FaCalendarCheck, FaChartLine, FaFire, FaFlagCheckered, FaLock, FaStar, FaWhatsapp, FaQuestionCircle, FaCommentDots } from "react-icons/fa";
 import { formatDateForAPI } from "@/lib/dateUtils";
 import { isGuestUser } from "@/lib/guest";
 import { trackEvent } from "@/lib/mixpanel";
+import {
+  getOnboardingStatus,
+  shouldShowFirstLogCue,
+  shouldShowAnalyzerCue,
+  syncOnboardingStatusFromAPI,
+  saveOnboardingStatus
+} from "@/lib/onboarding";
 
 // Define nested User type
 type User = {
@@ -54,6 +62,8 @@ export default function Dashboard() {
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [showFirstLogBanner, setShowFirstLogBanner] = useState(false);
+    const [showAnalyzerBanner, setShowAnalyzerBanner] = useState(false);
 
     const loadDashboard = useCallback(async () => {
         setLoading(true);
@@ -114,6 +124,49 @@ export default function Dashboard() {
         trackEvent("Dashboard Viewed", { isGuest });
     }, [loadDashboard, isGuest]);
 
+    // Load onboarding status
+    useEffect(() => {
+        const loadOnboardingStatus = async () => {
+            if (isGuest) {
+                // For guest users, check localStorage only
+                const localStatus = getOnboardingStatus();
+                setShowFirstLogBanner(shouldShowFirstLogCue());
+                setShowAnalyzerBanner(shouldShowAnalyzerCue());
+            } else {
+                // For authenticated users, sync with API
+                try {
+                    const apiStatus = await fetchFeatureStatus();
+                    if (apiStatus) {
+                        syncOnboardingStatusFromAPI(apiStatus);
+                        setShowFirstLogBanner(!apiStatus.has_created_first_log);
+                        setShowAnalyzerBanner(apiStatus.has_created_first_log && !apiStatus.has_used_analyzer);
+                    } else {
+                        // Fallback to localStorage if API fails
+                        setShowFirstLogBanner(shouldShowFirstLogCue());
+                        setShowAnalyzerBanner(shouldShowAnalyzerCue());
+                    }
+                } catch (error) {
+                    console.error("Failed to load onboarding status", error);
+                    // Fallback to localStorage
+                    setShowFirstLogBanner(shouldShowFirstLogCue());
+                    setShowAnalyzerBanner(shouldShowAnalyzerCue());
+                }
+            }
+        };
+
+        loadOnboardingStatus();
+    }, [isGuest]);
+
+    const handleDismissBanner = (type: "first-log" | "analyzer") => {
+        if (type === "first-log") {
+            setShowFirstLogBanner(false);
+            trackEvent("Onboarding Banner Dismissed", { type: "first-log", isGuest });
+        } else {
+            setShowAnalyzerBanner(false);
+            trackEvent("Onboarding Banner Dismissed", { type: "analyzer", isGuest });
+        }
+    };
+
     const goalProgress = useMemo(() => {
         if (!dashboardData?.user.start_date || !dashboardData?.user.end_date) {
             return null;
@@ -150,10 +203,18 @@ export default function Dashboard() {
                                 Welcome, {dashboardData?.user.first_name || 'friend'}!
                             </h1>
                             <p className="text-lg text-gray-600 mt-1">
-                                Here’s your progress at a glance. Keep it up! ✨
+                                Here&apos;s your progress at a glance. Keep it up! ✨
                             </p>
                         </div>
                     </header>
+
+                    {/* Onboarding Banners */}
+                    {showFirstLogBanner && (
+                        <OnboardingBanner type="first-log" onDismiss={() => handleDismissBanner("first-log")} />
+                    )}
+                    {showAnalyzerBanner && (
+                        <OnboardingBanner type="analyzer" onDismiss={() => handleDismissBanner("analyzer")} />
+                    )}
 
                     <CallToAction hasEntryToday={dashboardData?.has_today_entry || false} />
 
@@ -182,6 +243,38 @@ export default function Dashboard() {
                         />
                     </section>
                     
+                    {/* Quick Links for Guest */}
+                    <section className="card p-6">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Quick Links & Support</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <a href="/submissions" className="btn-secondary text-lg flex items-center justify-center gap-2">
+                                <FaCalendarCheck /> View All Entries
+                            </a>
+                            <a
+                                href="/help"
+                                className="btn-secondary text-lg flex items-center justify-center gap-2"
+                            >
+                                <FaQuestionCircle /> Help & Guide
+                            </a>
+                            <a
+                                href="https://chat.whatsapp.com/your-community-link"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-secondary text-lg flex items-center justify-center gap-2 hover:bg-green-50"
+                            >
+                                <FaWhatsapp /> WhatsApp Community
+                            </a>
+                            <a
+                                href="https://forms.gle/your-google-form-link"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-secondary text-lg flex items-center justify-center gap-2 hover:bg-purple-50 sm:col-span-2"
+                            >
+                                <FaCommentDots /> Have a Query? Contact Us
+                            </a>
+                        </div>
+                    </section>
+
                     {/* Locked Stats for Guest */}
                     <div className="relative pt-6">
                         <div className="absolute -inset-x-4 -inset-y-6 z-10 bg-white/30 backdrop-blur-sm rounded-lg"></div>
@@ -247,10 +340,18 @@ export default function Dashboard() {
                                 Welcome, {user.first_name || 'friend'}!
                             </h1>
                             <p className="text-lg text-gray-600 mt-1">
-                                Here’s your progress at a glance. Keep it up! ✨
+                                Here&apos;s your progress at a glance. Keep it up! ✨
                             </p>
                         </div>
                     </header>
+
+                    {/* Onboarding Banners */}
+                    {showFirstLogBanner && (
+                        <OnboardingBanner type="first-log" onDismiss={() => handleDismissBanner("first-log")} />
+                    )}
+                    {showAnalyzerBanner && (
+                        <OnboardingBanner type="analyzer" onDismiss={() => handleDismissBanner("analyzer")} />
+                    )}
 
                     <CallToAction hasEntryToday={dashboardData.has_today_entry} />
 
@@ -316,9 +417,35 @@ export default function Dashboard() {
 
                     <section className="card p-6">
                         <h2 className="text-2xl font-bold text-gray-800 mb-4">Quick Links</h2>
-                        <div className="flex flex-wrap items-center gap-4">
-                            <a href="/submissions" className="btn-secondary text-lg">View All Entries</a>
-                            <a href="/analyzer" className="btn-secondary text-lg">Open Analyzer</a>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <a href="/submissions" className="btn-secondary text-lg flex items-center justify-center gap-2">
+                                <FaCalendarCheck /> View All Entries
+                            </a>
+                            <a href="/analyzer" className="btn-secondary text-lg flex items-center justify-center gap-2">
+                                <FaChartLine /> Open Analyzer
+                            </a>
+                            <a
+                                href="/help"
+                                className="btn-secondary text-lg flex items-center justify-center gap-2"
+                            >
+                                <FaQuestionCircle /> Help & Guide
+                            </a>
+                            <a
+                                href="https://chat.whatsapp.com/KJQdLKOXZYh3M6aRzLnMQD"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-secondary text-lg flex items-center justify-center gap-2 hover:bg-green-50"
+                            >
+                                <FaWhatsapp /> WhatsApp Community
+                            </a>
+                            <a
+                                href="https://docs.google.com/forms/d/e/1FAIpQLSdYfPojaZjr_j3SDM8ODkVTzX34Cch6xivOpmfq-_ZIJnEUEw/viewform"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-secondary text-lg flex items-center justify-center gap-2 hover:bg-purple-50 sm:col-span-2"
+                            >
+                                <FaCommentDots /> Facing an Issue? Contact Us
+                            </a>
                         </div>
                     </section>
                 </div>

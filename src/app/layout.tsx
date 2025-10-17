@@ -3,17 +3,17 @@
 
 import { Patrick_Hand } from "next/font/google";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import clsx from "clsx"; // 1. Import clsx for cleaner conditional classes
 import "./globals.css";
-import { exitGuestMode, logout } from "@/lib/api";
+import { exitGuestMode } from "@/lib/api";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { Analytics } from '@vercel/analytics/next';
 import { isGuestUser } from "@/lib/guest";
 import MixpanelProvider from "@/components/MixpanelProvider";
-import { trackEvent, resetMixpanel } from "@/lib/mixpanel";
+import { resetMixpanel, trackEvent } from "@/lib/mixpanel";
 import { Modal } from "@/components/Modal";
 import { CreateAccountForm } from "@/components/CreateAccountForm";
 import { migrateFromOldAuth } from "@/lib/auth-migration";
@@ -29,7 +29,7 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authStatus, setAuthStatus] = useState<"loading" | "loggedIn" | "guest" | "loggedOut">("loading");
-  const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname();
 
   // Effect to check login status and close menu on page change
@@ -42,6 +42,7 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
 
       if (guest) {
         setAuthStatus("guest");
+        setIsAdmin(false);
       } else {
         try {
           // Check auth via httpOnly cookie
@@ -49,11 +50,26 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
           if (res.ok) {
             const data = await res.json();
             setAuthStatus(data.authenticated ? "loggedIn" : "loggedOut");
+
+            // Check if user is admin
+            if (data.authenticated) {
+              try {
+                const userRes = await fetch("/api/proxy/me");
+                if (userRes.ok) {
+                  const userData = await userRes.json();
+                  setIsAdmin(userData.is_admin || false);
+                }
+              } catch {
+                setIsAdmin(false);
+              }
+            }
           } else {
             setAuthStatus("loggedOut");
+            setIsAdmin(false);
           }
         } catch {
           setAuthStatus("loggedOut");
+          setIsAdmin(false);
         }
       }
     };
@@ -61,12 +77,6 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
     checkAuthStatus();
     setIsMenuOpen(false); // Close mobile menu on navigation
   }, [pathname]);
-
-  const handleLogout = () => {
-    trackEvent("User Logout");
-    resetMixpanel();
-    logout();
-  };
 
   // 2. Define nav links as an array for easier mapping
   const navLinks = [
@@ -122,19 +132,11 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
     if (authStatus === "loggedIn" || authStatus === "guest") {
       return (
         <>
+          {/* {isAdmin && <NavLink href="/admin" label="Admin" />} */}
           {navLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
-          {
-            authStatus === "loggedIn" && (
-              <button
-                onClick={handleLogout}
-                className="px-2 py-1 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
-              >
-                Logout
-              </button>
-            )
-          }
+          {/* Admin link - only show for admin users */}
           {
             authStatus === "guest" && (
               <button
@@ -180,7 +182,7 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-4 text-lg">
-            <NavLink {...helpLink} />
+            {/* <NavLink {...helpLink} /> */}
             {renderNavContent()}
           </nav>
 

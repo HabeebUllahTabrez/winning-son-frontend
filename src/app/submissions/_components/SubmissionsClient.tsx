@@ -88,9 +88,9 @@ export default function SubmissionsClient() {
           const params = new URLSearchParams({ start_date: startDateStr, end_date: endDateStr });
           const res = await apiFetch(`/api/journal?${params.toString()}`);
           // Assuming res.data is already correctly typed from apiFetch
-          entries = res.data;
+          entries = res.data || [];
         }
-        setData(entries);
+        setData(entries || []);
         trackEvent("Submissions Page Viewed", { isGuest, weekStart: startDateStr, entryCount: entries.length });
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Failed to load submissions.");
@@ -114,7 +114,7 @@ export default function SubmissionsClient() {
 
   // --- (All memoized values, week handlers, and delete handlers remain the same) ---
   const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => { const day = new Date(weekStartDate); day.setDate(weekStartDate.getDate() + i); return day; }), [weekStartDate]);
-  const entriesByDate = useMemo(() => data ? new Map(data.map(e => [e.local_date, e])) : new Map(), [data]);
+  const entriesByDate = useMemo(() => (data && Array.isArray(data)) ? new Map(data.map(e => [e.local_date, e])) : new Map(), [data]);
   const isNextWeekInFuture = useMemo(() => { const nextWeekStart = new Date(weekStartDate); nextWeekStart.setDate(weekStartDate.getDate() + 7); return nextWeekStart > new Date(); }, [weekStartDate]);
   const handlePreviousWeek = () => { const newDate = new Date(weekStartDate); newDate.setDate(weekStartDate.getDate() - 7); setWeekStartDate(newDate); };
   const handleNextWeek = () => { const newDate = new Date(weekStartDate); newDate.setDate(weekStartDate.getDate() + 7); setWeekStartDate(newDate); };
