@@ -11,7 +11,7 @@ import { DashboardSkeleton } from "./_components/DashboardSkeleton";
 import { SubmissionHistoryChart } from "./_components/SubmissionHistoryChart";
 import { ProfileSetupGuard } from "@/components/ProfileSetupGuard";
 import OnboardingBanner from "@/components/OnboardingBanner";
-import { FaCalendarCheck, FaChartLine, FaFire, FaFlagCheckered, FaLock, FaStar, FaWhatsapp, FaQuestionCircle, FaCommentDots } from "react-icons/fa";
+import { FaCalendarCheck, FaChartLine, FaFire, FaFlagCheckered, FaLock, FaStar, FaWhatsapp, FaQuestionCircle, FaCommentDots, FaTrophy, FaCalendar, FaArrowUp, FaArrowDown, FaClock, FaHourglassHalf } from "react-icons/fa";
 import { formatDateForAPI } from "@/lib/dateUtils";
 import { isGuestUser } from "@/lib/guest";
 import { trackEvent } from "@/lib/mixpanel";
@@ -34,6 +34,7 @@ type User = {
 
 // This type now correctly represents data from BOTH the API and the guest stats
 type DashboardData = {
+    reference_date: string;
     has_today_entry: boolean;
     day_karma: number;
     week_karma: number;
@@ -45,6 +46,11 @@ type DashboardData = {
     current_streak_days: number;
     last7_days_trend: { local_date: string; karma: number }[];
     user: User;
+    longest_streak_ever: number;
+    total_days_logged: number;
+    peak_performance_day_of_week: string;
+    last_week_karma: number;
+    karma_change_vs_last_week: number;
 };
 
 // Helper to format dates for display
@@ -80,6 +86,7 @@ export default function Dashboard() {
                     // Transform localStorage data into the consistent DashboardData shape.
                     // This handles data from both the old "_points" and new "_karma" format.
                     const transformedStats: DashboardData = {
+                        reference_date: storedStats.reference_date || new Date().toISOString().split('T')[0],
                         has_today_entry: storedStats.has_today_entry,
                         current_streak_days: storedStats.current_streak_days,
                         entries_this_week: storedStats.entries_this_week,
@@ -94,6 +101,11 @@ export default function Dashboard() {
                             karma: day.karma ?? day.points ?? 0,
                         })),
                         user: storedStats.user || { first_name: "Guest", avatar_id: 1, goal: null, start_date: null, end_date: null },
+                        longest_streak_ever: storedStats.longest_streak_ever ?? 0,
+                        total_days_logged: storedStats.total_days_logged ?? 0,
+                        peak_performance_day_of_week: storedStats.peak_performance_day_of_week || "N/A",
+                        last_week_karma: storedStats.last_week_karma ?? 0,
+                        karma_change_vs_last_week: storedStats.karma_change_vs_last_week ?? 0,
                     };
                     setDashboardData(transformedStats);
                 } else {
@@ -181,7 +193,17 @@ export default function Dashboard() {
         const elapsedDuration = now - start;
         const percentage = Math.round((elapsedDuration / totalDuration) * 100);
 
-        return Math.max(0, Math.min(100, percentage));
+        // Calculate days
+        const totalDays = Math.ceil(totalDuration / (1000 * 60 * 60 * 24));
+        const daysElapsed = Math.ceil(elapsedDuration / (1000 * 60 * 60 * 24));
+        const daysRemaining = Math.max(0, totalDays - daysElapsed);
+
+        return {
+            percentage: Math.max(0, Math.min(100, percentage)),
+            totalDays,
+            daysElapsed,
+            daysRemaining
+        };
     }, [dashboardData?.user]);
     
     if (loading) return <DashboardSkeleton />;
@@ -324,6 +346,17 @@ export default function Dashboard() {
 
     const { user } = dashboardData;
 
+    // Helper function to generate encouraging messages based on performance
+    const getEncouragingMessage = () => {
+        const change = dashboardData.karma_change_vs_last_week;
+        if (change > 20) return "You're on fire! What a week!";
+        if (change > 10) return "Great momentum! Keep crushing it!";
+        if (change > 0) return "Nice progress! You're moving up!";
+        if (change === 0) return "Steady as she goes! Consistency is key!";
+        if (change > -10) return "Small dip, but you've got this!";
+        return "Every champion has off weeks. Bounce back strong!";
+    };
+
     // --- Logged-in User View ---
     return (
         <ProfileSetupGuard>
@@ -340,7 +373,7 @@ export default function Dashboard() {
                                 Welcome, {user.first_name || 'friend'}!
                             </h1>
                             <p className="text-lg text-gray-600 mt-1">
-                                Here&apos;s your progress at a glance. Keep it up! ✨
+                                {getEncouragingMessage()}
                             </p>
                         </div>
                     </header>
@@ -355,68 +388,256 @@ export default function Dashboard() {
 
                     <CallToAction hasEntryToday={dashboardData.has_today_entry} />
 
+                    {/* ========== LONG TERM PROGRESS ========== */}
                     {user.goal && (
-                        <section className="card p-6 space-y-4">
-                             <div>
-                                <h2 className="text-xl font-bold text-gray-800">Your Current Goal</h2>
-                                <p className="text-3xl font-bold">{user.goal}</p>
-                            </div>
-                            {goalProgress !== null && (
-                                <div className="pt-2 space-y-3">
-                                    <div className="w-full bg-gray-100 h-6 rounded-full border-2 border-black">
-                                        <div 
-                                            className="bg-black h-full rounded-full transition-all duration-500" 
-                                            style={{ width: `${goalProgress}%` }} 
-                                        />
-                                    </div>
-                                    <div className="flex justify-between items-center text-md font-bold">
-                                        <span className="flex items-center gap-2">
-                                            <FaCalendarCheck className="text-green-600" />
-                                            Start: {formatDateForDisplay(user.start_date)}
-                                        </span>
-                                        <span className="flex items-center gap-2">
-                                            <FaFlagCheckered className="text-red-600" />
-                                            End: {formatDateForDisplay(user.end_date)}
-                                        </span>
-                                    </div>
+                        <section className="card p-6 space-y-6">
+                            {/* Goal Header */}
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                    <h2 className="text-lg font-semibold text-gray-600 mb-1">Your Goal Journey</h2>
+                                    <p className="text-3xl font-bold text-gray-900">{user.goal}</p>
                                 </div>
+                                <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-4 rounded-lg border-2 border-black" style={{ boxShadow: '4px 4px 0px #000' }}>
+                                    <FaTrophy className="text-3xl text-white" />
+                                </div>
+                            </div>
+
+                            {goalProgress !== null && (
+                                <>
+                                    {/* Progress Metrics Grid */}
+                                    <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                                        <div className="bg-blue-50 p-2 sm:p-4 border-2 border-black" style={{ borderRadius: '4px 5px 3px 6px', boxShadow: '4px 4px 0px #000' }}>
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                                                <FaClock className="text-blue-600 flex-shrink-0 text-sm sm:text-base" />
+                                                <p className="text-xs font-bold text-gray-800 uppercase">Elapsed</p>
+                                            </div>
+                                            <p className="text-lg sm:text-2xl font-bold text-gray-900">{goalProgress.daysElapsed}</p>
+                                            <p className="text-xs text-gray-600">days</p>
+                                        </div>
+
+                                        <div className="bg-green-50 p-2 sm:p-4 border-2 border-black" style={{ borderRadius: '5px 4px 6px 3px', boxShadow: '4px 4px 0px #000' }}>
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                                                <FaHourglassHalf className="text-green-600 flex-shrink-0 text-sm sm:text-base" />
+                                                <p className="text-xs font-bold text-gray-800 uppercase">Remaining</p>
+                                            </div>
+                                            <p className="text-lg sm:text-2xl font-bold text-gray-900">{goalProgress.daysRemaining}</p>
+                                            <p className="text-xs text-gray-600">days</p>
+                                        </div>
+
+                                        <div className="bg-purple-50 p-2 sm:p-4 border-2 border-black" style={{ borderRadius: '3px 6px 4px 5px', boxShadow: '4px 4px 0px #000' }}>
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                                                <FaCalendar className="text-purple-600 flex-shrink-0 text-sm sm:text-base" />
+                                                <p className="text-xs font-bold text-gray-800 uppercase">Total</p>
+                                            </div>
+                                            <p className="text-lg sm:text-2xl font-bold text-gray-900">{goalProgress.totalDays}</p>
+                                            <p className="text-xs text-gray-600">days</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Visual Timeline */}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between text-sm font-bold text-gray-800">
+                                            <span>{goalProgress.percentage}% Complete</span>
+                                            <span>{100 - goalProgress.percentage}% to go</span>
+                                        </div>
+
+                                        {/* Progress Bar */}
+                                        <div className="relative">
+                                            <div className="w-full bg-gray-100 h-8 border-2 border-black" style={{ borderRadius: '4px 5px 3px 6px' }}>
+                                                <div
+                                                    className="h-full transition-all duration-700 relative overflow-hidden"
+                                                    style={{
+                                                        width: `${goalProgress.percentage}%`,
+                                                        borderRadius: '2px 3px 1px 4px',
+                                                        background: 'linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%)'
+                                                    }}
+                                                >
+                                                    {/* Animated stripe pattern */}
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-20 animate-shimmer"></div>
+                                                </div>
+                                            </div>
+
+                                            {/* Current position marker */}
+                                            {goalProgress.percentage > 0 && goalProgress.percentage < 100 && (
+                                                <div
+                                                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-700"
+                                                    style={{ left: `${goalProgress.percentage}%` }}
+                                                >
+                                                    <div className="relative">
+                                                        <div className="w-4 h-4 bg-yellow-400 border-2 border-black rounded-full" style={{ boxShadow: '2px 2px 0px #000' }}></div>
+                                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black text-white text-xs px-2 py-1 font-bold" style={{ borderRadius: '2px 3px 2px 3px' }}>
+                                                            Today
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Timeline Dates */}
+                                        <div className="flex justify-between items-start pt-2">
+                                            <div className="flex flex-col items-start">
+                                                <div className="flex items-center gap-2 text-green-600 mb-1">
+                                                    <FaCalendarCheck className="text-lg" />
+                                                    <span className="text-xs font-bold uppercase">Start Date</span>
+                                                </div>
+                                                <span className="text-sm font-bold text-gray-900">{formatDateForDisplay(user.start_date)}</span>
+                                            </div>
+
+                                            <div className="flex flex-col items-end">
+                                                <div className="flex items-center gap-2 text-red-600 mb-1">
+                                                    <span className="text-xs font-bold uppercase">Target Date</span>
+                                                    <FaFlagCheckered className="text-lg" />
+                                                </div>
+                                                <span className="text-sm font-bold text-gray-900">{formatDateForDisplay(user.end_date)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Motivational Message */}
+                                    <div className="bg-yellow-50 border-2 border-black p-4" style={{ borderRadius: '4px 5px 3px 6px' }}>
+                                        <p className="text-center text-gray-900 font-bold">
+                                            {goalProgress.percentage < 25 && "Just getting started! Every day counts toward your goal!"}
+                                            {goalProgress.percentage >= 25 && goalProgress.percentage < 50 && "Quarter way there! You're building momentum!"}
+                                            {goalProgress.percentage >= 50 && goalProgress.percentage < 75 && "Over halfway! Keep pushing forward!"}
+                                            {goalProgress.percentage >= 75 && goalProgress.percentage < 90 && "The finish line is in sight! Stay focused!"}
+                                            {goalProgress.percentage >= 90 && goalProgress.percentage < 100 && "Almost there! Give it your all!"}
+                                            {goalProgress.percentage >= 100 && "Goal period complete! Time to set a new target!"}
+                                        </p>
+                                    </div>
+                                </>
                             )}
                         </section>
                     )}
 
+                    {/* ========== CURRENT WEEK ========== */}
+                    <section className="space-y-6">
+                        <div>
+                            <h2 className="text-3xl font-bold text-gray-800 mb-2">This Week</h2>
+                            <p className="text-gray-600 mb-6">Your performance over the last 7 days</p>
+                        </div>
+
+                        {/* Key Stats */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                            <StatCard
+                                title="Today's Karma"
+                                value={dashboardData.day_karma.toFixed(2)}
+                                icon={<FaCalendarCheck className="text-blue-500" />}
+                                isSmall={true}
+                            />
+                            <StatCard
+                                title="Current Streak"
+                                value={`${dashboardData.current_streak_days} days`}
+                                icon={<FaFire className="text-orange-500" />}
+                                isSmall={true}
+                            />
+                            <StatCard
+                                title="Week's Karma"
+                                value={dashboardData.week_karma.toFixed(2)}
+                                icon={<FaChartLine className="text-green-500" />}
+                                isSmall={true}
+                            />
+                            <StatCard
+                                title="Entries This Week"
+                                value={dashboardData.entries_this_week}
+                                icon={<FaCalendarCheck className="text-purple-500" />}
+                                isSmall={true}
+                            />
+                        </div>
+
+                        {/* Week-over-Week Comparison */}
+                        {dashboardData.last_week_karma > 0 && (
+                            <div className="card p-6">
+                                <h3 className="text-xl font-bold text-gray-800 mb-4">Week-over-Week</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                    <div>
+                                        <p className="text-sm font-semibold text-gray-500 mb-1">Last Week</p>
+                                        <p className="text-3xl font-bold text-gray-900">{dashboardData.last_week_karma.toFixed(2)}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-gray-500 mb-1">This Week</p>
+                                        <p className="text-3xl font-bold text-gray-900">{dashboardData.week_karma.toFixed(2)}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-gray-500 mb-1">Change</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className={`text-3xl font-bold ${dashboardData.karma_change_vs_last_week >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {dashboardData.karma_change_vs_last_week >= 0 ? '+' : ''}{dashboardData.karma_change_vs_last_week.toFixed(1)}%
+                                            </p>
+                                            {dashboardData.karma_change_vs_last_week >= 0 ? (
+                                                <FaArrowUp className="text-green-600 text-xl" />
+                                            ) : (
+                                                <FaArrowDown className="text-red-600 text-xl" />
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 7-Day Trend Chart */}
+                        <div className="card p-6">
+                            <h3 className="text-xl font-bold text-gray-800 mb-4">7-Day Trend</h3>
+                            <div className="h-72">
+                                <TrendChart data={dashboardData.last7_days_trend} />
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* ========== OVERALL STATS ========== */}
                     <section>
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Key Stats</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                            <StatCard title="Today's Karma" value={dashboardData.day_karma.toFixed(2)} icon={<FaCalendarCheck className="text-blue-500" />} />
-                            <StatCard title="Current Streak" value={`${dashboardData.current_streak_days} days`} icon={<FaFire className="text-orange-500" />} />
-                            <StatCard title="Karma This Week" value={dashboardData.week_karma.toFixed(2)} icon={<FaChartLine className="text-green-500" />} />
+                        <h2 className="text-3xl font-bold text-gray-800 mb-6">Overall Stats</h2>
+
+                        {/* Combined Stats Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
+                            <StatCard
+                                title="Year Total"
+                                value={dashboardData.year_karma.toFixed(2)}
+                                icon={<FaChartLine className="text-green-500" />}
+                                isSmall={true}
+                            />
+                            <StatCard
+                                title="Entries This Year"
+                                value={dashboardData.entries_this_year}
+                                icon={<FaCalendarCheck className="text-blue-500" />}
+                                isSmall={true}
+                            />
+                            <StatCard
+                                title="Monthly Average"
+                                value={dashboardData.average_month_karma?.toFixed(2)}
+                                icon={<FaStar className="text-yellow-500" />}
+                                isSmall={true}
+                            />
+                            <StatCard
+                                title="Longest Streak"
+                                value={`${dashboardData.longest_streak_ever} days`}
+                                icon={<FaTrophy className="text-yellow-500" />}
+                                isSmall={true}
+                            />
+                            <StatCard
+                                title="Total Days Logged"
+                                value={dashboardData.total_days_logged}
+                                icon={<FaCalendar className="text-purple-500" />}
+                                isSmall={true}
+                            />
+                            <StatCard
+                                title="Best Day"
+                                value={dashboardData.peak_performance_day_of_week}
+                                icon={<FaStar className="text-pink-500" />}
+                                isSmall={true}
+                            />
+                        </div>
+
+                        {/* Submission History Calendar */}
+                        <div className="card p-6">
+                            <h3 className="text-xl font-bold text-gray-800 mb-2">Activity Calendar</h3>
+                            <p className="text-gray-600 mb-4">Track your consistency over time</p>
+                            <SubmissionHistoryChart isGuest={false} />
                         </div>
                     </section>
 
+                    {/* Quick Actions */}
                     <section className="card p-6">
-                         <h2 className="text-2xl font-bold text-gray-800 mb-4">Last 7 Days</h2>
-                        <div className="h-72">
-                            <TrendChart data={dashboardData.last7_days_trend} />
-                        </div>
-                    </section>
-
-                    <section className="card p-6">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Submission History</h2>
-                        <p className="text-gray-600 mb-4">Track your journal entries over time (max 1 year)</p>
-                        <SubmissionHistoryChart isGuest={false} />
-                    </section>
-                    
-                    <section>
-                         <h2 className="text-2xl font-bold text-gray-800 mb-4">More Stats</h2>
-                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                            <StatCard title="Monthly Average Karma" value={dashboardData.average_month_karma?.toFixed(2)} icon={<FaStar className="text-yellow-500" />} isSmall={true} />
-                            <StatCard title="Entries This Week" value={dashboardData.entries_this_week} isSmall={true} />
-                            <StatCard title="Total Karma This Year" value={dashboardData.year_karma.toFixed(2)} isSmall={true} />
-                        </div>
-                    </section>
-
-                    <section className="card p-6">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Quick Links</h2>
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Quick Actions</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <a href="/submissions" className="btn-secondary text-lg flex items-center justify-center gap-2">
                                 <FaCalendarCheck /> View All Entries
