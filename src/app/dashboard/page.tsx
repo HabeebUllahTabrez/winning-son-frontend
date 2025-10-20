@@ -430,12 +430,12 @@ export default function Dashboard() {
     // Helper function to generate encouraging messages based on performance
     const getEncouragingMessage = () => {
         const change = dashboardData.karma_change_vs_last_week;
-        if (change > 20) return "You're on fire! What a week!";
-        if (change > 10) return "Great momentum! Keep crushing it!";
-        if (change > 0) return "Nice progress! You're moving up!";
-        if (change === 0) return "Steady as she goes! Consistency is key!";
-        if (change > -10) return "Small dip, but you've got this!";
-        return "Every champion has off weeks. Bounce back strong!";
+        if (change > 20) return `You're on fire! What a week!`;
+        if (change > 10) return `Great momentum! Keep crushing it!`;
+        if (change > 0) return `Nice progress! You're moving up!`;
+        if (change === 0) return `Steady as she goes! Consistency is key!`;
+        if (change > -10) return `Small dip, but you've got this!`;
+        return `Every champion has off weeks. Bounce back strong!`;
     };
 
     // --- Logged-in User View ---
@@ -577,12 +577,12 @@ export default function Dashboard() {
                                     {/* Motivational Message */}
                                     <div className="bg-yellow-50 border-2 border-black p-4" style={{ borderRadius: '4px 5px 3px 6px' }}>
                                         <p className="text-center text-gray-900 font-bold">
-                                            {goalProgress.percentage < 25 && "Just getting started! Every day counts toward your goal!"}
-                                            {goalProgress.percentage >= 25 && goalProgress.percentage < 50 && "Quarter way there! You're building momentum!"}
-                                            {goalProgress.percentage >= 50 && goalProgress.percentage < 75 && "Over halfway! Keep pushing forward!"}
-                                            {goalProgress.percentage >= 75 && goalProgress.percentage < 90 && "The finish line is in sight! Stay focused!"}
-                                            {goalProgress.percentage >= 90 && goalProgress.percentage < 100 && "Almost there! Give it your all!"}
-                                            {goalProgress.percentage >= 100 && "Goal period complete! Time to set a new target!"}
+                                            {goalProgress.percentage < 25 && `Just getting started! Every day counts toward your goal!`}
+                                            {goalProgress.percentage >= 25 && goalProgress.percentage < 50 && `Quarter way there! You're building momentum!`}
+                                            {goalProgress.percentage >= 50 && goalProgress.percentage < 75 && `Over halfway! Keep pushing forward!`}
+                                            {goalProgress.percentage >= 75 && goalProgress.percentage < 90 && `The finish line is in sight! Stay focused!`}
+                                            {goalProgress.percentage >= 90 && goalProgress.percentage < 100 && `Almost there! Give it your all!`}
+                                            {goalProgress.percentage >= 100 && `Goal period complete! Time to set a new target!`}
                                         </p>
                                     </div>
                                 </>
