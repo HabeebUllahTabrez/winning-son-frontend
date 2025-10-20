@@ -686,7 +686,7 @@ export default function Dashboard() {
                                     <FaCalendar className="text-lg md:text-2xl text-purple-500 flex-shrink-0" />
                                     <p className="text-xs md:text-sm font-bold text-gray-600 uppercase">Total Days Logged</p>
                                 </div>
-                                <p className="text-2xl md:text-4xl font-bold text-gray-900 mb-0.5 md:mb-1">{dashboardData.total_days_logged}</p>
+                                <p className="text-2xl md:text-4xl font-bold text-gray-900 mb-0.5 md:mb-1">{dashboardData.total_days_logged || 0}</p>
                                 <p className="text-xs md:text-sm text-gray-600">All-time journal entries</p>
                             </div>
 
@@ -696,7 +696,7 @@ export default function Dashboard() {
                                     <FaFire className="text-lg md:text-2xl text-orange-500 flex-shrink-0" />
                                     <p className="text-xs md:text-sm font-bold text-gray-600 uppercase">Longest Streak</p>
                                 </div>
-                                <p className="text-2xl md:text-4xl font-bold text-gray-900 mb-0.5 md:mb-1">{dashboardData.longest_streak_ever}</p>
+                                <p className="text-2xl md:text-4xl font-bold text-gray-900 mb-0.5 md:mb-1">{dashboardData.longest_streak_ever || 0}</p>
                                 <p className="text-xs md:text-sm text-gray-600">Consecutive days</p>
                             </div>
 
