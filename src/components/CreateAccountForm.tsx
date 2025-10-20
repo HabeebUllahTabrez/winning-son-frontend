@@ -87,7 +87,12 @@ export function CreateAccountForm({closeModal}: {closeModal?: () => void}) {
       localStorage.removeItem("guestStats");
 
       toast.success("Account created successfully! Welcome aboard.");
-      
+
+      // Close the modal if closeModal function is provided
+      if (closeModal) {
+        closeModal();
+      }
+
       router.push("/dashboard");
       router.refresh();
 
