@@ -10,22 +10,8 @@ type CallToActionProps = {
 export function CallToAction({ hasEntryToday }: CallToActionProps) {
     // --- State 1: User HAS logged their accomplishments for the day ---
     if (hasEntryToday) {
-        return (
-            <div className="card bg-green-50 border-green-200 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                    {/* A fun, game-like "level complete" heading */}
-                    <h2 className="text-xl font-bold text-green-800">Productivity Level: Max!</h2>
-                    {/* Acknowledges their hard work and encourages rest */}
-                    <p className="text-green-700">
-                        Another productive day in the books. Time to recharge for tomorrow&apos;s mission.
-                    </p>
-                </div>
-                {/* A powerful and funny button text */}
-                <a href="/submissions" className="btn-secondary whitespace-nowrap" onClick={() => trackEvent("Review Submission Clicked from Dashboard")}>
-                    Review My Submission
-                </a>
-            </div>
-        );
+        // Don't show anything - they've already completed their task for today!
+        return null;
     }
 
     // --- State 2: User has NOT YET logged their accomplishments ---
