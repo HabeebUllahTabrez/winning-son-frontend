@@ -43,13 +43,8 @@ export function SubmissionHistoryChart({ isGuest, journalEntries = [] }: { isGue
     const loadHistory = async () => {
         if (isGuest) {
             // For guests: generate full calendar view from sparse journal entries
-            if (!journalEntries || journalEntries.length === 0) {
-                setData(null);
-                return;
-            }
-
             // Create a Set of dates that have journal entries for O(1) lookup
-            const entryDatesSet = new Set(journalEntries.map(entry => entry.local_date));
+            const entryDatesSet = new Set((journalEntries || []).map(entry => entry.local_date));
 
             // Determine the date range based on view mode
             let startDate: Date;
@@ -77,12 +72,6 @@ export function SubmissionHistoryChart({ isGuest, journalEntries = [] }: { isGue
                     has_submission: entryDatesSet.has(dateStr)
                 });
                 currentDate.setDate(currentDate.getDate() + 1);
-            }
-
-            // Safety check: ensure we have data before setting
-            if (fullHistory.length === 0) {
-                setData(null);
-                return;
             }
 
             setData({

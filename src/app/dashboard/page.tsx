@@ -4,7 +4,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch, fetchFeatureStatus } from "@/lib/api";
 import { getAvatarFile } from "@/lib/avatars";
-import { StatCard } from "./_components/StatCard";
 import { TrendChart } from "./_components/TrendChart";
 import { CallToAction } from "./_components/CallToAction";
 import { DashboardSkeleton } from "./_components/DashboardSkeleton";
@@ -240,30 +239,110 @@ export default function Dashboard() {
 
                     <CallToAction hasEntryToday={dashboardData?.has_today_entry || false} />
 
-                    {/* Unlocked Stats for Guest */}
-                    <section>
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Your Activity</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <StatCard title="Current Streak" value={`${dashboardData?.current_streak_days || 0} days`} icon={<FaFire className="text-orange-500" />} />
-                            <StatCard title="Entries This Week" value={dashboardData?.entries_this_week || 0} icon={<FaCalendarCheck className="text-blue-500" />} />
+                    {/* This Week Stats for Guest */}
+                    <section className="space-y-4 md:space-y-6">
+                        <div>
+                            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-1 md:mb-2">This Week</h2>
+                            <p className="text-sm md:text-base text-gray-600 mb-3 md:mb-6">Your recent activity and progress</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+                            <div className="card p-3 md:p-6">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <FaFire className="text-lg md:text-2xl text-orange-500 flex-shrink-0" />
+                                    <p className="text-xs md:text-sm font-bold text-gray-600 uppercase">Current Streak</p>
+                                </div>
+                                <p className="text-2xl md:text-4xl font-bold text-gray-900 mb-0.5 md:mb-1">{dashboardData?.current_streak_days || 0} days</p>
+                            </div>
+
+                            <div className="card p-3 md:p-6">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <FaCalendarCheck className="text-lg md:text-2xl text-purple-500 flex-shrink-0" />
+                                    <p className="text-xs md:text-sm font-bold text-gray-600 uppercase">Entries This Week</p>
+                                </div>
+                                <p className="text-2xl md:text-4xl font-bold text-gray-900 mb-0.5 md:mb-1">{dashboardData?.entries_this_week || 0}</p>
+                            </div>
+
+                            <div className="card p-3 md:p-6">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <FaCalendar className="text-lg md:text-2xl text-blue-500 flex-shrink-0" />
+                                    <p className="text-xs md:text-sm font-bold text-gray-600 uppercase">Entries This Year</p>
+                                </div>
+                                <p className="text-2xl md:text-4xl font-bold text-gray-900 mb-0.5 md:mb-1">{dashboardData?.entries_this_year || 0}</p>
+                            </div>
+
+                            <div className="card p-3 md:p-6">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <FaChartLine className="text-lg md:text-2xl text-green-500 flex-shrink-0" />
+                                    <p className="text-xs md:text-sm font-bold text-gray-600 uppercase">Total Days Logged</p>
+                                </div>
+                                <p className="text-2xl md:text-4xl font-bold text-gray-900 mb-0.5 md:mb-1">{dashboardData?.total_days_logged || 0}</p>
+                            </div>
+                        </div>
+
+                        {/* 7-Day Trend Chart */}
+                        {dashboardData?.last7_days_trend && dashboardData.last7_days_trend.length > 0 && (
+                            <div className="card p-6">
+                                <h3 className="text-xl font-bold text-gray-800 mb-4">7-Day Trend</h3>
+                                <div className="h-72">
+                                    <TrendChart data={dashboardData.last7_days_trend} />
+                                </div>
+                            </div>
+                        )}
+                    </section>
+
+                    {/* Overall Stats for Guest */}
+                    <section className="space-y-4 md:space-y-6">
+                        <div>
+                            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-1 md:mb-2">Overall Stats</h2>
+                            <p className="text-sm md:text-base text-gray-600 mb-3 md:mb-6">Your all-time activity summary</p>
+                        </div>
+
+                        {/* Activity Calendar */}
+                        <div className="card p-6">
+                            <h3 className="text-xl font-bold text-gray-800 mb-2">Activity Calendar</h3>
+                            <p className="text-gray-600 mb-4">Track your consistency over time</p>
+                            <SubmissionHistoryChart
+                                isGuest={isGuest}
+                                journalEntries={(() => {
+                                    const entries = JSON.parse(localStorage.getItem("guestJournalEntries") || "[]") as Array<{ localDate: string }>;
+                                    return entries.map((entry) => ({
+                                        local_date: entry.localDate,
+                                        has_submission: true
+                                    }));
+                                })()}
+                            />
                         </div>
                     </section>
 
-                    {/* Also show SubmissionHistory for Guest */}
-                    <section className="card p-6">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Submission History</h2>
-                        <p className="text-gray-600 mb-4">Track your journal entries over time (max 1 year)</p>
-                        <SubmissionHistoryChart
-                            isGuest={isGuest}
-                            journalEntries={(() => {
-                                const entries = JSON.parse(localStorage.getItem("guestJournalEntries") || "[]") as Array<{ localDate: string }>;
-                                return entries.map((entry) => ({
-                                    local_date: entry.localDate,
-                                    has_submission: true
-                                }));
-                            })()}
-                        />
-                    </section>
+                    {/* Additional Stats for Guest */}
+                    {dashboardData && (dashboardData.longest_streak_ever > 0 || dashboardData.peak_performance_day_of_week) && (
+                        <section className="card p-6">
+                            <h2 className="text-2xl font-bold text-gray-800 mb-4">Fun Facts</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                {dashboardData.longest_streak_ever > 0 && (
+                                    <div className="bg-orange-50 p-4 border-2 border-black rounded-lg" style={{ boxShadow: '4px 4px 0px #000' }}>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <FaTrophy className="text-2xl text-orange-500" />
+                                            <p className="text-sm font-bold text-gray-600 uppercase">Longest Streak</p>
+                                        </div>
+                                        <p className="text-4xl font-bold text-gray-900">{dashboardData.longest_streak_ever}</p>
+                                        <p className="text-sm text-gray-600">consecutive days</p>
+                                    </div>
+                                )}
+                                {dashboardData.peak_performance_day_of_week && dashboardData.peak_performance_day_of_week !== "N/A" && (
+                                    <div className="bg-blue-50 p-4 border-2 border-black rounded-lg" style={{ boxShadow: '4px 4px 0px #000' }}>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <FaCalendar className="text-2xl text-blue-500" />
+                                            <p className="text-sm font-bold text-gray-600 uppercase">Best Day</p>
+                                        </div>
+                                        <p className="text-2xl font-bold text-gray-900">{dashboardData.peak_performance_day_of_week}</p>
+                                        <p className="text-sm text-gray-600">You journal most on this day</p>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+                    )}
                     
                     {/* Quick Links for Guest */}
                     <section className="card p-4 md:p-6">
@@ -297,34 +376,36 @@ export default function Dashboard() {
                         </div>
                     </section>
 
-                    {/* Locked Stats for Guest */}
-                    <div className="relative pt-6">
-                        <div className="absolute -inset-x-4 -inset-y-6 z-10 bg-white/30 backdrop-blur-sm rounded-lg"></div>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-                            <div className="bg-white/80 p-8 rounded-xl text-center shadow-lg border max-w-md">
-                                <FaLock className="text-5xl text-yellow-500 mx-auto mb-4" />
-                                <h2 className="text-2xl font-bold text-gray-800">Unlock Karma Analytics</h2>
-                                <p className="text-gray-600 mt-2 mb-6">
-                                    Sign up to track your Karma score, visualize trends, and set goals.
-                                </p>
-                                <a href="/profile" className="btn text-lg">
-                                    Create a Free Account
-                                </a>
-                            </div>
-                        </div>
-                        
-                        <div className="space-y-8 pointer-events-none">
-                            <section>
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4">Karma Stats</h2>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                                    <div className="h-32 bg-gray-200 rounded-lg"></div>
-                                    <div className="h-32 bg-gray-200 rounded-lg"></div>
-                                    <div className="h-32 bg-gray-200 rounded-lg"></div>
+                    {/* Upgrade CTA for Guest - Smaller teaser for Karma features */}
+                    <section className="card p-6 bg-gradient-to-br from-yellow-50 to-orange-50">
+                        <div className="text-center">
+                            <FaLock className="text-4xl text-yellow-500 mx-auto mb-3" />
+                            <h2 className="text-2xl font-bold text-gray-800 mb-2">Want More Insights?</h2>
+                            <p className="text-gray-700 mb-4 max-w-2xl mx-auto">
+                                Create a free account to unlock:
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 max-w-3xl mx-auto">
+                                <div className="bg-white p-4 rounded-lg border-2 border-black" style={{ boxShadow: '3px 3px 0px #000' }}>
+                                    <FaChartLine className="text-3xl text-green-500 mx-auto mb-2" />
+                                    <p className="font-bold text-gray-800">Karma Analytics</p>
+                                    <p className="text-sm text-gray-600">Track your daily, weekly, and monthly karma scores</p>
                                 </div>
-                            </section>
-                            <section className="h-72 bg-gray-200 rounded-lg"></section>
+                                <div className="bg-white p-4 rounded-lg border-2 border-black" style={{ boxShadow: '3px 3px 0px #000' }}>
+                                    <FaTrophy className="text-3xl text-purple-500 mx-auto mb-2" />
+                                    <p className="font-bold text-gray-800">Goal Tracking</p>
+                                    <p className="text-sm text-gray-600">Set goals and track your progress over time</p>
+                                </div>
+                                <div className="bg-white p-4 rounded-lg border-2 border-black" style={{ boxShadow: '3px 3px 0px #000' }}>
+                                    <FaFlagCheckered className="text-3xl text-blue-500 mx-auto mb-2" />
+                                    <p className="font-bold text-gray-800">Advanced Stats</p>
+                                    <p className="text-sm text-gray-600">Week-over-week trends and performance insights</p>
+                                </div>
+                            </div>
+                            <a href="/profile" className="btn text-lg inline-block">
+                                Create a Free Account
+                            </a>
                         </div>
-                    </div>
+                    </section>
                 </div>
             </div>
             </ProfileSetupGuard>
