@@ -366,7 +366,7 @@ export default function Dashboard() {
                                 <FaWhatsapp className="text-sm md:text-base" />Community
                             </a>
                             <a
-                                href="https://forms.gle/your-google-form-link"
+                                href="https://docs.google.com/forms/d/e/1FAIpQLSdYfPojaZjr_j3SDM8ODkVTzX34Cch6xivOpmfq-_ZIJnEUEw/viewform"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="btn-secondary text-sm md:text-lg flex items-center justify-center gap-1 md:gap-2 hover:bg-purple-50 py-2 md:py-3"
