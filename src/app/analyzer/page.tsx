@@ -37,6 +37,7 @@ export default function AnalyzerPage() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [dateValidationError, setDateValidationError] = useState<string>("");
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showNoEntriesDialog, setShowNoEntriesDialog] = useState(false);
   const [generatedEntryCount, setGeneratedEntryCount] = useState<number>(0);
 
   const isGuest = isGuestUser();
@@ -161,7 +162,7 @@ export default function AnalyzerPage() {
       }
 
       if (!entries || entries.length === 0) {
-        toast.error("No entries found for the selected date range. Please add some journal entries and try again.");
+        setShowNoEntriesDialog(true);
         setLoadingState("idle");
         return;
       }
@@ -295,6 +296,137 @@ export default function AnalyzerPage() {
           </div>
         )}
 
+        {/* No Entries Dialog - Dramatic & Fun */}
+        {showNoEntriesDialog && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl shadow-2xl max-w-md w-full p-8 border-4 border-yellow-300 animate-scale-in">
+              {/* Dramatic Icon */}
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-yellow-100 mb-4 animate-bounce">
+                  <span className="text-6xl">📭</span>
+                </div>
+                <h2 className="text-3xl font-black text-gray-900 mb-2">Son, We Have a Problem!</h2>
+                <p className="text-lg text-yellow-900 font-bold">No Entries Found</p>
+              </div>
+
+              {/* Dramatic Message */}
+              <div className="bg-white/80 backdrop-blur rounded-xl p-5 mb-6 border-2 border-yellow-200">
+                <p className="text-gray-800 text-center leading-relaxed mb-4">
+                  🎭 <span className="font-bold">*Dramatic gasp*</span> Your journal is empty for this date range!
+                  The AI can&apos;t analyze what doesn&apos;t exist... yet!
+                </p>
+                <div className="bg-yellow-100 rounded-lg p-3 border border-yellow-300">
+                  <p className="text-sm text-yellow-900 text-center">
+                    <span className="font-bold">Date Range:</span> {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} → {new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Fun Suggestions */}
+              <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-4 mb-6 border-2 border-purple-200">
+                <p className="text-sm font-bold text-purple-900 mb-2">💡 Here&apos;s what you can do:</p>
+                <ul className="text-sm text-purple-800 space-y-1">
+                  <li>✍️ Create your first journal entry</li>
+                  <li>📅 Try a different date range</li>
+                  <li>🚀 Start your journey today!</li>
+                </ul>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <a
+                  href="/journal"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <span className="text-xl">✍️</span>
+                  Create Your First Entry
+                </a>
+                <button
+                  onClick={() => {
+                    setShowNoEntriesDialog(false);
+                    setStartDate("");
+                    setEndDate("");
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl border-2 border-gray-300 hover:border-gray-400 transition-all"
+                >
+                  <span className="text-xl">📅</span>
+                  Try Different Dates
+                </button>
+                <button
+                  onClick={() => setShowNoEntriesDialog(false)}
+                  className="w-full px-6 py-2 text-gray-600 hover:text-gray-800 font-medium transition-all"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Success Dialog/Modal */}
+        {showSuccessDialog && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-scale-in">
+              {/* Success Icon */}
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 mb-4">
+                  <span className="text-5xl">✨</span>
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Prompt Generated!</h2>
+                <p className="text-gray-600">Your personalized AI prompt is ready</p>
+              </div>
+
+              {/* Stats */}
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 mb-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                      <span className="text-2xl">📊</span>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Analyzed</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {generatedEntryCount} {generatedEntryCount === 1 ? 'Entry' : 'Entries'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-4xl">🎯</div>
+                </div>
+              </div>
+
+              {/* Date Range */}
+              <div className="bg-gray-50 rounded-lg p-3 mb-6">
+                <p className="text-xs text-gray-500 mb-1">Date Range</p>
+                <p className="text-sm font-semibold text-gray-700">
+                  {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  {' → '}
+                  {new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    setShowSuccessDialog(false);
+                    handleCopy(finalPrompt);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <FaCopy className="text-lg" />
+                  Copy Prompt & Continue
+                </button>
+                <button
+                  onClick={() => setShowSuccessDialog(false)}
+                  className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all"
+                >
+                  View Prompt
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-6">
           {!finalPrompt ? (
             <>
@@ -410,72 +542,7 @@ export default function AnalyzerPage() {
               </div>
           </>
           ) : (
-            <>
-              {/* Success Dialog/Modal */}
-              {showSuccessDialog && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-                  <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-scale-in">
-                    {/* Success Icon */}
-                    <div className="text-center mb-6">
-                      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 mb-4">
-                        <span className="text-5xl">✨</span>
-                      </div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-2">Prompt Generated!</h2>
-                      <p className="text-gray-600">Your personalized AI prompt is ready</p>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 mb-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                            <span className="text-2xl">📊</span>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-600">Analyzed</p>
-                            <p className="text-2xl font-bold text-gray-900">
-                              {generatedEntryCount} {generatedEntryCount === 1 ? 'Entry' : 'Entries'}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-4xl">🎯</div>
-                      </div>
-                    </div>
-
-                    {/* Date Range */}
-                    <div className="bg-gray-50 rounded-lg p-3 mb-6">
-                      <p className="text-xs text-gray-500 mb-1">Date Range</p>
-                      <p className="text-sm font-semibold text-gray-700">
-                        {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        {' → '}
-                        {new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </p>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="space-y-3">
-                      <button
-                        onClick={() => {
-                          setShowSuccessDialog(false);
-                          handleCopy(finalPrompt);
-                        }}
-                        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-                      >
-                        <FaCopy className="text-lg" />
-                        Copy Prompt & Continue
-                      </button>
-                      <button
-                        onClick={() => setShowSuccessDialog(false)}
-                        className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all"
-                      >
-                        View Prompt
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="animate-fade-in space-y-6">
+            <div className="animate-fade-in space-y-6">
                 {/* Success Banner */}
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-6 sm:p-8 text-center shadow-lg">
                   <div className="text-6xl mb-4">✨</div>
@@ -547,8 +614,7 @@ export default function AnalyzerPage() {
                   Generate Another
                 </button>
               </div>
-              </div>
-            </>
+            </div>
           )}
         </div>
       </div>
