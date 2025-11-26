@@ -124,6 +124,26 @@
   }
 }
 
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
 }
@@ -134,4 +154,12 @@
 
 .animate-bounce-slow {
   animation: bounceSlow 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
 }

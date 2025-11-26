@@ -26,15 +26,18 @@ export interface JournalEntry {
  */
 export interface DashboardStats {
     has_today_entry: boolean;
-    // day_karma: number;
-    // week_karma: number;
-    // month_karma: number;
-    // year_karma: number;
-    // entries_this_week: number;
-    // entries_this_year: number;
-    // average_month_karma: number;
+    day_karma: number;
+    week_karma: number;
+    month_karma: number;
+    year_karma: number;
+    entries_this_week: number;
+    entries_this_year: number;
+    average_month_karma: number;
     current_streak_days: number;
-    // last7_days_trend: { local_date: string; karma: number }[];
+    last7_days_trend: { local_date: string; karma: number }[];
+    longest_streak_ever: number;
+    total_days_logged: number;
+    peak_performance_day_of_week: string;
 }
 
 // --- UPDATED DEFAULT STATE ---
@@ -87,38 +90,44 @@ const calculateDashboardStats = (journalEntries: JournalEntry[]): DashboardStats
     const startOfWeek = subDays(today, getDay(today)); // Assumes week starts on Sunday
 
     // Initialize Statistic Variables
-    // let week_karma = 0;
-    // let month_karma = 0;
-    // let year_karma = 0;
-    // let entries_this_week = 0;
-    // let entries_this_year = 0;
-    // let monthEntriesCount = 0;
+    let week_karma = 0;
+    let month_karma = 0;
+    let year_karma = 0;
+    let entries_this_week = 0;
+    let entries_this_year = 0;
+    let monthEntriesCount = 0;
+    const dayOfWeekCounts = new Map<number, number>();
 
     // Calculate Aggregated Stats by Iterating Through All Entries
-    // for (const entry of journalEntries) {
-    //     // Ensure date is treated as local by parsing it this way
-    //     const entryDate = new Date(entry.createdAt + 'T00:00:00');
-        
-    //     if (getYear(entryDate) === currentYear) {
-    //         year_karma += entry.karma;
-    //         entries_this_year++;
+    for (const entry of journalEntries) {
+        // Ensure date is treated as local by parsing it this way
+        const entryDate = new Date(entry.createdAt + 'T00:00:00');
+        const karma = (entry.alignment_rating + entry.contentment_rating) / 2;
 
-    //         if (getMonth(entryDate) === currentMonth) {
-    //             month_karma += entry.karma;
-    //             monthEntriesCount++;
-    //         }
-    //     }
-        
-    //     if (entryDate >= startOfWeek) {
-    //         week_karma += entry.karma;
-    //         entries_this_week++;
-    //     }
-    // }
+        // Track day of week for peak performance
+        const dayOfWeek = getDay(entryDate);
+        dayOfWeekCounts.set(dayOfWeek, (dayOfWeekCounts.get(dayOfWeek) || 0) + 1);
+
+        if (getYear(entryDate) === currentYear) {
+            year_karma += karma;
+            entries_this_year++;
+
+            if (getMonth(entryDate) === currentMonth) {
+                month_karma += karma;
+                monthEntriesCount++;
+            }
+        }
+
+        if (entryDate >= startOfWeek) {
+            week_karma += karma;
+            entries_this_week++;
+        }
+    }
 
     // Calculate Day-Specific and Trend Stats
     const todayEntry = entriesMap.get(todayStr);
     const has_today_entry = !!todayEntry;
-    // const day_karma = todayEntry ? todayEntry.karma : 0;
+    const day_karma = todayEntry ? (todayEntry.alignment_rating + todayEntry.contentment_rating) / 2 : 0;
 
     const last7_days_trend = Array.from({ length: 7 }, (_, i) => {
         const date = subDays(today, i);
@@ -126,7 +135,7 @@ const calculateDashboardStats = (journalEntries: JournalEntry[]): DashboardStats
         const entry = entriesMap.get(dateString);
         return {
             local_date: dateString,
-            // karma: entry ? entry.karma : 0,
+            karma: entry ? (entry.alignment_rating + entry.contentment_rating) / 2 : 0,
         };
     }).reverse();
 
@@ -138,23 +147,61 @@ const calculateDashboardStats = (journalEntries: JournalEntry[]): DashboardStats
     if (!has_today_entry) {
         streakDate = subDays(streakDate, 1);
     }
-    
+
     while (entriesMap.has(format(streakDate, 'yyyy-MM-dd'))) {
         current_streak_days++;
         streakDate = subDays(streakDate, 1);
     }
 
+    // Calculate Longest Streak Ever
+    let longest_streak_ever = 0;
+    let tempStreak = 0;
+    const sortedDates = Array.from(entriesMap.keys()).sort();
+
+    for (let i = 0; i < sortedDates.length; i++) {
+        if (i === 0) {
+            tempStreak = 1;
+        } else {
+            const prevDate = new Date(sortedDates[i - 1] + 'T00:00:00');
+            const currDate = new Date(sortedDates[i] + 'T00:00:00');
+            const dayDiff = Math.floor((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+
+            if (dayDiff === 1) {
+                tempStreak++;
+            } else {
+                longest_streak_ever = Math.max(longest_streak_ever, tempStreak);
+                tempStreak = 1;
+            }
+        }
+    }
+    longest_streak_ever = Math.max(longest_streak_ever, tempStreak);
+
+    // Calculate Peak Performance Day of Week
+    let peak_performance_day_of_week = "N/A";
+    let maxCount = 0;
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    dayOfWeekCounts.forEach((count, day) => {
+        if (count > maxCount) {
+            maxCount = count;
+            peak_performance_day_of_week = dayNames[day];
+        }
+    });
+
     return {
         has_today_entry,
-        // day_karma,
-        // week_karma,
-        // month_karma,
-        // year_karma,
-        // entries_this_week,
-        // entries_this_year,
-        // average_month_karma: monthEntriesCount > 0 ? (month_karma / monthEntriesCount) : 0,
+        day_karma,
+        week_karma,
+        month_karma,
+        year_karma,
+        entries_this_week,
+        entries_this_year,
+        average_month_karma: monthEntriesCount > 0 ? (month_karma / monthEntriesCount) : 0,
         current_streak_days,
-        // last7_days_trend,
+        last7_days_trend,
+        longest_streak_ever,
+        total_days_logged: journalEntries.length,
+        peak_performance_day_of_week,
     };
 };
 
