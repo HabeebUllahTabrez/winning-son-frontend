@@ -34,8 +34,10 @@ export default function AnalyzerPage() {
   const [finalPrompt, setFinalPrompt] = useState("");
   const [loadingState, setLoadingState] = useState<LoadingState>("idle");
   const [error, setError] = useState<string>("");
-  const [noEntriesMessage, setNoEntriesMessage] = useState<string>("");
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [dateValidationError, setDateValidationError] = useState<string>("");
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [generatedEntryCount, setGeneratedEntryCount] = useState<number>(0);
 
   const isGuest = isGuestUser();
 
@@ -80,9 +82,49 @@ export default function AnalyzerPage() {
 
   // --- Event Handlers ---
 
+  // Date validation
+  const validateDates = (start: string, end: string): boolean => {
+    setDateValidationError("");
+
+    if (!start || !end) {
+      return false;
+    }
+
+    const startDateObj = new Date(start);
+    const endDateObj = new Date(end);
+
+    if (endDateObj < startDateObj) {
+      setDateValidationError("End date must be after start date");
+      return false;
+    }
+
+    return true;
+  };
+
+  // Handle date changes with validation
+  const handleStartDateChange = (value: string) => {
+    setStartDate(value);
+    if (endDate) {
+      validateDates(value, endDate);
+    }
+  };
+
+  const handleEndDateChange = (value: string) => {
+    setEndDate(value);
+    if (startDate) {
+      validateDates(startDate, value);
+    }
+  };
+
   const handleSummonBlueprint = async () => {
     if (!startDate || !endDate) {
-      toast.error("Please select both start and end dates to generate your prompt.");
+      toast.error("🎯 Hold on! Please select both start and end dates to generate your prompt.");
+      return;
+    }
+
+    // Validate dates
+    if (!validateDates(startDate, endDate)) {
+      toast.error("⏰ Wait! Your end date needs to be after your start date.");
       return;
     }
 
@@ -96,7 +138,6 @@ export default function AnalyzerPage() {
     setLoadingState("summoning");
     setError("");
     setFinalPrompt("");
-    setNoEntriesMessage("");
 
     try {
       let entries: JournalEntry[] = [];
@@ -120,10 +161,13 @@ export default function AnalyzerPage() {
       }
 
       if (!entries || entries.length === 0) {
-        setNoEntriesMessage("No journal entries found for the selected date range. Try selecting different dates or create some journal entries first.");
+        toast.error("No entries found for the selected date range. Please add some journal entries and try again.");
         setLoadingState("idle");
         return;
       }
+
+      // Store entry count for success dialog
+      setGeneratedEntryCount(entries.length);
 
       // Enrich journal data with analytics
       const enrichedData = enrichJournalData(entries, startDate, endDate);
@@ -142,6 +186,9 @@ export default function AnalyzerPage() {
       // Compose the prompt using the new engine
       const generatedPrompt = composePrompt(preferences, enrichedData, userProfile);
       setFinalPrompt(generatedPrompt);
+
+      // Show success dialog
+      setShowSuccessDialog(true);
 
       // Track analyzer usage
       const isFirstAnalyzerUse = shouldShowAnalyzerCue();
@@ -189,8 +236,8 @@ export default function AnalyzerPage() {
   // --- (Remaining event handlers and JSX are unchanged) ---
   const handleReset = () => {
       setFinalPrompt("");
-      setNoEntriesMessage("");
       setError("");
+      setDateValidationError("");
   }
 
   const handleCopy = (text: string) => {
@@ -282,8 +329,12 @@ export default function AnalyzerPage() {
                       type="date"
                       id="start_date"
                       value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="input w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all"
+                      onChange={(e) => handleStartDateChange(e.target.value)}
+                      className={`input w-full px-4 py-3 rounded-lg border-2 transition-all ${
+                        dateValidationError
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+                          : 'border-gray-300 focus:border-purple-500 focus:ring-purple-200'
+                      } focus:ring-2`}
                     />
                   </div>
                   <div className="form-group">
@@ -294,22 +345,34 @@ export default function AnalyzerPage() {
                       type="date"
                       id="end_date"
                       value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="input w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all"
+                      onChange={(e) => handleEndDateChange(e.target.value)}
+                      className={`input w-full px-4 py-3 rounded-lg border-2 transition-all ${
+                        dateValidationError
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+                          : 'border-gray-300 focus:border-purple-500 focus:ring-purple-200'
+                      } focus:ring-2`}
                     />
                   </div>
                 </div>
+
+                {/* Date Validation Error */}
+                {dateValidationError && (
+                  <div className="flex items-center gap-2 p-4 bg-red-50 border-2 border-red-200 rounded-xl">
+                    <span className="text-2xl">⚠️</span>
+                    <p className="text-red-700 font-medium">{dateValidationError}</p>
+                  </div>
+                )}
               </div>
 
             {/* Analyzer Controls */}
             <AnalyzerControls />
 
               {/* Generate Button - More Prominent */}
-              <div className="flex justify-center py-4">
+              <div className="flex flex-col items-center gap-3 py-4">
                 <button
                   className="group relative btn text-lg sm:text-xl px-8 sm:px-16 py-4 sm:py-6 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-700 hover:via-pink-700 hover:to-purple-700 text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   onClick={handleSummonBlueprint}
-                  disabled={loadingState === 'summoning'}
+                  disabled={loadingState === 'summoning' || !!dateValidationError || !startDate || !endDate}
                 >
                   {loadingState === 'summoning' ? (
                     <>
@@ -328,26 +391,99 @@ export default function AnalyzerPage() {
                     </>
                   )}
                 </button>
-              </div>
 
-              {noEntriesMessage && (
-                <div className="text-center p-6 bg-yellow-50 border-2 border-yellow-300 rounded-2xl shadow-sm">
-                  <div className="text-5xl mb-3">📭</div>
-                  <p className="text-lg font-semibold text-yellow-900 mb-1">No Entries Found</p>
-                  <p className="text-yellow-700">{noEntriesMessage}</p>
-                </div>
-              )}
+                {/* Helpful hint when button is disabled */}
+                {loadingState !== 'summoning' && (
+                  <>
+                    {dateValidationError && (
+                      <p className="text-sm text-red-600 text-center max-w-md font-medium">
+                        {dateValidationError}
+                      </p>
+                    )}
+                    {!dateValidationError && (!startDate || !endDate) && (
+                      <p className="text-sm text-gray-500 text-center max-w-md">
+                        Please select both start and end dates to continue
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
           </>
           ) : (
-            <div className="animate-fade-in space-y-6">
-              {/* Success Banner */}
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-6 sm:p-8 text-center shadow-lg">
-                <div className="text-6xl mb-4">✨</div>
-                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">Your AI Prompt is Ready!</h2>
-                <p className="text-lg text-gray-700 max-w-2xl mx-auto">
-                  Copy the prompt below and paste it into any AI assistant (ChatGPT, Claude, Gemini, etc.) to get personalized insights about your journey.
-                </p>
-              </div>
+            <>
+              {/* Success Dialog/Modal */}
+              {showSuccessDialog && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+                  <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-scale-in">
+                    {/* Success Icon */}
+                    <div className="text-center mb-6">
+                      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 mb-4">
+                        <span className="text-5xl">✨</span>
+                      </div>
+                      <h2 className="text-3xl font-bold text-gray-900 mb-2">Prompt Generated!</h2>
+                      <p className="text-gray-600">Your personalized AI prompt is ready</p>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 mb-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                            <span className="text-2xl">📊</span>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Analyzed</p>
+                            <p className="text-2xl font-bold text-gray-900">
+                              {generatedEntryCount} {generatedEntryCount === 1 ? 'Entry' : 'Entries'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-4xl">🎯</div>
+                      </div>
+                    </div>
+
+                    {/* Date Range */}
+                    <div className="bg-gray-50 rounded-lg p-3 mb-6">
+                      <p className="text-xs text-gray-500 mb-1">Date Range</p>
+                      <p className="text-sm font-semibold text-gray-700">
+                        {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        {' → '}
+                        {new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </p>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="space-y-3">
+                      <button
+                        onClick={() => {
+                          setShowSuccessDialog(false);
+                          handleCopy(finalPrompt);
+                        }}
+                        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                      >
+                        <FaCopy className="text-lg" />
+                        Copy Prompt & Continue
+                      </button>
+                      <button
+                        onClick={() => setShowSuccessDialog(false)}
+                        className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all"
+                      >
+                        View Prompt
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="animate-fade-in space-y-6">
+                {/* Success Banner */}
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-6 sm:p-8 text-center shadow-lg">
+                  <div className="text-6xl mb-4">✨</div>
+                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">Your AI Prompt is Ready!</h2>
+                  <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+                    Copy the prompt below and paste it into any AI assistant (ChatGPT, Claude, Gemini, etc.) to get personalized insights about your journey.
+                  </p>
+                </div>
 
               {/* Prompt Display Card */}
               <div className="bg-white rounded-2xl border-2 border-gray-200 shadow-xl overflow-hidden">
@@ -411,7 +547,8 @@ export default function AnalyzerPage() {
                   Generate Another
                 </button>
               </div>
-            </div>
+              </div>
+            </>
           )}
         </div>
       </div>
