@@ -36,7 +36,13 @@ type GuestEntry = {
 };
 
 
-export default function SubmissionsClient() {
+type ViewMode = 'daily' | 'weekly';
+
+type SubmissionsClientProps = {
+  viewMode: ViewMode;
+};
+
+export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) {
   const searchParams = useSearchParams();
   const highlightedDate = searchParams.get("highlighted");
 
@@ -48,6 +54,14 @@ export default function SubmissionsClient() {
     }
     // Otherwise, show the current week
     return getStartOfWeek(new Date());
+  });
+
+  // For daily view, track the current day
+  const [currentDay, setCurrentDay] = useState(() => {
+    if (highlightedDate) {
+      return new Date(highlightedDate + 'T00:00:00');
+    }
+    return new Date();
   });
 
   const [data, setData] = useState<Entry[]>([]);
@@ -64,6 +78,8 @@ export default function SubmissionsClient() {
   useEffect(() => {
     const fetchSubmissions = async () => {
       setLoading(true);
+
+      // For weekly view, fetch the entire week
       const endDate = new Date(weekStartDate);
       endDate.setDate(weekStartDate.getDate() + 6);
       const startDateStr = formatDateForAPI(weekStartDate);
@@ -91,7 +107,7 @@ export default function SubmissionsClient() {
           entries = res.data || [];
         }
         setData(entries || []);
-        trackEvent("Submissions Page Viewed", { isGuest, weekStart: startDateStr, entryCount: entries.length });
+        trackEvent("Submissions Page Viewed", { isGuest, viewMode, weekStart: startDateStr, entryCount: entries.length });
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Failed to load submissions.");
         setData([]);
@@ -139,7 +155,11 @@ export default function SubmissionsClient() {
     }
   };
   const handleGoToToday = () => {
-    setWeekStartDate(getStartOfWeek(new Date()));
+    if (viewMode === 'daily') {
+      setCurrentDay(new Date());
+    } else {
+      setWeekStartDate(getStartOfWeek(new Date()));
+    }
     // Clear highlight when navigating
     if (highlightedDate) {
       const newUrl = new URL(window.location.href);
@@ -147,6 +167,54 @@ export default function SubmissionsClient() {
       router.replace(newUrl.pathname + newUrl.search);
     }
   };
+
+  // Daily view navigation handlers
+  const handlePreviousDay = () => {
+    const newDate = new Date(currentDay);
+    newDate.setDate(currentDay.getDate() - 1);
+    setCurrentDay(newDate);
+
+    // Update week if we've moved outside current week
+    const newWeekStart = getStartOfWeek(newDate);
+    if (newWeekStart.getTime() !== weekStartDate.getTime()) {
+      setWeekStartDate(newWeekStart);
+    }
+
+    // Clear highlight when navigating
+    if (highlightedDate) {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('highlighted');
+      router.replace(newUrl.pathname + newUrl.search);
+    }
+  };
+
+  const handleNextDay = () => {
+    const newDate = new Date(currentDay);
+    newDate.setDate(currentDay.getDate() + 1);
+    setCurrentDay(newDate);
+
+    // Update week if we've moved outside current week
+    const newWeekStart = getStartOfWeek(newDate);
+    if (newWeekStart.getTime() !== weekStartDate.getTime()) {
+      setWeekStartDate(newWeekStart);
+    }
+
+    // Clear highlight when navigating
+    if (highlightedDate) {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('highlighted');
+      router.replace(newUrl.pathname + newUrl.search);
+    }
+  };
+
+  const isNextDayInFuture = useMemo(() => {
+    const nextDay = new Date(currentDay);
+    nextDay.setDate(currentDay.getDate() + 1);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    nextDay.setHours(0, 0, 0, 0);
+    return nextDay > today;
+  }, [currentDay]);
   const handleDeleteClick = (date: string) => {
     setEntryToDelete(date);
     setIsConfirmOpen(true);
@@ -183,26 +251,88 @@ export default function SubmissionsClient() {
     }
   };
 
-  // --- (JSX remains the same) ---
+  // --- JSX ---
   return (
       <>
           <ConfirmDialog isOpen={isConfirmOpen} onCancel={() => setIsConfirmOpen(false)} onConfirm={handleConfirmDelete} title="Confirm Deletion" isConfirming={isDeleting} confirmText="Delete">
               Are you sure you want to delete this journal entry? This action cannot be undone.
           </ConfirmDialog>
+
+          {/* Navigation Card */}
           <div className="card mb-8 p-4">
               <div className="flex justify-between items-center">
-                  <button onClick={handlePreviousWeek} className="p-2 rounded-full hover:bg-gray-100 transition-colors" aria-label="Previous week"><ChevronLeftIcon /></button>
+                  <button
+                      onClick={viewMode === 'daily' ? handlePreviousDay : handlePreviousWeek}
+                      className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                      aria-label={viewMode === 'daily' ? "Previous day" : "Previous week"}
+                  >
+                      <ChevronLeftIcon />
+                  </button>
                   <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-                      <h2 className="text-xl sm:text-2xl font-bold text-center">{formatDateRangeForDisplay(weekStartDate)}</h2>
+                      <h2 className="text-xl sm:text-2xl font-bold text-center">
+                          {viewMode === 'daily'
+                              ? currentDay.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+                              : formatDateRangeForDisplay(weekStartDate)
+                          }
+                      </h2>
                       <button onClick={handleGoToToday} className="btn bg-white text-black text-sm !py-1 !px-3">Today</button>
                   </div>
-                  <button onClick={handleNextWeek} disabled={isNextWeekInFuture} className="p-2 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed" aria-label="Next week"><ChevronRightIcon /></button>
+                  <button
+                      onClick={viewMode === 'daily' ? handleNextDay : handleNextWeek}
+                      disabled={viewMode === 'daily' ? isNextDayInFuture : isNextWeekInFuture}
+                      className="p-2 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      aria-label={viewMode === 'daily' ? "Next day" : "Next week"}
+                  >
+                      <ChevronRightIcon />
+                  </button>
               </div>
           </div>
 
           {loading ? (
               <div className="text-center p-8 text-gray-500">Loading entries...</div>
+          ) : viewMode === 'daily' ? (
+              // Daily View
+              <div>
+                  {(() => {
+                      const dateString = formatDateForAPI(currentDay);
+                      const entry = entriesByDate.get(dateString);
+                      return (
+                          <div ref={(node) => { if (node) entryRefs.current.set(dateString, node); else entryRefs.current.delete(dateString); }}>
+                              {entry ? (
+                                  <div className={clsx("card", { 'highlight': dateString === highlightedDate })}>
+                                      <div>
+                                          <div className="flex flex-wrap justify-between items-start gap-2 border-b-2 border-black/10 pb-3 mb-3">
+                                              <div className="flex flex-wrap items-center gap-2 text-sm font-bold">
+                                                  <span className="bg-purple-100 text-purple-800 py-1 px-3 rounded-full">Alignment: {entry.alignment_rating}/10</span>
+                                                  <span className="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-full">Contentment: {entry.contentment_rating}/10</span>
+                                              </div>
+                                              <div className="flex items-center gap-2">
+                                                  <button className="p-2 rounded-full hover:bg-gray-200 transition-colors" onClick={() => {
+                                                    trackEvent("Edit Entry Clicked", { date: entry.local_date, isGuest });
+                                                    router.push(`/journal?date=${entry.local_date}`);
+                                                  }} aria-label="Edit"><PencilIcon /></button>
+                                                  <button className="p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors" onClick={() => handleDeleteClick(entry.local_date)} aria-label="Delete"><TrashIcon /></button>
+                                              </div>
+                                          </div>
+                                          <p className="whitespace-pre-wrap text-lg leading-relaxed pt-2">{entry.topics}</p>
+                                      </div>
+                                  </div>
+                              ) : (
+                                  <Link href={`/journal?date=${dateString}`} className="block" onClick={() => {
+                                    trackEvent("Add Entry Clicked", { date: dateString, isGuest });
+                                  }}>
+                                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500 hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer">
+                                          <p className="font-semibold">No entry for this day</p>
+                                          <p className="text-sm">Click to add an entry.</p>
+                                      </div>
+                                  </Link>
+                              )}
+                          </div>
+                      );
+                  })()}
+              </div>
           ) : (
+              // Weekly View
               <div className="space-y-8">
                   {weekDays.map(day => {
                       const dateString = formatDateForAPI(day);
