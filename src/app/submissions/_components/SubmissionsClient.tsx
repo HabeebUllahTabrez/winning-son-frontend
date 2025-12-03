@@ -291,7 +291,7 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
           {loading ? (
               <div className="text-center p-8 text-gray-500">Loading entries...</div>
           ) : viewMode === 'daily' ? (
-              // Daily View
+              // Daily View - Content-focused layout
               <div>
                   {(() => {
                       const dateString = formatDateForAPI(currentDay);
@@ -299,31 +299,73 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
                       return (
                           <div ref={(node) => { if (node) entryRefs.current.set(dateString, node); else entryRefs.current.delete(dateString); }}>
                               {entry ? (
-                                  <div className={clsx("card", { 'highlight': dateString === highlightedDate })}>
-                                      <div>
-                                          <div className="flex flex-wrap justify-between items-start gap-2 border-b-2 border-black/10 pb-3 mb-3">
-                                              <div className="flex flex-wrap items-center gap-2 text-sm font-bold">
-                                                  <span className="bg-purple-100 text-purple-800 py-1 px-3 rounded-full">Alignment: {entry.alignment_rating}/10</span>
-                                                  <span className="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-full">Contentment: {entry.contentment_rating}/10</span>
+                                  <div className={clsx(
+                                      "bg-white border-2 border-black p-8 sm:p-10 md:p-12 lg:p-16",
+                                      { 'highlight': dateString === highlightedDate }
+                                  )}
+                                  style={{
+                                      boxShadow: '12px 12px 0px var(--color-card-shadow)',
+                                      borderRadius: '4px 5px 3px 6px'
+                                  }}>
+                                      {/* Journal Content - The main focus */}
+                                      <div className="mb-8">
+                                          <p className="whitespace-pre-wrap text-lg sm:text-xl md:text-2xl leading-relaxed sm:leading-relaxed md:leading-loose text-gray-900 font-normal">
+                                              {entry.topics}
+                                          </p>
+                                      </div>
+
+                                      {/* Compact footer with ratings and actions */}
+                                      <div className="pt-6 border-t-2 border-black/10">
+                                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                              {/* Compact Ratings */}
+                                              <div className="flex flex-wrap items-center gap-3">
+                                                  <span className="inline-flex items-center gap-2 bg-purple-100 text-purple-800 py-2 px-4 rounded-full text-sm font-bold">
+                                                      <span className="text-xs uppercase tracking-wide">Alignment</span>
+                                                      <span className="text-lg">{entry.alignment_rating}/10</span>
+                                                  </span>
+                                                  <span className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 py-2 px-4 rounded-full text-sm font-bold">
+                                                      <span className="text-xs uppercase tracking-wide">Contentment</span>
+                                                      <span className="text-lg">{entry.contentment_rating}/10</span>
+                                                  </span>
                                               </div>
+
+                                              {/* Action Buttons */}
                                               <div className="flex items-center gap-2">
-                                                  <button className="p-2 rounded-full hover:bg-gray-200 transition-colors" onClick={() => {
-                                                    trackEvent("Edit Entry Clicked", { date: entry.local_date, isGuest });
-                                                    router.push(`/journal?date=${entry.local_date}`);
-                                                  }} aria-label="Edit"><PencilIcon /></button>
-                                                  <button className="p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors" onClick={() => handleDeleteClick(entry.local_date)} aria-label="Delete"><TrashIcon /></button>
+                                                  <button
+                                                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
+                                                      onClick={() => {
+                                                          trackEvent("Edit Entry Clicked", { date: entry.local_date, isGuest });
+                                                          router.push(`/journal?date=${entry.local_date}`);
+                                                      }}
+                                                      aria-label="Edit entry"
+                                                  >
+                                                      <PencilIcon />
+                                                      <span className="text-sm font-medium">Edit</span>
+                                                  </button>
+                                                  <button
+                                                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors text-gray-700"
+                                                      onClick={() => handleDeleteClick(entry.local_date)}
+                                                      aria-label="Delete entry"
+                                                  >
+                                                      <TrashIcon />
+                                                      <span className="text-sm font-medium">Delete</span>
+                                                  </button>
                                               </div>
                                           </div>
-                                          <p className="whitespace-pre-wrap text-lg leading-relaxed pt-2">{entry.topics}</p>
                                       </div>
                                   </div>
                               ) : (
                                   <Link href={`/journal?date=${dateString}`} className="block" onClick={() => {
                                     trackEvent("Add Entry Clicked", { date: dateString, isGuest });
                                   }}>
-                                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500 hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer">
-                                          <p className="font-semibold">No entry for this day</p>
-                                          <p className="text-sm">Click to add an entry.</p>
+                                      <div
+                                          className="border-2 border-dashed border-gray-300 rounded-lg p-16 sm:p-20 md:p-24 text-center text-gray-500 hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer"
+                                      >
+                                          <div className="max-w-md mx-auto">
+                                              <div className="text-6xl sm:text-7xl mb-6">📝</div>
+                                              <p className="text-2xl sm:text-3xl font-bold text-gray-700 mb-4">No entry for this day</p>
+                                              <p className="text-lg sm:text-xl text-gray-500">Click here to create your journal entry</p>
+                                          </div>
                                       </div>
                                   </Link>
                               )}
