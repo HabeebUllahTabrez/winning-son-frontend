@@ -7,9 +7,10 @@ import toast from "react-hot-toast";
 import { FaBullseye, FaEdit, FaCloudUploadAlt, FaShieldAlt, FaCalendarCheck, FaCalendarPlus, FaCog, FaSignOutAlt, FaCamera, FaWhatsapp, FaQuestionCircle, FaCommentDots } from "react-icons/fa";
 import { ProfileSkeleton } from "./_components/ProfileSkeleton";
 import { AVATAR_MAP, getAvatarFile } from "@/lib/avatars";
-import { isGuestUser, clearGuestData } from "@/lib/guest";
+import { isGuestUser, clearGuestData, getGuestEntries } from "@/lib/guest";
 import { CreateAccountForm } from "../../components/CreateAccountForm";
 import { Modal } from "../../components/Modal";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { format, parseISO } from "date-fns";
 import { trackEvent } from "@/lib/mixpanel";
 import Image from "next/image";
@@ -60,6 +61,10 @@ export default function ProfilePage() {
   const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  
+  // Exit guest mode confirmation state
+  const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
+  const [guestEntryCount, setGuestEntryCount] = useState(0);
 
   const loadUserData = useCallback(async () => {
     setIsLoading(true);
@@ -137,9 +142,22 @@ export default function ProfilePage() {
     logout();
   };
 
-  const handleExitGuestMode = () => {
-    trackEvent("Exit Guest Mode from Profile");
+  const handleExitGuestModeClick = () => {
+    // Check if there are any journal entries before showing confirmation
+    const entries = getGuestEntries();
+    if (entries.length > 0) {
+      setGuestEntryCount(entries.length);
+      setIsExitConfirmOpen(true);
+    } else {
+      // No entries, exit immediately
+      confirmExitGuestMode();
+    }
+  };
+
+  const confirmExitGuestMode = () => {
+    trackEvent("Exit Guest Mode from Profile", { entriesLost: guestEntryCount });
     clearGuestData();
+    setIsExitConfirmOpen(false);
     window.location.href = "/";
   };
 
@@ -182,6 +200,42 @@ export default function ProfilePage() {
       <Modal isOpen={isCreateAccountModalOpen} onClose={() => setIsCreateAccountModalOpen(false)} title="Create a Free Account" backdropClassName="backdrop-blur-sm">
         <CreateAccountForm closeModal={() => setIsCreateAccountModalOpen(false)} />
       </Modal>
+
+      {/* Exit Guest Mode Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isExitConfirmOpen}
+        onCancel={() => setIsExitConfirmOpen(false)}
+        onConfirm={confirmExitGuestMode}
+        title="🚨 Wait! Your Data's About to Vanish!"
+        confirmText="Embrace the Void"
+        cancelText="Keep My Entries"
+        variant="warning"
+        confirmingText="Vanishing..."
+      >
+        <div className="space-y-4">
+          <p className="text-lg">
+            You have <span className="font-bold text-orange-600">{guestEntryCount} {guestEntryCount === 1 ? 'legendary entry' : 'legendary entries'}</span> that 
+            will be <span className="font-bold">lost forever</span> if you exit guest mode!
+          </p>
+          <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
+            <p className="text-base text-orange-800">
+              📜 Your chronicles, your wisdom, your moments of glory... 
+              <span className="font-bold">poof!</span> Gone like a sneeze in a hurricane.
+            </p>
+          </div>
+          <p className="text-base text-gray-600">
+            Consider <button 
+              onClick={() => {
+                setIsExitConfirmOpen(false);
+                setIsCreateAccountModalOpen(true);
+              }}
+              className="font-bold underline text-blue-600 hover:text-blue-800"
+            >
+              creating a free account
+            </button> to save your data instead!
+          </p>
+        </div>
+      </ConfirmDialog>
 
       {/* Edit Profile Modal (without avatar) */}
       <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Your Profile" backdropClassName="backdrop-blur-sm">
@@ -423,7 +477,7 @@ export default function ProfilePage() {
               </button>
               {isGuest ? (
                 <button
-                  onClick={handleExitGuestMode}
+                  onClick={handleExitGuestModeClick}
                   className="flex items-center justify-center gap-2 flex-1 px-6 py-3 rounded-lg bg-red-50 hover:bg-red-100 border-2 border-black text-red-700 font-bold shadow-[4px_4px_0_0_#000] cursor-pointer transition-colors"
                 >
                   <FaSignOutAlt />
