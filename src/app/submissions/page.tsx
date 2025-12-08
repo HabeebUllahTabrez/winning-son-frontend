@@ -28,14 +28,59 @@ const ChevronDownIcon = () => (
 // A simple loading skeleton for the Suspense fallback
 function SubmissionsSkeleton() {
     return (
-        <div className="space-y-8 animate-pulse">
-            <div className="card h-16 mb-8"></div>
-            {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i}>
-                    <div className="h-6 bg-gray-200 rounded w-1/3 mb-3"></div>
-                    <div className="card h-24"></div>
+        <div className="animate-pulse">
+            {/* Navigation Card Skeleton */}
+            <div className="card mb-8 p-4">
+                <div className="flex justify-between items-center">
+                    <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                    <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+                        <div className="h-7 bg-gray-200 rounded w-48 sm:w-64"></div>
+                        <div className="h-8 bg-gray-200 rounded w-16"></div>
+                    </div>
+                    <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
                 </div>
-            ))}
+            </div>
+
+            {/* Weekly View Structure */}
+            <div className="space-y-8">
+                {Array.from({ length: 7 }).map((_, dayIndex) => (
+                    <div key={dayIndex}>
+                        {/* Day Header */}
+                        <div className="flex items-center gap-2 border-b-2 border-black/10 pb-2 mb-4">
+                            <div className="h-7 bg-gray-200 rounded w-24"></div>
+                            <div className="h-6 bg-gray-200 rounded w-32"></div>
+                        </div>
+                        
+                        {/* Entry Card or Empty State */}
+                        {dayIndex % 2 === 0 ? (
+                            // Entry Card Skeleton
+                            <div className="card">
+                                <div className="flex flex-wrap justify-between items-start gap-2 border-b-2 border-black/10 pb-3 mb-3">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <div className="h-7 bg-purple-100 rounded-full w-28"></div>
+                                        <div className="h-7 bg-yellow-100 rounded-full w-32"></div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                                        <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                                    </div>
+                                </div>
+                                <div className="space-y-2 pt-2">
+                                    <div className="h-5 bg-gray-200 rounded w-full"></div>
+                                    <div className="h-5 bg-gray-200 rounded w-5/6"></div>
+                                    <div className="h-5 bg-gray-200 rounded w-3/4"></div>
+                                </div>
+                            </div>
+                        ) : (
+                            // Empty State Skeleton
+                            <div className="border-2 border-dashed border-gray-200 rounded-lg p-6">
+                                <div className="h-5 bg-gray-200 rounded w-40 mx-auto mb-2"></div>
+                                <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
