@@ -308,6 +308,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="WinningSoninator" />
         
+        {/* Google Search Console Verification */}
+        <meta name="google-site-verification" content="TjrWw1a1EEdYF5DHnyMt2vFFqHS3tsd5MKMBumRV1ZA" />
+        
         <GoogleAnalytics />
       </head>
       <body
