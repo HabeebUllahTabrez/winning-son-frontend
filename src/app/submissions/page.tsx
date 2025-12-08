@@ -1,6 +1,7 @@
 'use client';
 
-import { Suspense, useState, useMemo } from 'react';
+import { Suspense, useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import SubmissionsClient from './_components/SubmissionsClient';
 import clsx from 'clsx';
 
@@ -43,7 +44,23 @@ function SubmissionsSkeleton() {
 }
 
 function SubmissionsContent() {
-    const [viewMode, setViewMode] = useState<ViewMode>('weekly');
+    const searchParams = useSearchParams();
+    const viewParam = searchParams.get('view');
+    
+    // Initialize viewMode from URL param if present, otherwise default to 'weekly'
+    const [viewMode, setViewMode] = useState<ViewMode>(() => {
+        if (viewParam === 'daily' || viewParam === 'weekly') {
+            return viewParam;
+        }
+        return 'weekly';
+    });
+
+    // Sync viewMode with URL changes (e.g., when navigating from dashboard chart)
+    useEffect(() => {
+        if (viewParam === 'daily' || viewParam === 'weekly') {
+            setViewMode(viewParam);
+        }
+    }, [viewParam]);
 
     // Week Day Icons
     const dayIcons = useMemo(() => ({
