@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { toast } from "react-hot-toast";
 import { getStartOfWeek, formatDateForAPI, formatDateRangeForDisplay } from "@/lib/dateUtils";
 import { isGuestUser, getGuestEntries, deleteGuestEntry } from "@/lib/guest";
-import clsx from "clsx";
 import { trackEvent } from "@/lib/mixpanel";
 
 // --- (SVG Icons remain the same) ---
@@ -40,17 +39,15 @@ type ViewMode = 'daily' | 'weekly';
 
 type SubmissionsClientProps = {
   viewMode: ViewMode;
+  initialDate?: string;
 };
 
-export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) {
-  const searchParams = useSearchParams();
-  const highlightedDate = searchParams.get("highlighted");
-
-  // Calculate initial week start based on highlighted date or current week
+export default function SubmissionsClient({ viewMode, initialDate }: SubmissionsClientProps) {
+  // Calculate initial week start based on initialDate or current week
   const [weekStartDate, setWeekStartDate] = useState(() => {
-    if (highlightedDate) {
-      // If there's a highlighted date, show the week containing that date
-      return getStartOfWeek(new Date(highlightedDate + 'T00:00:00'));
+    if (initialDate) {
+      // If there's an initial date, show the week containing that date
+      return getStartOfWeek(new Date(initialDate + 'T00:00:00'));
     }
     // Otherwise, show the current week
     return getStartOfWeek(new Date());
@@ -58,8 +55,8 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
 
   // For daily view, track the current day
   const [currentDay, setCurrentDay] = useState(() => {
-    if (highlightedDate) {
-      return new Date(highlightedDate + 'T00:00:00');
+    if (initialDate) {
+      return new Date(initialDate + 'T00:00:00');
     }
     return new Date();
   });
@@ -71,9 +68,8 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
   const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const router = useRouter();
   const isGuest = isGuestUser();
-  const entryRefs = useRef(new Map<string, HTMLDivElement>());
+  const router = useRouter();
 
   useEffect(() => {
     const fetchSubmissions = async () => {
@@ -119,14 +115,7 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
     fetchSubmissions();
   }, [weekStartDate, isGuest]);
 
-  useEffect(() => {
-    if (loading || !highlightedDate || !entryRefs.current.has(highlightedDate)) return;
 
-    const node = entryRefs.current.get(highlightedDate);
-    if (node) {
-      setTimeout(() => node.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
-    }
-  }, [highlightedDate, loading, data]);
 
   // --- (All memoized values, week handlers, and delete handlers remain the same) ---
   const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => { const day = new Date(weekStartDate); day.setDate(weekStartDate.getDate() + i); return day; }), [weekStartDate]);
@@ -136,35 +125,17 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
     const newDate = new Date(weekStartDate);
     newDate.setDate(weekStartDate.getDate() - 7);
     setWeekStartDate(newDate);
-    // Clear highlight when navigating
-    if (highlightedDate) {
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete('highlighted');
-      router.replace(newUrl.pathname + newUrl.search);
-    }
   };
   const handleNextWeek = () => {
     const newDate = new Date(weekStartDate);
     newDate.setDate(weekStartDate.getDate() + 7);
     setWeekStartDate(newDate);
-    // Clear highlight when navigating
-    if (highlightedDate) {
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete('highlighted');
-      router.replace(newUrl.pathname + newUrl.search);
-    }
   };
   const handleGoToToday = () => {
     if (viewMode === 'daily') {
       setCurrentDay(new Date());
     } else {
       setWeekStartDate(getStartOfWeek(new Date()));
-    }
-    // Clear highlight when navigating
-    if (highlightedDate) {
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete('highlighted');
-      router.replace(newUrl.pathname + newUrl.search);
     }
   };
 
@@ -179,13 +150,6 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
     if (newWeekStart.getTime() !== weekStartDate.getTime()) {
       setWeekStartDate(newWeekStart);
     }
-
-    // Clear highlight when navigating
-    if (highlightedDate) {
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete('highlighted');
-      router.replace(newUrl.pathname + newUrl.search);
-    }
   };
 
   const handleNextDay = () => {
@@ -197,13 +161,6 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
     const newWeekStart = getStartOfWeek(newDate);
     if (newWeekStart.getTime() !== weekStartDate.getTime()) {
       setWeekStartDate(newWeekStart);
-    }
-
-    // Clear highlight when navigating
-    if (highlightedDate) {
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete('highlighted');
-      router.replace(newUrl.pathname + newUrl.search);
     }
   };
 
@@ -218,12 +175,6 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
   const handleDeleteClick = (date: string) => {
     setEntryToDelete(date);
     setIsConfirmOpen(true);
-    // Clear highlight from URL to prevent z-index conflicts
-    if (highlightedDate) {
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete('highlighted');
-      router.replace(newUrl.pathname + newUrl.search);
-    }
   };
   const handleConfirmDelete = async () => {
     if (!entryToDelete) return;
@@ -297,16 +248,14 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
                       const dateString = formatDateForAPI(currentDay);
                       const entry = entriesByDate.get(dateString);
                       return (
-                          <div ref={(node) => { if (node) entryRefs.current.set(dateString, node); else entryRefs.current.delete(dateString); }}>
+                          <div>
                               {entry ? (
-                                  <div className={clsx(
-                                      "bg-white border-2 border-black p-8 sm:p-10 md:p-12 lg:p-16",
-                                      { 'highlight': dateString === highlightedDate }
-                                  )}
-                                  style={{
-                                      boxShadow: '12px 12px 0px var(--color-card-shadow)',
-                                      borderRadius: '4px 5px 3px 6px'
-                                  }}>
+                                  <div
+                                      className="bg-white border-2 border-black p-8 sm:p-10 md:p-12 lg:p-16"
+                                      style={{
+                                          boxShadow: '12px 12px 0px var(--color-card-shadow)',
+                                          borderRadius: '4px 5px 3px 6px'
+                                      }}>
                                       {/* Journal Content - The main focus */}
                                       <div className="mb-8">
                                           <p className="whitespace-pre-wrap text-lg sm:text-xl md:text-2xl leading-relaxed sm:leading-relaxed md:leading-loose text-gray-900 font-normal">
@@ -380,12 +329,12 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
                       const dateString = formatDateForAPI(day);
                       const entry = entriesByDate.get(dateString);
                       return (
-                          <div key={dateString} ref={(node) => { if (node) entryRefs.current.set(dateString, node); else entryRefs.current.delete(dateString); }}>
+                          <div key={dateString}>
                               <h3 className="text-2xl font-bold border-b-2 border-black/10 pb-2 mb-4">
                                   {day.toLocaleDateString('en-US', { weekday: 'long' })}, <span className="text-gray-600">{day.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</span>
                               </h3>
                               {entry ? (
-                                  <div className={clsx("card", { 'highlight': dateString === highlightedDate })}>
+                                  <div className="card">
                                       <div>
                                           <div className="flex flex-wrap justify-between items-start gap-2 border-b-2 border-black/10 pb-3 mb-3">
                                               <div className="flex flex-wrap items-center gap-2 text-sm font-bold">

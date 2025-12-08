@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import SubmissionsClient from './_components/SubmissionsClient';
 import clsx from 'clsx';
 
@@ -86,7 +87,11 @@ function SubmissionsSkeleton() {
 }
 
 function SubmissionsContent() {
-    const [viewMode, setViewMode] = useState<ViewMode>('weekly');
+    const searchParams = useSearchParams();
+    const dateParam = searchParams.get('date');
+    
+    // If date param is provided, default to daily view
+    const [viewMode, setViewMode] = useState<ViewMode>(() => dateParam ? 'daily' : 'weekly');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -197,7 +202,7 @@ function SubmissionsContent() {
             </header>
 
             <Suspense fallback={<SubmissionsSkeleton />}>
-                <SubmissionsClient viewMode={viewMode} />
+                <SubmissionsClient viewMode={viewMode} initialDate={dateParam || undefined} />
             </Suspense>
         </>
     );
@@ -206,7 +211,9 @@ function SubmissionsContent() {
 export default function SubmissionsPage() {
     return (
         <div className="max-w-5xl mx-auto px-4 py-10">
-            <SubmissionsContent />
+            <Suspense fallback={<SubmissionsSkeleton />}>
+                <SubmissionsContent />
+            </Suspense>
         </div>
     );
 }

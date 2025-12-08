@@ -40,7 +40,7 @@ export function SubmissionHistoryChart({ isGuest, journalEntries = [] }: { isGue
     // Navigate to submissions page with the selected date in daily view
     const handleDayClick = (date: string) => {
         if (!date) return;
-        router.push(`/submissions?highlighted=${date}&view=daily`);
+        router.push(`/submissions?date=${date}`);
     };
 
     useEffect(() => {
