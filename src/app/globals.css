@@ -4,7 +4,8 @@
 @theme {
   --color-card-shadow: #000;
   /* NEW: Added a variable for error color for consistency */
-  --color-error: #ef4444; /* red-500 */
+  --color-error: #ef4444;
+  /* red-500 */
 }
 
 /* Base styles */
@@ -16,23 +17,28 @@
 
 /* Components */
 @layer components {
+
   /* Card */
   .card {
     @apply bg-white border-2 border-black p-6;
     box-shadow: 8px 8px 0px var(--color-card-shadow);
-    border-radius: 4px 5px 3px 6px; /* Imperfect radius */
+    border-radius: 4px 5px 3px 6px;
+    /* Imperfect radius */
   }
 
   /* Button */
   .btn {
     @apply bg-black text-white font-bold border-2 border-black px-5 py-2 transition-all cursor-pointer;
-    border-radius: 5px 4px 6px 3px; /* Imperfect radius */
+    border-radius: 5px 4px 6px 3px;
+    /* Imperfect radius */
   }
+
   .btn:hover {
     @apply bg-white text-black;
     transform: translate(-2px, -2px);
     box-shadow: 4px 4px 0px var(--color-card-shadow);
   }
+
   .btn:disabled {
     @apply bg-gray-300 border-gray-300 text-gray-500 cursor-not-allowed;
     transform: none;
@@ -42,13 +48,16 @@
   /* Secondary Button */
   .btn-secondary {
     @apply bg-white text-black font-bold border-2 border-black px-5 py-2 transition-all cursor-pointer;
-    border-radius: 5px 4px 6px 3px; /* Imperfect radius */
+    border-radius: 5px 4px 6px 3px;
+    /* Imperfect radius */
   }
+
   .btn-secondary:hover {
     @apply bg-gray-100;
     transform: translate(-2px, -2px);
     box-shadow: 4px 4px 0px var(--color-card-shadow);
   }
+
   .btn-secondary:disabled {
     @apply bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed;
     transform: none;
@@ -58,8 +67,10 @@
   /* Input */
   .input {
     @apply bg-white w-full border-2 border-black p-2 transition-all;
-    border-radius: 3px 5px 4px 4px; /* Imperfect radius */
+    border-radius: 3px 5px 4px 4px;
+    /* Imperfect radius */
   }
+
   .input:focus {
     outline: none;
     transform: translate(-1px, -1px);
@@ -68,8 +79,10 @@
 
   /* NEW: Error state for inputs, matching your theme */
   .input-error {
-    @apply border-red-500; /* Uses the --color-error variable implicitly */
+    @apply border-red-500;
+    /* Uses the --color-error variable implicitly */
   }
+
   .input-error:focus {
     /* The focus shadow now becomes red to indicate the error */
     box-shadow: 2px 2px 0px var(--color-error);
@@ -77,38 +90,53 @@
 
   /* Highlight */
   .highlight {
-  /* Lifts the card above other content */
-  position: relative;
-  z-index: 10;
-  /* Points to our new, more dramatic animation */
-  animation: spotlight 3.5s ease-in-out;
-}
+    /* Lifts the card above other content */
+    position: relative;
+    z-index: 10;
+    /* Points to our new, more dramatic animation */
+    animation: spotlight 3.5s ease-in-out;
+  }
 
   /* Hide scrollbar for mobile tabs */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
+
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+    display: none;
+    /* Chrome, Safari and Opera */
   }
 }
 
 /* Your animations can remain as they are */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes spotlight {
+
   /* Start with just the card's normal shadow */
   0% {
     box-shadow: 8px 8px 0px var(--color-card-shadow), 0 0 0 0 rgba(0, 0, 0, 0);
   }
+
   /* At 20%, fade in the dark overlay. It stays until 80% */
-  20%, 80% {
+  20%,
+  80% {
     box-shadow: 8px 8px 0px var(--color-card-shadow), 0 0 0 200vmax rgba(0, 0, 0, 0.6);
   }
+
   /* At 100%, fade the overlay out, returning to normal */
   100% {
     box-shadow: 8px 8px 0px var(--color-card-shadow), 0 0 0 0 rgba(0, 0, 0, 0);
@@ -116,9 +144,12 @@
 }
 
 @keyframes bounceSlow {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -128,6 +159,7 @@
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -138,6 +170,7 @@
     opacity: 0;
     transform: scale(0.9) translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -149,6 +182,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -178,4 +212,314 @@
 .animate-slide-up {
   animation: slideUp 0.4s ease-out forwards;
   opacity: 0;
+}
+
+/* ===== SUBMISSIONS PAGE REDESIGN STYLES ===== */
+
+/* Timeline Entry Cards */
+.entry-card {
+  @apply bg-white border-2 border-black relative overflow-hidden;
+  box-shadow: 8px 8px 0px var(--color-card-shadow);
+  border-radius: 4px 5px 3px 6px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.entry-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 12px 16px 0px var(--color-card-shadow);
+}
+
+.entry-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #8b5cf6, #ec4899, #f59e0b);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.entry-card:hover::before {
+  opacity: 1;
+}
+
+/* Glow Effects */
+.glow-purple {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.1);
+}
+
+.glow-amber {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3), 0 0 40px rgba(245, 158, 11, 0.1);
+}
+
+/* Timeline Day Indicators */
+.timeline-dot {
+  @apply w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm cursor-pointer transition-all duration-300;
+  border: 2px solid #000;
+}
+
+.timeline-dot.has-entry {
+  @apply bg-black text-white;
+}
+
+.timeline-dot.no-entry {
+  @apply bg-white text-gray-400;
+  border: 2px dashed #d1d5db;
+}
+
+.timeline-dot.current {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.timeline-dot:hover {
+  transform: scale(1.15);
+}
+
+/* Progress Bar for Ratings */
+.rating-bar {
+  @apply h-3 rounded-full overflow-hidden;
+  background: #e5e7eb;
+}
+
+.rating-bar-fill {
+  @apply h-full rounded-full;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rating-bar-fill.alignment {
+  background: linear-gradient(90deg, #c084fc, #8b5cf6);
+}
+
+.rating-bar-fill.contentment {
+  background: linear-gradient(90deg, #fcd34d, #f59e0b);
+}
+
+/* Mood Badges */
+.mood-badge {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm;
+  animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.mood-excellent {
+  background: linear-gradient(135deg, #fef3c7, #fcd34d);
+  color: #92400e;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.mood-good {
+  background: linear-gradient(135deg, #e0e7ff, #a5b4fc);
+  color: #3730a3;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+.mood-okay {
+  background: linear-gradient(135deg, #f3f4f6, #d1d5db);
+  color: #374151;
+}
+
+.mood-growing {
+  background: linear-gradient(135deg, #d1fae5, #6ee7b7);
+  color: #065f46;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+  @apply border-2 border-dashed border-gray-300 rounded-2xl text-center transition-all duration-300;
+}
+
+.empty-state:hover {
+  @apply border-gray-400 bg-gray-50;
+  transform: scale(1.01);
+}
+
+/* Floating Action Buttons */
+.action-btn {
+  @apply p-3 rounded-xl transition-all duration-200;
+  background: white;
+  border: 2px solid transparent;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn.edit:hover {
+  @apply border-purple-500 text-purple-600;
+  background: #faf5ff;
+}
+
+.action-btn.delete:hover {
+  @apply border-red-500 text-red-600;
+  background: #fef2f2;
+}
+
+/* Week Stats Bar */
+.stats-pill {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium;
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  border: 1px solid #e2e8f0;
+}
+
+/* Timeline Connector */
+.timeline-connector {
+  @apply absolute left-1/2 w-0.5 bg-gradient-to-b from-black to-gray-300;
+  transform: translateX(-50%);
+}
+
+/* View Toggle Enhancement */
+.view-toggle {
+  @apply relative flex rounded-2xl p-1;
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  border: 2px solid #000;
+}
+
+.view-toggle-btn {
+  @apply px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 relative z-10;
+}
+
+.view-toggle-btn.active {
+  @apply bg-black text-white;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+}
+
+.view-toggle-btn:not(.active) {
+  @apply text-gray-600 hover:text-black;
+}
+
+/* Stagger Animation Classes */
+.stagger-1 {
+  animation-delay: 0.1s;
+}
+
+.stagger-2 {
+  animation-delay: 0.2s;
+}
+
+.stagger-3 {
+  animation-delay: 0.3s;
+}
+
+.stagger-4 {
+  animation-delay: 0.4s;
+}
+
+.stagger-5 {
+  animation-delay: 0.5s;
+}
+
+.stagger-6 {
+  animation-delay: 0.6s;
+}
+
+.stagger-7 {
+  animation-delay: 0.7s;
+}
+
+/* New Keyframe Animations */
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4), 8px 8px 0px var(--color-card-shadow);
+  }
+
+  50% {
+    box-shadow: 0 0 20px 8px rgba(139, 92, 246, 0.2), 8px 8px 0px var(--color-card-shadow);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  70% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes floatBounce {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-15px) rotate(2deg);
+  }
+}
+
+@keyframes writeWiggle {
+
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+
+  25% {
+    transform: rotate(5deg);
+  }
+
+  50% {
+    transform: rotate(-3deg);
+  }
+
+  75% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes entrySlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px) rotate(-2deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0) rotate(0);
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-float-bounce {
+  animation: floatBounce 3s ease-in-out infinite;
+}
+
+.animate-write-wiggle {
+  animation: writeWiggle 0.5s ease-in-out;
+}
+
+.animate-entry-slide {
+  animation: entrySlideIn 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
 }

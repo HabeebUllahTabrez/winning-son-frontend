@@ -11,11 +11,12 @@ import { isGuestUser, getGuestEntries, deleteGuestEntry } from "@/lib/guest";
 import clsx from "clsx";
 import { trackEvent } from "@/lib/mixpanel";
 
-// --- (SVG Icons remain the same) ---
-const PencilIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>;
-const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.033-2.134H8.033C6.91 2.75 6 3.704 6 4.884v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>;
+// --- SVG Icons ---
+const PencilIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>;
+const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.033-2.134H8.033C6.91 2.75 6 3.704 6 4.884v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>;
 const ChevronLeftIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>;
 const ChevronRightIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>;
+const SparklesIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" /></svg>;
 
 // --- Type Definitions ---
 type Entry = {
@@ -26,7 +27,6 @@ type Entry = {
   id?: string;
 };
 
-// ✨ Define a specific type for guest entries from localStorage
 type GuestEntry = {
   createdAt: string;
   topics: string;
@@ -35,28 +35,91 @@ type GuestEntry = {
   id: string;
 };
 
-
 type ViewMode = 'daily' | 'weekly';
 
 type SubmissionsClientProps = {
   viewMode: ViewMode;
 };
 
+// --- Helper: Get mood based on ratings ---
+function getMood(alignment: number, contentment: number): { emoji: string; label: string; className: string } {
+  const avg = (alignment + contentment) / 2;
+  if (avg >= 8) return { emoji: '🔥', label: 'Excellent', className: 'mood-excellent' };
+  if (avg >= 6) return { emoji: '✨', label: 'Good', className: 'mood-good' };
+  if (avg >= 4) return { emoji: '💭', label: 'Okay', className: 'mood-okay' };
+  return { emoji: '🌱', label: 'Growing', className: 'mood-growing' };
+}
+
+// --- Rating Progress Bar Component ---
+function RatingBar({ label, value, type }: { label: string; value: number; type: 'alignment' | 'contentment' }) {
+  const [width, setWidth] = useState(0);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setWidth(value * 10), 100);
+    return () => clearTimeout(timer);
+  }, [value]);
+
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-xs font-bold uppercase tracking-wider text-gray-500 w-24">{label}</span>
+      <div className="rating-bar flex-1">
+        <div 
+          className={`rating-bar-fill ${type}`} 
+          style={{ width: `${width}%` }}
+        />
+      </div>
+      <span className="text-sm font-bold text-gray-700 w-8">{value}/10</span>
+    </div>
+  );
+}
+
+// --- Timeline Day Dot Component ---
+function TimelineDot({ 
+  day, 
+  hasEntry, 
+  isCurrentDay, 
+  isSelected,
+  onClick 
+}: { 
+  day: Date; 
+  hasEntry: boolean; 
+  isCurrentDay: boolean;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  const dayName = day.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+  const dayNum = day.getDate();
+  
+  return (
+    <button
+      onClick={onClick}
+      className={clsx(
+        "timeline-dot",
+        hasEntry ? "has-entry" : "no-entry",
+        isCurrentDay && "current",
+        isSelected && "ring-2 ring-purple-500 ring-offset-2"
+      )}
+      title={day.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+    >
+      <span className="flex flex-col items-center leading-none">
+        <span className="text-[10px] opacity-70">{dayName}</span>
+        <span className="text-sm">{dayNum}</span>
+      </span>
+    </button>
+  );
+}
+
 export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) {
   const searchParams = useSearchParams();
   const highlightedDate = searchParams.get("highlighted");
 
-  // Calculate initial week start based on highlighted date or current week
   const [weekStartDate, setWeekStartDate] = useState(() => {
     if (highlightedDate) {
-      // If there's a highlighted date, show the week containing that date
       return getStartOfWeek(new Date(highlightedDate + 'T00:00:00'));
     }
-    // Otherwise, show the current week
     return getStartOfWeek(new Date());
   });
 
-  // For daily view, track the current day
   const [currentDay, setCurrentDay] = useState(() => {
     if (highlightedDate) {
       return new Date(highlightedDate + 'T00:00:00');
@@ -75,11 +138,11 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
   const isGuest = isGuestUser();
   const entryRefs = useRef(new Map<string, HTMLDivElement>());
 
+  // Fetch submissions
   useEffect(() => {
     const fetchSubmissions = async () => {
       setLoading(true);
 
-      // For weekly view, fetch the entire week
       const endDate = new Date(weekStartDate);
       endDate.setDate(weekStartDate.getDate() + 6);
       const startDateStr = formatDateForAPI(weekStartDate);
@@ -88,7 +151,6 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
       try {
         let entries: Entry[] = [];
         if (isGuest) {
-          // ✨ Use the GuestEntry type for the data from getGuestEntries()
           const guestEntries: GuestEntry[] = getGuestEntries();
           entries = guestEntries.filter(entry => {
             const entryDate = entry.createdAt.split('T')[0];
@@ -103,7 +165,6 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
         } else {
           const params = new URLSearchParams({ start_date: startDateStr, end_date: endDateStr });
           const res = await apiFetch(`/api/journal?${params.toString()}`);
-          // Assuming res.data is already correctly typed from apiFetch
           entries = res.data || [];
         }
         setData(entries || []);
@@ -117,8 +178,9 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
     };
 
     fetchSubmissions();
-  }, [weekStartDate, isGuest]);
+  }, [weekStartDate, isGuest, viewMode]);
 
+  // Scroll to highlighted entry
   useEffect(() => {
     if (loading || !highlightedDate || !entryRefs.current.has(highlightedDate)) return;
 
@@ -128,39 +190,26 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
     }
   }, [highlightedDate, loading, data]);
 
-  // --- (All memoized values, week handlers, and delete handlers remain the same) ---
+  // Memoized values
   const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => { const day = new Date(weekStartDate); day.setDate(weekStartDate.getDate() + i); return day; }), [weekStartDate]);
   const entriesByDate = useMemo(() => (data && Array.isArray(data)) ? new Map(data.map(e => [e.local_date, e])) : new Map(), [data]);
   const isNextWeekInFuture = useMemo(() => { const nextWeekStart = new Date(weekStartDate); nextWeekStart.setDate(weekStartDate.getDate() + 7); return nextWeekStart > new Date(); }, [weekStartDate]);
+  
+  const todayStr = useMemo(() => formatDateForAPI(new Date()), []);
+  const currentDayStr = useMemo(() => formatDateForAPI(currentDay), [currentDay]);
+
+  // Week stats
+  const weekStats = useMemo(() => {
+    const total = weekDays.length;
+    const completed = weekDays.filter(day => entriesByDate.has(formatDateForAPI(day))).length;
+    return { total, completed, percentage: Math.round((completed / total) * 100) };
+  }, [weekDays, entriesByDate]);
+
+  // Navigation handlers
   const handlePreviousWeek = () => {
     const newDate = new Date(weekStartDate);
     newDate.setDate(weekStartDate.getDate() - 7);
     setWeekStartDate(newDate);
-    // Clear highlight when navigating
-    if (highlightedDate) {
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete('highlighted');
-      router.replace(newUrl.pathname + newUrl.search);
-    }
-  };
-  const handleNextWeek = () => {
-    const newDate = new Date(weekStartDate);
-    newDate.setDate(weekStartDate.getDate() + 7);
-    setWeekStartDate(newDate);
-    // Clear highlight when navigating
-    if (highlightedDate) {
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete('highlighted');
-      router.replace(newUrl.pathname + newUrl.search);
-    }
-  };
-  const handleGoToToday = () => {
-    if (viewMode === 'daily') {
-      setCurrentDay(new Date());
-    } else {
-      setWeekStartDate(getStartOfWeek(new Date()));
-    }
-    // Clear highlight when navigating
     if (highlightedDate) {
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete('highlighted');
@@ -168,19 +217,47 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
     }
   };
 
-  // Daily view navigation handlers
+  const handleNextWeek = () => {
+    const newDate = new Date(weekStartDate);
+    newDate.setDate(weekStartDate.getDate() + 7);
+    setWeekStartDate(newDate);
+    if (highlightedDate) {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('highlighted');
+      router.replace(newUrl.pathname + newUrl.search);
+    }
+  };
+
+  const handleGoToToday = () => {
+    if (viewMode === 'daily') {
+      setCurrentDay(new Date());
+    }
+    setWeekStartDate(getStartOfWeek(new Date()));
+    if (highlightedDate) {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('highlighted');
+      router.replace(newUrl.pathname + newUrl.search);
+    }
+  };
+
+  const handleDayClick = (day: Date) => {
+    setCurrentDay(day);
+    const dayWeekStart = getStartOfWeek(day);
+    if (dayWeekStart.getTime() !== weekStartDate.getTime()) {
+      setWeekStartDate(dayWeekStart);
+    }
+  };
+
   const handlePreviousDay = () => {
     const newDate = new Date(currentDay);
     newDate.setDate(currentDay.getDate() - 1);
     setCurrentDay(newDate);
 
-    // Update week if we've moved outside current week
     const newWeekStart = getStartOfWeek(newDate);
     if (newWeekStart.getTime() !== weekStartDate.getTime()) {
       setWeekStartDate(newWeekStart);
     }
 
-    // Clear highlight when navigating
     if (highlightedDate) {
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete('highlighted');
@@ -193,13 +270,11 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
     newDate.setDate(currentDay.getDate() + 1);
     setCurrentDay(newDate);
 
-    // Update week if we've moved outside current week
     const newWeekStart = getStartOfWeek(newDate);
     if (newWeekStart.getTime() !== weekStartDate.getTime()) {
       setWeekStartDate(newWeekStart);
     }
 
-    // Clear highlight when navigating
     if (highlightedDate) {
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete('highlighted');
@@ -215,16 +290,18 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
     nextDay.setHours(0, 0, 0, 0);
     return nextDay > today;
   }, [currentDay]);
+
+  // Delete handlers
   const handleDeleteClick = (date: string) => {
     setEntryToDelete(date);
     setIsConfirmOpen(true);
-    // Clear highlight from URL to prevent z-index conflicts
     if (highlightedDate) {
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete('highlighted');
       router.replace(newUrl.pathname + newUrl.search);
     }
   };
+
   const handleConfirmDelete = async () => {
     if (!entryToDelete) return;
     setIsDeleting(true);
@@ -251,173 +328,280 @@ export default function SubmissionsClient({ viewMode }: SubmissionsClientProps) 
     }
   };
 
-  // --- JSX ---
+  // --- RENDER ---
   return (
-      <>
-          <ConfirmDialog isOpen={isConfirmOpen} onCancel={() => setIsConfirmOpen(false)} onConfirm={handleConfirmDelete} title="Confirm Deletion" isConfirming={isDeleting} confirmText="Delete">
-              Are you sure you want to delete this journal entry? This action cannot be undone.
-          </ConfirmDialog>
+    <>
+      <ConfirmDialog isOpen={isConfirmOpen} onCancel={() => setIsConfirmOpen(false)} onConfirm={handleConfirmDelete} title="Confirm Deletion" isConfirming={isDeleting} confirmText="Delete">
+        Are you sure you want to delete this journal entry? This action cannot be undone.
+      </ConfirmDialog>
 
-          {/* Navigation Card */}
-          <div className="card mb-8 p-4">
-              <div className="flex justify-between items-center">
-                  <button
-                      onClick={viewMode === 'daily' ? handlePreviousDay : handlePreviousWeek}
-                      className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                      aria-label={viewMode === 'daily' ? "Previous day" : "Previous week"}
-                  >
-                      <ChevronLeftIcon />
-                  </button>
-                  <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-                      <h2 className="text-xl sm:text-2xl font-bold text-center">
-                          {viewMode === 'daily'
-                              ? currentDay.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
-                              : formatDateRangeForDisplay(weekStartDate)
-                          }
-                      </h2>
-                      <button onClick={handleGoToToday} className="btn bg-white text-black text-sm !py-1 !px-3">Today</button>
-                  </div>
-                  <button
-                      onClick={viewMode === 'daily' ? handleNextDay : handleNextWeek}
-                      disabled={viewMode === 'daily' ? isNextDayInFuture : isNextWeekInFuture}
-                      className="p-2 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                      aria-label={viewMode === 'daily' ? "Next day" : "Next week"}
-                  >
-                      <ChevronRightIcon />
-                  </button>
-              </div>
+      {/* Timeline Navigation Card */}
+      <div className="entry-card p-6 mb-8">
+        {/* Main Navigation Row */}
+        <div className="flex justify-between items-center mb-6">
+          <button
+            onClick={viewMode === 'daily' ? handlePreviousDay : handlePreviousWeek}
+            className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-all hover:scale-110 active:scale-95"
+            aria-label={viewMode === 'daily' ? "Previous day" : "Previous week"}
+          >
+            <ChevronLeftIcon />
+          </button>
+          
+          <div className="flex flex-col items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-black text-center">
+              {viewMode === 'daily'
+                ? currentDay.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+                : formatDateRangeForDisplay(weekStartDate)
+              }
+            </h2>
+            <button 
+              onClick={handleGoToToday} 
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black text-white text-sm font-bold hover:scale-105 transition-transform"
+            >
+              <SparklesIcon />
+              Today
+            </button>
           </div>
+          
+          <button
+            onClick={viewMode === 'daily' ? handleNextDay : handleNextWeek}
+            disabled={viewMode === 'daily' ? isNextDayInFuture : isNextWeekInFuture}
+            className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-all hover:scale-110 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100"
+            aria-label={viewMode === 'daily' ? "Next day" : "Next week"}
+          >
+            <ChevronRightIcon />
+          </button>
+        </div>
 
-          {loading ? (
-              <div className="text-center p-8 text-gray-500">Loading entries...</div>
-          ) : viewMode === 'daily' ? (
-              // Daily View - Content-focused layout
-              <div>
-                  {(() => {
-                      const dateString = formatDateForAPI(currentDay);
-                      const entry = entriesByDate.get(dateString);
-                      return (
-                          <div ref={(node) => { if (node) entryRefs.current.set(dateString, node); else entryRefs.current.delete(dateString); }}>
-                              {entry ? (
-                                  <div className={clsx(
-                                      "bg-white border-2 border-black p-8 sm:p-10 md:p-12 lg:p-16",
-                                      { 'highlight': dateString === highlightedDate }
-                                  )}
-                                  style={{
-                                      boxShadow: '12px 12px 0px var(--color-card-shadow)',
-                                      borderRadius: '4px 5px 3px 6px'
-                                  }}>
-                                      {/* Journal Content - The main focus */}
-                                      <div className="mb-8">
-                                          <p className="whitespace-pre-wrap text-lg sm:text-xl md:text-2xl leading-relaxed sm:leading-relaxed md:leading-loose text-gray-900 font-normal">
-                                              {entry.topics}
-                                          </p>
-                                      </div>
+        {/* Timeline Dots */}
+        <div className="flex justify-center items-center gap-2 sm:gap-3 flex-wrap">
+          {weekDays.map((day) => {
+            const dateStr = formatDateForAPI(day);
+            return (
+              <TimelineDot
+                key={dateStr}
+                day={day}
+                hasEntry={entriesByDate.has(dateStr)}
+                isCurrentDay={dateStr === todayStr}
+                isSelected={viewMode === 'daily' && dateStr === currentDayStr}
+                onClick={() => handleDayClick(day)}
+              />
+            );
+          })}
+        </div>
 
-                                      {/* Compact footer with ratings and actions */}
-                                      <div className="pt-6 border-t-2 border-black/10">
-                                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                              {/* Compact Ratings */}
-                                              <div className="flex flex-wrap items-center gap-3">
-                                                  <span className="inline-flex items-center gap-2 bg-purple-100 text-purple-800 py-2 px-4 rounded-full text-sm font-bold">
-                                                      <span className="text-xs uppercase tracking-wide">Alignment</span>
-                                                      <span className="text-lg">{entry.alignment_rating}/10</span>
-                                                  </span>
-                                                  <span className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 py-2 px-4 rounded-full text-sm font-bold">
-                                                      <span className="text-xs uppercase tracking-wide">Contentment</span>
-                                                      <span className="text-lg">{entry.contentment_rating}/10</span>
-                                                  </span>
-                                              </div>
+        {/* Week Stats */}
+        <div className="mt-6 flex justify-center">
+          <div className="stats-pill">
+            <span className="text-lg">{weekStats.completed === weekStats.total ? '🎉' : '📝'}</span>
+            <span>
+              <strong>{weekStats.completed}</strong> of {weekStats.total} days journaled
+            </span>
+            <span className="text-purple-600 font-bold">({weekStats.percentage}%)</span>
+          </div>
+        </div>
+      </div>
 
-                                              {/* Action Buttons */}
-                                              <div className="flex items-center gap-2">
-                                                  <button
-                                                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
-                                                      onClick={() => {
-                                                          trackEvent("Edit Entry Clicked", { date: entry.local_date, isGuest });
-                                                          router.push(`/journal?date=${entry.local_date}`);
-                                                      }}
-                                                      aria-label="Edit entry"
-                                                  >
-                                                      <PencilIcon />
-                                                      <span className="text-sm font-medium">Edit</span>
-                                                  </button>
-                                                  <button
-                                                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors text-gray-700"
-                                                      onClick={() => handleDeleteClick(entry.local_date)}
-                                                      aria-label="Delete entry"
-                                                  >
-                                                      <TrashIcon />
-                                                      <span className="text-sm font-medium">Delete</span>
-                                                  </button>
-                                              </div>
-                                          </div>
-                                      </div>
-                                  </div>
-                              ) : (
-                                  <Link href={`/journal?date=${dateString}`} className="block" onClick={() => {
-                                    trackEvent("Add Entry Clicked", { date: dateString, isGuest });
-                                  }}>
-                                      <div
-                                          className="border-2 border-dashed border-gray-300 rounded-lg p-16 sm:p-20 md:p-24 text-center text-gray-500 hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer"
-                                      >
-                                          <div className="max-w-md mx-auto">
-                                              <div className="text-6xl sm:text-7xl mb-6">📝</div>
-                                              <p className="text-2xl sm:text-3xl font-bold text-gray-700 mb-4">No entry for this day</p>
-                                              <p className="text-lg sm:text-xl text-gray-500">Click here to create your journal entry</p>
-                                          </div>
-                                      </div>
-                                  </Link>
-                              )}
-                          </div>
-                      );
-                  })()}
+      {/* Content Area */}
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <div className="text-center">
+            <div className="text-6xl mb-4 animate-bounce-slow">📖</div>
+            <p className="text-gray-500 text-lg">Loading your entries...</p>
+          </div>
+        </div>
+      ) : viewMode === 'daily' ? (
+        // ===== DAILY VIEW =====
+        <div>
+          {(() => {
+            const dateString = formatDateForAPI(currentDay);
+            const entry = entriesByDate.get(dateString);
+            const mood = entry ? getMood(entry.alignment_rating, entry.contentment_rating) : null;
+            
+            return (
+              <div 
+                ref={(node) => { if (node) entryRefs.current.set(dateString, node); else entryRefs.current.delete(dateString); }}
+                className="animate-entry-slide"
+              >
+                {entry ? (
+                  <div className={clsx(
+                    "entry-card p-8 sm:p-10 lg:p-12",
+                    { 'highlight': dateString === highlightedDate }
+                  )}>
+                    {/* Mood Badge */}
+                    <div className="flex justify-between items-start mb-6">
+                      <div className={clsx("mood-badge", mood?.className)}>
+                        <span className="text-xl">{mood?.emoji}</span>
+                        <span>{mood?.label} Day</span>
+                      </div>
+                      
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          className="action-btn edit"
+                          onClick={() => {
+                            trackEvent("Edit Entry Clicked", { date: entry.local_date, isGuest });
+                            router.push(`/journal?date=${entry.local_date}`);
+                          }}
+                          aria-label="Edit entry"
+                          title="Edit entry"
+                        >
+                          <PencilIcon />
+                        </button>
+                        <button
+                          className="action-btn delete"
+                          onClick={() => handleDeleteClick(entry.local_date)}
+                          aria-label="Delete entry"
+                          title="Delete entry"
+                        >
+                          <TrashIcon />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Journal Content */}
+                    <div className="mb-8">
+                      <p className="whitespace-pre-wrap text-lg sm:text-xl lg:text-2xl leading-relaxed text-gray-800">
+                        {entry.topics}
+                      </p>
+                    </div>
+
+                    {/* Rating Bars */}
+                    <div className="pt-6 border-t-2 border-black/10 space-y-4">
+                      <RatingBar label="Alignment" value={entry.alignment_rating} type="alignment" />
+                      <RatingBar label="Contentment" value={entry.contentment_rating} type="contentment" />
+                    </div>
+                  </div>
+                ) : (
+                  <Link href={`/journal?date=${dateString}`} className="block" onClick={() => {
+                    trackEvent("Add Entry Clicked", { date: dateString, isGuest });
+                  }}>
+                    <div className="empty-state p-12 sm:p-16 lg:p-20 cursor-pointer group">
+                      <div className="max-w-md mx-auto">
+                        <div className="text-7xl sm:text-8xl mb-6 animate-float-bounce group-hover:animate-write-wiggle">✏️</div>
+                        <p className="text-2xl sm:text-3xl font-bold text-gray-700 mb-3">
+                          No entry yet
+                        </p>
+                        <p className="text-lg text-gray-500 mb-6">
+                          Every day is a new page. What will you write?
+                        </p>
+                        <span className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white font-bold rounded-full group-hover:scale-105 transition-transform">
+                          <SparklesIcon />
+                          Start Writing
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                )}
               </div>
-          ) : (
-              // Weekly View
-              <div className="space-y-8">
-                  {weekDays.map(day => {
-                      const dateString = formatDateForAPI(day);
-                      const entry = entriesByDate.get(dateString);
-                      return (
-                          <div key={dateString} ref={(node) => { if (node) entryRefs.current.set(dateString, node); else entryRefs.current.delete(dateString); }}>
-                              <h3 className="text-2xl font-bold border-b-2 border-black/10 pb-2 mb-4">
-                                  {day.toLocaleDateString('en-US', { weekday: 'long' })}, <span className="text-gray-600">{day.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</span>
-                              </h3>
-                              {entry ? (
-                                  <div className={clsx("card", { 'highlight': dateString === highlightedDate })}>
-                                      <div>
-                                          <div className="flex flex-wrap justify-between items-start gap-2 border-b-2 border-black/10 pb-3 mb-3">
-                                              <div className="flex flex-wrap items-center gap-2 text-sm font-bold">
-                                                  <span className="bg-purple-100 text-purple-800 py-1 px-3 rounded-full">Alignment: {entry.alignment_rating}/10</span>
-                                                  <span className="bg-yellow-100 text-yellow-800 py-1 px-3 rounded-full">Contentment: {entry.contentment_rating}/10</span>
-                                              </div>
-                                              <div className="flex items-center gap-2">
-                                                  <button className="p-2 rounded-full hover:bg-gray-200 transition-colors" onClick={() => {
-                                                    trackEvent("Edit Entry Clicked", { date: entry.local_date, isGuest });
-                                                    router.push(`/journal?date=${entry.local_date}`);
-                                                  }} aria-label="Edit"><PencilIcon /></button>
-                                                  <button className="p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors" onClick={() => handleDeleteClick(entry.local_date)} aria-label="Delete"><TrashIcon /></button>
-                                              </div>
-                                          </div>
-                                          <p className="whitespace-pre-wrap text-lg leading-relaxed pt-2">{entry.topics}</p>
-                                      </div>
-                                  </div>
-                              ) : (
-                                  <Link href={`/journal?date=${dateString}`} className="block" onClick={() => {
-                                    trackEvent("Add Entry Clicked", { date: dateString, isGuest });
-                                  }}>
-                                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500 hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer">
-                                          <p className="font-semibold">No entry for this day</p>
-                                          <p className="text-sm">Click to add an entry.</p>
-                                      </div>
-                                  </Link>
-                              )}
-                          </div>
-                      );
-                  })}
+            );
+          })()}
+        </div>
+      ) : (
+        // ===== WEEKLY VIEW =====
+        <div className="space-y-6">
+          {weekDays.map((day, index) => {
+            const dateString = formatDateForAPI(day);
+            const entry = entriesByDate.get(dateString);
+            const mood = entry ? getMood(entry.alignment_rating, entry.contentment_rating) : null;
+            const isToday = dateString === todayStr;
+            
+            return (
+              <div 
+                key={dateString} 
+                ref={(node) => { if (node) entryRefs.current.set(dateString, node); else entryRefs.current.delete(dateString); }}
+                className={`animate-entry-slide stagger-${index + 1}`}
+              >
+                {/* Day Header */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={clsx(
+                    "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm",
+                    entry ? "bg-black text-white" : "bg-gray-100 text-gray-400",
+                    isToday && "ring-2 ring-purple-500 ring-offset-2"
+                  )}>
+                    {day.getDate()}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold">
+                      {day.toLocaleDateString('en-US', { weekday: 'long' })}
+                      {isToday && <span className="ml-2 text-sm font-normal text-purple-600">(Today)</span>}
+                    </h3>
+                    <p className="text-sm text-gray-500">{day.toLocaleDateString('en-US', { month: 'long' })}</p>
+                  </div>
+                  {entry && mood && (
+                    <span className={clsx("mood-badge ml-auto", mood.className)}>
+                      <span>{mood.emoji}</span>
+                      <span className="hidden sm:inline">{mood.label}</span>
+                    </span>
+                  )}
+                </div>
+
+                {/* Entry Card */}
+                {entry ? (
+                  <div className={clsx(
+                    "entry-card p-6",
+                    { 'highlight': dateString === highlightedDate }
+                  )}>
+                    {/* Content Preview */}
+                    <p className="whitespace-pre-wrap text-base leading-relaxed text-gray-700 mb-4 line-clamp-3">
+                      {entry.topics}
+                    </p>
+
+                    {/* Footer */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-gray-100">
+                      <div className="flex items-center gap-4 text-sm">
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-400 to-purple-600"></span>
+                          <span className="text-gray-600">Align: <strong>{entry.alignment_rating}</strong></span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="w-3 h-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-600"></span>
+                          <span className="text-gray-600">Content: <strong>{entry.contentment_rating}</strong></span>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          className="action-btn edit" 
+                          onClick={() => {
+                            trackEvent("Edit Entry Clicked", { date: entry.local_date, isGuest });
+                            router.push(`/journal?date=${entry.local_date}`);
+                          }} 
+                          aria-label="Edit"
+                          title="Edit entry"
+                        >
+                          <PencilIcon />
+                        </button>
+                        <button 
+                          className="action-btn delete" 
+                          onClick={() => handleDeleteClick(entry.local_date)} 
+                          aria-label="Delete"
+                          title="Delete entry"
+                        >
+                          <TrashIcon />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <Link href={`/journal?date=${dateString}`} className="block" onClick={() => {
+                    trackEvent("Add Entry Clicked", { date: dateString, isGuest });
+                  }}>
+                    <div className="empty-state p-6 flex items-center justify-between cursor-pointer group">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl group-hover:animate-bounce-slow">📝</span>
+                        <span className="text-gray-500">No entry yet</span>
+                      </div>
+                      <span className="text-sm font-bold text-gray-400 group-hover:text-black transition-colors">
+                        Add entry →
+                      </span>
+                    </div>
+                  </Link>
+                )}
               </div>
-          )}
-      </>
+            );
+          })}
+        </div>
+      )}
+    </>
   );
 }
