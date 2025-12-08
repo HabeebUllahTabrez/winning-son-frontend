@@ -11,12 +11,13 @@ import "./globals.css";
 import { exitGuestMode } from "@/lib/api";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { Analytics } from '@vercel/analytics/next';
-import { isGuestUser } from "@/lib/guest";
+import { isGuestUser, getGuestEntries } from "@/lib/guest";
 import MixpanelProvider from "@/components/MixpanelProvider";
 import { resetMixpanel, trackEvent } from "@/lib/mixpanel";
 import { Modal } from "@/components/Modal";
 import { CreateAccountForm } from "@/components/CreateAccountForm";
 import { migrateFromOldAuth } from "@/lib/auth-migration";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 const scribble = Patrick_Hand({
   weight: "400",
@@ -31,6 +32,10 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
   const [authStatus, setAuthStatus] = useState<"loading" | "loggedIn" | "guest" | "loggedOut">("loading");
   const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname();
+  
+  // Exit guest mode confirmation state
+  const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
+  const [guestEntryCount, setGuestEntryCount] = useState(0);
 
   // Effect to check login status and close menu on page change
   useEffect(() => {
@@ -43,6 +48,9 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
       if (guest) {
         setAuthStatus("guest");
         setIsAdmin(false);
+        // Get the count of guest entries for the confirmation dialog
+        const entries = getGuestEntries();
+        setGuestEntryCount(entries.length);
       } else {
         try {
           // Check auth via httpOnly cookie
@@ -115,11 +123,27 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
     </Link>
   );
 
-  const handleExitGuestMode = () => {
-    trackEvent("Guest Mode Exited");
+  const handleExitGuestModeClick = () => {
+    // Close mobile menu first
+    setIsMenuOpen(false);
+    
+    // Check if there are any journal entries before showing confirmation
+    const entries = getGuestEntries();
+    if (entries.length > 0) {
+      setGuestEntryCount(entries.length);
+      setIsExitConfirmOpen(true);
+    } else {
+      // No entries, exit immediately
+      confirmExitGuestMode();
+    }
+  };
+
+  const confirmExitGuestMode = () => {
+    trackEvent("Guest Mode Exited", { entriesLost: guestEntryCount });
     resetMixpanel();
     exitGuestMode();
     setAuthStatus("loggedOut");
+    setIsExitConfirmOpen(false);
   };
 
   const renderNavContent = () => {
@@ -140,7 +164,7 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
           {
             authStatus === "guest" && (
               <button
-                onClick={handleExitGuestMode}
+                onClick={handleExitGuestModeClick}
                 className="px-2 py-1 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
               >
                 Exit Guest Mode
@@ -156,65 +180,103 @@ function Nav({ setIsCreateAccountModalOpen }: { setIsCreateAccountModalOpen: (op
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b-2 border-black">
-      {/* banner for guest user showing changes are only on this device and create account to save data and use on multiple devices */}
-      {authStatus === "guest" && (
-        <div className="bg-yellow-100 border-b-2 border-yellow-400 text-yellow-800 text-center text-sm p-2">
-          You are in <span className="font-bold">Guest Mode</span>. Your data is only saved on this device.{" "}
-          <button
-            onClick={
-              () => setIsCreateAccountModalOpen(true)
-            }
-            className="underline font-bold"
-          >
-            Create an account
-          </button>{" "}
-          to save your data and access it from any device!
+    <>
+      {/* Exit Guest Mode Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isExitConfirmOpen}
+        onCancel={() => setIsExitConfirmOpen(false)}
+        onConfirm={confirmExitGuestMode}
+        title="🚨 Wait! Your Data's About to Vanish!"
+        confirmText="Embrace the Void"
+        cancelText="Keep My Entries"
+        variant="warning"
+        confirmingText="Vanishing..."
+      >
+        <div className="space-y-4">
+          <p className="text-lg">
+            You have <span className="font-bold text-orange-600">{guestEntryCount} {guestEntryCount === 1 ? 'legendary entry' : 'legendary entries'}</span> that 
+            will be <span className="font-bold">lost forever</span> if you exit guest mode!
+          </p>
+          <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
+            <p className="text-base text-orange-800">
+              📜 Your chronicles, your wisdom, your moments of glory... 
+              <span className="font-bold">poof!</span> Gone like a sneeze in a hurricane.
+            </p>
+          </div>
+          <p className="text-base text-gray-600">
+            Consider <button 
+              onClick={() => {
+                setIsExitConfirmOpen(false);
+                setIsCreateAccountModalOpen(true);
+              }}
+              className="font-bold underline text-blue-600 hover:text-blue-800"
+            >
+              creating a free account
+            </button> to save your data instead!
+          </p>
         </div>
-      )}
-      {/* end banner for guest user */}
-      {/* Main Nav Bar */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-3 flex items-center justify-between">
-          <Link href={authStatus === "guest" ? "/dashboard" : "/"} className="font-bold text-2xl">
-            WinningSon-inator
-          </Link>
+      </ConfirmDialog>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-4 text-lg">
-            {/* <NavLink {...helpLink} /> */}
+      <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b-2 border-black">
+        {/* banner for guest user showing changes are only on this device and create account to save data and use on multiple devices */}
+        {authStatus === "guest" && (
+          <div className="bg-yellow-100 border-b-2 border-yellow-400 text-yellow-800 text-center text-sm p-2">
+            You are in <span className="font-bold">Guest Mode</span>. Your data is only saved on this device.{" "}
+            <button
+              onClick={
+                () => setIsCreateAccountModalOpen(true)
+              }
+              className="underline font-bold"
+            >
+              Create an account
+            </button>{" "}
+            to save your data and access it from any device!
+          </div>
+        )}
+        {/* end banner for guest user */}
+        {/* Main Nav Bar */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-3 flex items-center justify-between">
+            <Link href={authStatus === "guest" ? "/dashboard" : "/"} className="font-bold text-2xl">
+              WinningSon-inator
+            </Link>
+
+            {/* Desktop Nav */}
+            <nav className="hidden md:flex items-center gap-4 text-lg">
+              {/* <NavLink {...helpLink} /> */}
+              {renderNavContent()}
+            </nav>
+
+            {/* 3. Redesigned Mobile Menu Button with Animation */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden p-2 z-50"
+              aria-label="Toggle menu"
+              aria-expanded={isMenuOpen}
+            >
+              <div className="w-7 h-7 flex flex-col justify-around">
+                <span className={clsx("h-0.5 w-full bg-black rounded-full transition-transform duration-300", isMenuOpen && "rotate-45 translate-y-[5px]")}></span>
+                <span className={clsx("h-0.5 w-full bg-black rounded-full transition-opacity duration-300", isMenuOpen && "opacity-0")}></span>
+                <span className={clsx("h-0.5 w-full bg-black rounded-full transition-transform duration-300", isMenuOpen && "-rotate-45 -translate-y-[5px]")}></span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* 4. Redesigned Mobile Menu Dropdown with Animation */}
+        <div
+          className={clsx(
+            "md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b-2 border-black overflow-hidden transition-all duration-300 ease-in-out",
+            isMenuOpen ? "max-h-96" : "max-h-0"
+          )}
+        >
+          <nav className="flex flex-col items-start gap-2 p-4 text-lg">
+            <NavLink {...helpLink} />
             {renderNavContent()}
           </nav>
-
-          {/* 3. Redesigned Mobile Menu Button with Animation */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 z-50"
-            aria-label="Toggle menu"
-            aria-expanded={isMenuOpen}
-          >
-            <div className="w-7 h-7 flex flex-col justify-around">
-              <span className={clsx("h-0.5 w-full bg-black rounded-full transition-transform duration-300", isMenuOpen && "rotate-45 translate-y-[5px]")}></span>
-              <span className={clsx("h-0.5 w-full bg-black rounded-full transition-opacity duration-300", isMenuOpen && "opacity-0")}></span>
-              <span className={clsx("h-0.5 w-full bg-black rounded-full transition-transform duration-300", isMenuOpen && "-rotate-45 -translate-y-[5px]")}></span>
-            </div>
-          </button>
         </div>
-      </div>
-
-      {/* 4. Redesigned Mobile Menu Dropdown with Animation */}
-      <div
-        className={clsx(
-          "md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b-2 border-black overflow-hidden transition-all duration-300 ease-in-out",
-          isMenuOpen ? "max-h-96" : "max-h-0"
-        )}
-      >
-        <nav className="flex flex-col items-start gap-2 p-4 text-lg">
-          <NavLink {...helpLink} />
-          {renderNavContent()}
-        </nav>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }
 
