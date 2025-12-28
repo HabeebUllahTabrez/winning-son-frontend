@@ -244,7 +244,7 @@ export default function AnalyzerPage() {
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     trackEvent("Prompt Copied", { isGuest });
-    toast.success("✅ Prompt copied! Now paste it into your AI assistant.");
+    toast.success("Prompt copied! Now paste it into your AI assistant.");
   };
 
   if (isInitialLoading) return <AnalyzerSkeleton />;
