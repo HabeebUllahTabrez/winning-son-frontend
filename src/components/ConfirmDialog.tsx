@@ -12,6 +12,8 @@ interface ConfirmDialogProps {
   confirmText?: string;
   cancelText?: string;
   isConfirming?: boolean;
+  confirmingText?: string;
+  variant?: 'danger' | 'warning';
 }
 
 export const ConfirmDialog: FC<ConfirmDialogProps> = ({
@@ -23,8 +25,14 @@ export const ConfirmDialog: FC<ConfirmDialogProps> = ({
   confirmText = "Confirm",
   cancelText = "Cancel",
   isConfirming = false,
+  confirmingText = "Processing...",
+  variant = 'danger',
 }) => {
   if (!isOpen) return null;
+
+  const buttonStyles = variant === 'danger'
+    ? "bg-red-600 text-white border-red-600 hover:bg-red-700"
+    : "bg-orange-500 text-white border-orange-500 hover:bg-orange-600";
 
   return (
     // Backdrop
@@ -43,11 +51,11 @@ export const ConfirmDialog: FC<ConfirmDialogProps> = ({
               {cancelText}
             </button>
             <button 
-              className="btn text-lg bg-red-600 text-white border-red-600 hover:bg-red-700" 
+              className={`btn text-lg ${buttonStyles}`}
               onClick={onConfirm}
               disabled={isConfirming}
             >
-              {isConfirming ? "Deleting..." : confirmText}
+              {isConfirming ? confirmingText : confirmText}
             </button>
           </div>
         </div>

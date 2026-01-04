@@ -244,7 +244,7 @@ export default function AnalyzerPage() {
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     trackEvent("Prompt Copied", { isGuest });
-    toast.success("✅ Prompt copied! Now paste it into your AI assistant.");
+    toast.success("Prompt copied! Now paste it into your AI assistant.");
   };
 
   if (isInitialLoading) return <AnalyzerSkeleton />;
@@ -298,34 +298,34 @@ export default function AnalyzerPage() {
 
         {/* No Entries Dialog - Dramatic & Fun */}
         {showNoEntriesDialog && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl shadow-2xl max-w-md w-full p-8 border-4 border-yellow-300 animate-scale-in">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in overflow-y-auto">
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-8 border-4 border-yellow-300 animate-scale-in my-auto max-h-[95vh] overflow-y-auto">
               {/* Dramatic Icon */}
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-yellow-100 mb-4 animate-bounce">
-                  <span className="text-6xl">📭</span>
+              <div className="text-center mb-4 sm:mb-6">
+                <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-yellow-100 mb-3 sm:mb-4 animate-bounce">
+                  <span className="text-5xl sm:text-6xl">📭</span>
                 </div>
-                <h2 className="text-3xl font-black text-gray-900 mb-2">Son, We Have a Problem!</h2>
-                <p className="text-lg text-yellow-900 font-bold">No Entries Found</p>
+                <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">Son, We Have a Problem!</h2>
+                <p className="text-base sm:text-lg text-yellow-900 font-bold">No Entries Found</p>
               </div>
 
               {/* Dramatic Message */}
-              <div className="bg-white/80 backdrop-blur rounded-xl p-5 mb-6 border-2 border-yellow-200">
-                <p className="text-gray-800 text-center leading-relaxed mb-4">
+              <div className="bg-white/80 backdrop-blur rounded-xl p-4 sm:p-5 mb-4 sm:mb-6 border-2 border-yellow-200">
+                <p className="text-sm sm:text-base text-gray-800 text-center leading-relaxed mb-3 sm:mb-4">
                   🎭 <span className="font-bold">*Dramatic gasp*</span> Your journal is empty for this date range!
                   The AI can&apos;t analyze what doesn&apos;t exist... yet!
                 </p>
-                <div className="bg-yellow-100 rounded-lg p-3 border border-yellow-300">
-                  <p className="text-sm text-yellow-900 text-center">
+                <div className="bg-yellow-100 rounded-lg p-2.5 sm:p-3 border border-yellow-300">
+                  <p className="text-xs sm:text-sm text-yellow-900 text-center">
                     <span className="font-bold">Date Range:</span> {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} → {new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </p>
                 </div>
               </div>
 
               {/* Fun Suggestions */}
-              <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-4 mb-6 border-2 border-purple-200">
-                <p className="text-sm font-bold text-purple-900 mb-2">💡 Here&apos;s what you can do:</p>
-                <ul className="text-sm text-purple-800 space-y-1">
+              <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 border-2 border-purple-200">
+                <p className="text-xs sm:text-sm font-bold text-purple-900 mb-2">💡 Here&apos;s what you can do:</p>
+                <ul className="text-xs sm:text-sm text-purple-800 space-y-1">
                   <li>✍️ Create your first journal entry</li>
                   <li>📅 Try a different date range</li>
                   <li>🚀 Start your journey today!</li>
@@ -333,12 +333,12 @@ export default function AnalyzerPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-3">
+              <div className="space-y-2.5 sm:space-y-3">
                 <a
                   href="/journal"
-                  className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="w-full flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white text-sm sm:text-base font-bold rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
-                  <span className="text-xl">✍️</span>
+                  <span className="text-lg sm:text-xl">✍️</span>
                   Create Your First Entry
                 </a>
                 <button
@@ -347,14 +347,14 @@ export default function AnalyzerPage() {
                     setStartDate("");
                     setEndDate("");
                   }}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl border-2 border-gray-300 hover:border-gray-400 transition-all"
+                  className="w-full flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-white hover:bg-gray-50 text-gray-700 text-sm sm:text-base font-semibold rounded-xl border-2 border-gray-300 hover:border-gray-400 transition-all"
                 >
-                  <span className="text-xl">📅</span>
+                  <span className="text-lg sm:text-xl">📅</span>
                   Try Different Dates
                 </button>
                 <button
                   onClick={() => setShowNoEntriesDialog(false)}
-                  className="w-full px-6 py-2 text-gray-600 hover:text-gray-800 font-medium transition-all"
+                  className="w-full px-4 sm:px-6 py-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base font-medium transition-all"
                 >
                   Close
                 </button>

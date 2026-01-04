@@ -289,19 +289,38 @@ export function ProfileSetup() {
                     <button
                       key={id}
                       onClick={() => handleInputChange('avatar_id', id)}
-                      className={`p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-black ${
+                      className={`relative w-[88px] h-[88px] rounded-full transition-all duration-300 focus:outline-none flex items-center justify-center mx-auto ${
                         profileData.avatar_id === id
-                          ? "ring-2 ring-black bg-gray-200 scale-105"
-                          : "hover:bg-gray-100 hover:scale-105"
+                          ? "scale-110"
+                          : "hover:scale-105 opacity-70 hover:opacity-100"
                       }`}
                     >
+                      {/* Gradient ring for selected state */}
+                      <div className={`absolute inset-0 rounded-full transition-all duration-300 ${
+                        profileData.avatar_id === id
+                          ? "bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 shadow-lg shadow-blue-500/30"
+                          : "bg-transparent"
+                      }`} />
+                      
+                      {/* White inner circle for ring effect */}
+                      {profileData.avatar_id === id && (
+                        <div className="absolute inset-[4px] rounded-full bg-white" />
+                      )}
+                      
                       <Image
                         src={`/avatars/${file}`}
                         alt={`Avatar option ${id}`}
                         width={80}
                         height={80}
-                        className="rounded-full"
+                        className="relative rounded-full transition-all duration-300"
                       />
+                      
+                      {/* Checkmark badge for selected avatar */}
+                      {profileData.avatar_id === id && (
+                        <div className="absolute -bottom-1 -right-1 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full p-1.5 shadow-md">
+                          <FaCheck className="w-3 h-3 text-white" />
+                        </div>
+                      )}
                     </button>
                   ))}
                 </div>

@@ -189,7 +189,7 @@ export default function Journal() {
       setSuccessMsg(
         `Saved entry for ${formatDisplayDate(journalDate)} successfully!`
       );
-      router.push(`/submissions?highlighted=${journalDate}`);
+      router.push(`/submissions?date=${journalDate}`);
     } catch (e: unknown) {
       setErrorMsg(
         e instanceof Error ? e.message : "An unknown error occurred."

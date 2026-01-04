@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { fetchSubmissionHistory } from "@/lib/api";
 import { formatDateForAPI } from "@/lib/dateUtils";
 
@@ -25,6 +26,7 @@ type JournalEntry = {
 
 export function SubmissionHistoryChart({ isGuest, journalEntries = [] }: { isGuest?: boolean; journalEntries?: JournalEntry[] }) {
 
+    const router = useRouter();
     const [data, setData] = useState<SubmissionHistoryData | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -34,6 +36,12 @@ export function SubmissionHistoryChart({ isGuest, journalEntries = [] }: { isGue
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     });
     const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
+
+    // Navigate to submissions page with the selected date in daily view
+    const handleDayClick = (date: string) => {
+        if (!date) return;
+        router.push(`/submissions?date=${date}`);
+    };
 
     useEffect(() => {
         loadHistory();
@@ -289,11 +297,12 @@ export function SubmissionHistoryChart({ isGuest, journalEntries = [] }: { isGue
                                     return (
                                         <div
                                             key={item.local_date}
+                                            onClick={() => handleDayClick(item.local_date)}
                                             className={`
-                                                aspect-square rounded transition-all cursor-pointer hover:scale-105
+                                                aspect-square rounded transition-all cursor-pointer hover:scale-105 hover:ring-2 hover:ring-black hover:ring-offset-1
                                                 ${item.has_submission ? 'bg-green-500' : 'bg-gray-200'}
                                             `}
-                                            title={`${formattedDate}: ${item.has_submission ? 'Entry created' : 'No entry'}`}
+                                            title={`${formattedDate}: ${item.has_submission ? 'Entry created' : 'No entry'} - Click to view`}
                                         />
                                     );
                                 })}
@@ -350,11 +359,12 @@ export function SubmissionHistoryChart({ isGuest, journalEntries = [] }: { isGue
                                                             return (
                                                                 <div
                                                                     key={`${weekIdx}-${dayIdx}`}
+                                                                    onClick={() => item.local_date && handleDayClick(item.local_date)}
                                                                     className={`
-                                                                        w-3 h-3 rounded transition-all cursor-pointer hover:scale-110
+                                                                        w-3 h-3 rounded transition-all cursor-pointer hover:scale-110 hover:ring-2 hover:ring-black hover:ring-offset-1
                                                                         ${item.local_date ? (item.has_submission ? 'bg-green-500' : 'bg-gray-200') : ''}
                                                                     `}
-                                                                    title={item.local_date ? `${formattedDate}: ${item.has_submission ? 'Entry created' : 'No entry'}` : ''}
+                                                                    title={item.local_date ? `${formattedDate}: ${item.has_submission ? 'Entry created' : 'No entry'} - Click to view` : ''}
                                                                 />
                                                             );
                                                         })}
